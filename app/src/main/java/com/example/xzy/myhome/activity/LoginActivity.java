@@ -51,6 +51,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         switch (view.getId()) {
             case R.id.login_button:
                 login();
+                finish();
                 break;
             case R.id.register_button:
                 register();
@@ -81,7 +82,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
                 // 登录成功
                 Toast.makeText(LoginActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                intent.putExtra("uid", uid);
+                intent.putExtra("token", token);
+                startActivity(intent);
 
 
             } else {
@@ -94,7 +98,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         public void didRegisterUser(GizWifiErrorCode result, String uid,  String token) {
             if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
                 // 注册成功
-                Toast.makeText(LoginActivity.this, "邮箱注册成功", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LoginActivity.this, "邮箱注册成功，自动登录", Toast.LENGTH_SHORT).show();
+                GizWifiSDK.sharedInstance().userLogin(RegisterEmail, RegisterPassword);
             } else {
                 // 注册失败
                 Toast.makeText(LoginActivity.this, "邮箱注册失败"+"\n"+
