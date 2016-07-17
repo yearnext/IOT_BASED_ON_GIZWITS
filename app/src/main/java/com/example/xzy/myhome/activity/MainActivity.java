@@ -22,8 +22,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     String uid;
     String token;
     List<String> pks;
-    String ProductKey="db8d532e5c8f46a597e5b434a0198a66";
-    String Did = "2kgR5sJHLiwtxuuifH7MiP";
+    String ProductKey="c39bb944b86f4b55a51e74cdf11b1286";
+    String Did = "FD5NHUDiroQ7XZycWMJRuV";
     GizWifiDevice mDevice = null;
     // 使用缓存的设备列表刷新UI
     List<GizWifiDevice> devices = GizWifiSDK.sharedInstance().getDeviceList();
@@ -81,11 +81,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 break;
             case R.id.button_bound_no_lan:
-//                GizWifiSDK.sharedInstance().bindRemoteDevice (uid, token,
-//                        Did,ProductKey, "123456");
+                GizWifiSDK.sharedInstance().bindRemoteDevice (uid, token,
+                        Did,"123456", null);
                 break;
             case R.id.set_massage:
-
                 break;
             case R.id.button_remove_bound:
 
@@ -97,8 +96,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (mDevice == null) {
                     Toast.makeText(MainActivity.this, "设备未订阅", Toast.LENGTH_SHORT).show();
                 }else {
-
-
+                    Intent intent = new Intent(MainActivity.this, DeviceActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putParcelable("mDevice", mDevice);
+                    intent.putExtras(bundle);
+                    startActivity(intent);
                 }
 
                 break;
@@ -119,8 +121,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // 显示变化后的设备列表
             Log.d("", "discovered deviceList: " + deviceList);
             devices = deviceList;
-            Toast.makeText(MainActivity.this,"设备列表变化"+ deviceList , Toast.LENGTH_SHORT).show();
-
+            if (devices != null) {
+                Toast.makeText(MainActivity.this, "没有可用设备" , Toast.LENGTH_SHORT).show();
+            }else {
+                Toast.makeText(MainActivity.this, "设备列表变化" + devices, Toast.LENGTH_SHORT).show();
+            }
         }
 
         @Override

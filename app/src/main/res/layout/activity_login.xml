@@ -81,6 +81,12 @@
             tools:ignore="HardcodedText" />
 
     </LinearLayout>
+    <Button
+        android:padding="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="一键登录"
+        android:id="@+id/button_login_default" />
 
 
 </LinearLayout>

@@ -22,7 +22,8 @@ public class StartActivity extends AppCompatActivity {
         setContentView(R.layout.activity_start);
         //init sdk
         GizWifiSDK.sharedInstance().setListener(mListener);
-        GizWifiSDK.sharedInstance().startWithAppID(getApplicationContext(), "01bae3b215f4450f80031722c788ddd9");
+        GizWifiSDK.sharedInstance().startWithAppID(getApplicationContext(), "04d8c15be81a4fafa23ef842f8b8047b" +
+                "");
         GizWifiSDK.sharedInstance().setLogLevel(GizLogPrintLevel.GizLogPrintI);
         //启动界面选择
         new Handler().postDelayed(new Runnable() {
