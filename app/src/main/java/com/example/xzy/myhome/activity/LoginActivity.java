@@ -31,12 +31,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         setContentView(R.layout.activity_login);
         GizWifiSDK.sharedInstance().setListener(mListener);    //SDK初始化
         initViews();
-        Button login = (Button) findViewById(R.id.login_button);
-        Button register = (Button) findViewById(R.id.register_button);
-        Button buttonDefault = (Button) findViewById(R.id.button_login_default);
-        login.setOnClickListener(this);
-        register.setOnClickListener(this);
-        buttonDefault.setOnClickListener(this);
+
     }
 
     //控件初始化
@@ -45,6 +40,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         loginPassword = (EditText) findViewById(R.id.login_password);
         registerEmail = (EditText) findViewById(R.id.register_email);
         registerPassword = (EditText) findViewById(R.id.register_password);
+        Button login = (Button) findViewById(R.id.login_button);
+        Button register = (Button) findViewById(R.id.register_button);
+        Button buttonDefault = (Button) findViewById(R.id.button_login_default);
+        Button buttonOne = (Button) findViewById(R.id.button_login_one);
+        login.setOnClickListener(this);
+        register.setOnClickListener(this);
+        buttonDefault.setOnClickListener(this);
+        buttonOne.setOnClickListener(this);
     }
 
 
@@ -59,6 +62,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 break;
             case R.id.button_login_default:
                 GizWifiSDK.sharedInstance().userLogin("183482174@qq.com", "xdxdxdxd04");
+                break;
+            case R.id.button_login_one:
+                GizWifiSDK.sharedInstance().userLoginAnonymous();
+                break;
         }
 
     }
