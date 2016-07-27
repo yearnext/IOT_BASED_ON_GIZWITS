@@ -2,7 +2,6 @@ package com.example.xzy.myhome.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -12,13 +11,11 @@ import com.example.xzy.myhome.R;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
 import com.gizwits.gizwifisdk.api.GizWifiSDK;
 import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
-import com.gizwits.gizwifisdk.listener.GizWifiDeviceListener;
-import com.gizwits.gizwifisdk.listener.GizWifiSDKListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends BaseActivity implements View.OnClickListener {
     String uid;
     String token;
     List<String> pks;
@@ -32,8 +29,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        GizWifiSDK.sharedInstance().setListener(mListener);
-
         Button buttonWifi = (Button) findViewById(R.id.button_wifi);
         Button buttonFind = (Button) findViewById(R.id.button_find);
         Button buttonSubscription = (Button) findViewById(R.id.button_subscription);
@@ -56,6 +51,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         token = intent.getStringExtra("token");
 
     }
+
+
 
     @Override
     public void onClick(View view) {
@@ -108,56 +105,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    // 接收设备列表变化上报，刷新UI
-    GizWifiSDKListener mListener = new GizWifiSDKListener() {
-        @Override
-        public void didDiscovered(GizWifiErrorCode result, List<GizWifiDevice> deviceList) {
-            // 提示错误原因
-            if (result != GizWifiErrorCode.GIZ_SDK_SUCCESS) {
-                Log.d("", "result: " + result.name());
-                Toast.makeText(MainActivity.this,"result: " + result.name(), Toast.LENGTH_SHORT).show();
+    @Override
+    public void MdidDiscovered(GizWifiErrorCode result, List<GizWifiDevice> deviceList) {
+        // 提示错误原因
+        if (result != GizWifiErrorCode.GIZ_SDK_SUCCESS) {
+            Log.d("", "result: " + result.name());
+            Toast.makeText(MainActivity.this,"result: " + result.name(), Toast.LENGTH_SHORT).show();
 
-            }
-            // 显示变化后的设备列表
-            Log.d("", "discovered deviceList: " + deviceList);
-            devices = deviceList;
-            if (devices != null) {
-                Toast.makeText(MainActivity.this, "没有可用设备" , Toast.LENGTH_SHORT).show();
-            }else {
-                Toast.makeText(MainActivity.this, "设备列表变化" + devices, Toast.LENGTH_SHORT).show();
-            }
         }
-
-        @Override
-        public void didBindDevice(GizWifiErrorCode result, String did) {
-            if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
-                Toast.makeText(MainActivity.this,"绑定成功" , Toast.LENGTH_SHORT).show();
-
-                // 绑定成功
-            } else {
-                Toast.makeText(MainActivity.this,"绑定失败" , Toast.LENGTH_SHORT).show();
-
-                // 绑定失败
-            }
+        // 显示变化后的设备列表
+        Log.d("", "discovered deviceList: " + deviceList);
+        devices = deviceList;
+        if (devices != null) {
+            Toast.makeText(MainActivity.this, "没有可用设备" , Toast.LENGTH_SHORT).show();
+        }else {
+            Toast.makeText(MainActivity.this, "设备列表变化" + devices, Toast.LENGTH_SHORT).show();
         }
-
-
-    };
-    GizWifiDeviceListener mDeviceListener = new GizWifiDeviceListener() {
-        @Override
-        public  void didSetSubscribe(GizWifiErrorCode result, GizWifiDevice device, boolean isSubscribed) {
-            if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
-                Toast.makeText(MainActivity.this,"订阅或解除订阅成功" , Toast.LENGTH_SHORT).show();
-
-                // 订阅或解除订阅成功
-            } else {
-                // 失败
-                Toast.makeText(MainActivity.this,"订阅或解除订阅失败" , Toast.LENGTH_SHORT).show();
-
-
-            }
-        }
-    };
+    }
 
 
 

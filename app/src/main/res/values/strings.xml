@@ -2,5 +2,5 @@
     <string name="app_name">智能家居</string>
     <string name="prompt_email">邮箱</string>
     <string name="prompt_password">密码</string>
-    <string name="action_sign_in">登录</string>
+    <string name="action_sign_in">sign_in</string>
 </resources>

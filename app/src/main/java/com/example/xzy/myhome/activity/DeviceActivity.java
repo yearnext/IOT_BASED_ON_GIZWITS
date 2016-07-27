@@ -2,7 +2,6 @@ package com.example.xzy.myhome.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -12,13 +11,12 @@ import android.widget.ToggleButton;
 import com.example.xzy.myhome.R;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
 import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
-import com.gizwits.gizwifisdk.listener.GizWifiDeviceListener;
 
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.example.xzy.myhome.R.id.toggleButton_motor;
 
-public class DeviceActivity extends AppCompatActivity implements View.OnClickListener {
+public class DeviceActivity extends BaseActivity implements View.OnClickListener {
     GizWifiDevice mDevice;
     int sn;
     ConcurrentHashMap<String, Object> command = new ConcurrentHashMap<String, Object>();
@@ -38,7 +36,7 @@ public class DeviceActivity extends AppCompatActivity implements View.OnClickLis
         initViews();
         Intent intent = getIntent();
         mDevice = intent.getParcelableExtra("mDevice");
-        mDevice.setListener(mListener);
+        mDevice.setListener(mDeviceListener);
         mDevice.getDeviceStatus();
     }
 
@@ -77,9 +75,8 @@ public class DeviceActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     // 实现回调
-    GizWifiDeviceListener mListener = new GizWifiDeviceListener() {
         @Override
-        public void didReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn) {
+        public void MdidReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn) {
 
             // 已定义的设备数据点，有布尔、数值和枚举型数据
             if (dataMap.get("data") != null) {
@@ -133,7 +130,7 @@ public class DeviceActivity extends AppCompatActivity implements View.OnClickLis
 
             }
         }
-    };
+
 
 
 
