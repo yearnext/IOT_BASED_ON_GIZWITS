@@ -9,7 +9,6 @@ import com.example.xzy.myhome.R;
 import com.example.xzy.myhome.util.CircularAnimUtil;
 import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
-import com.gizwits.gizwifisdk.api.GizWifiSDK;
 import com.gizwits.gizwifisdk.enumration.GizEventType;
 import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
 import com.gizwits.gizwifisdk.listener.GizWifiDeviceListener;
@@ -26,11 +25,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected String mToken;
     protected final String TAG = "BaseActivity";
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        GizWifiSDK.sharedInstance().setListener(mListener);
-    }
 
     GizWifiSDKListener mListener = new GizWifiSDKListener() {
         @Override

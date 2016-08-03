@@ -10,6 +10,7 @@ import android.widget.ToggleButton;
 
 import com.example.xzy.myhome.R;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
+import com.gizwits.gizwifisdk.api.GizWifiSDK;
 import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,6 +36,7 @@ public class DeviceActivity extends BaseActivity implements View.OnClickListener
         setContentView(R.layout.activity_device);
         initViews();
         Intent intent = getIntent();
+        GizWifiSDK.sharedInstance().setListener(mListener);
         mDevice = intent.getParcelableExtra("mDevice");
         mDevice.setListener(mDeviceListener);
         mDevice.getDeviceStatus();

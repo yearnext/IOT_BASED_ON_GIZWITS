@@ -29,6 +29,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        GizWifiSDK.sharedInstance().setListener(mListener);
         Button buttonWifi = (Button) findViewById(R.id.button_wifi);
         Button buttonFind = (Button) findViewById(R.id.button_find);
         Button buttonSubscription = (Button) findViewById(R.id.button_subscription);

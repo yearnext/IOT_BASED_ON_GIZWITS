@@ -23,6 +23,7 @@ public class RegisterActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+        GizWifiSDK.sharedInstance().setListener(mListener);
         registerEmail = (EditText) findViewById(R.id.register_email);
         registerPassword = (EditText) findViewById(R.id.register_password);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar1);

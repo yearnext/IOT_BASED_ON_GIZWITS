@@ -28,6 +28,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        GizWifiSDK.sharedInstance().setListener(mListener);
         initViews();
 
     }
