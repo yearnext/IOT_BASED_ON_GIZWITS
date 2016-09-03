@@ -110,7 +110,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     public void MdidDiscovered(GizWifiErrorCode result, List<GizWifiDevice> deviceList) {
         // 提示错误原因
         if (result != GizWifiErrorCode.GIZ_SDK_SUCCESS) {
-            Log.d("", "result: " + result.name());
+            Log.e("绑定错误", "result: " + result.name());
             Toast.makeText(MainActivity.this,"result: " + result.name(), Toast.LENGTH_SHORT).show();
 
         }

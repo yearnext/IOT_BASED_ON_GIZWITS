@@ -45,7 +45,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             }
 
         }
-
+        //登录回调
         @Override
         public  void didUserLogin(GizWifiErrorCode result, String uid, String token) {
             mUid = uid;
@@ -62,6 +62,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
             }
         }
+        //注册回调
         @Override
         public void didRegisterUser(GizWifiErrorCode result, String uid,  String token) {
             if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
@@ -77,7 +78,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 registerFail();
             }
         }
-
+        //绑定结果回调
         @Override
         public void didDiscovered(GizWifiErrorCode result, List<GizWifiDevice> deviceList) {
             MdidDiscovered( result,  deviceList);
@@ -95,7 +96,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 // 绑定失败
             }
         }
-
+        //
         @Override
         public  void didSetDeviceOnboarding (GizWifiErrorCode result, String mac, String did, String productKey) {
             if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
@@ -104,7 +105,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 // 配置成功
             } else {
                 Toast.makeText(BaseActivity.this, "配置失败", Toast.LENGTH_SHORT).show();
-                Log.d("WIFI", "didSetDeviceOnboarding:配置失败 ");
+                Log.e("WIFI", "didSetDeviceOnboarding:配置失败   "+result);
                 // 配置失败
             }
         }

@@ -41,7 +41,8 @@ public class WIFIActivity extends BaseActivity {
             public void onClick(View view) {
                 String APSSD = editTextAPSsd.getText().toString();
                 String APPassword = editTextAPPassword.getText().toString();
-                GizWifiSDK.sharedInstance().setDeviceOnboarding(APSSD, APPassword, GizWifiConfigureMode.GizWifiSoftAP, "your_gagent_hotspot_prefix", 60, null);
+                //// TODO: 16/9/1 热点密码设置
+                GizWifiSDK.sharedInstance().setDeviceOnboarding("CMCC-506", "abc123456", GizWifiConfigureMode.GizWifiSoftAP, null, 60, null);
 
             }
         });
