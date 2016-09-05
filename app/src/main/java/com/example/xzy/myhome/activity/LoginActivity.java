@@ -2,139 +2,89 @@ package com.example.xzy.myhome.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.xzy.myhome.R;
-import com.example.xzy.myhome.util.CircularAnimUtil;
 import com.example.xzy.myhome.util.ExceptionUtil;
 import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiSDK;
+import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
 
-public class LoginActivity extends BaseActivity implements View.OnClickListener{
-    private EditText etLoginEmail;
-    private EditText etLoginPassword;
-    private Button loginButton;
-    private ProgressBar mProgressBar;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+
+public class LoginActivity extends BaseActivity {
+    @BindView(R.id.login_email)
+    EditText loginEmail;
+    @BindView(R.id.login_password)
+    EditText loginPassword;
+    @BindView(R.id.login_button)
+    Button loginButton;
+    @BindView(R.id.register_start)
+    TextView registerStart;
+    @BindView(R.id.login_anonymity)
+    TextView loginAnonymity;
     private String LoginEmail;
     private String LoginPassword;
-
+    AlertDialog ad;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        GizWifiSDK.sharedInstance().setListener(mListener);
-        initViews();
-
-    }
-
-    //控件初始化
-    private void initViews() {
-        etLoginEmail = (EditText) findViewById(R.id.login_email);
-        etLoginPassword = (EditText) findViewById(R.id.login_password);
-        loginButton = (Button) findViewById(R.id.login_button);
-        TextView registerStart = (TextView) findViewById(R.id.register_start);
-        TextView loginAnonymity = (TextView) findViewById(R.id.login_anonymity);
-        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
-        loginButton.setOnClickListener(this);
-        registerStart.setOnClickListener(this);
-        loginAnonymity.setOnClickListener(this);
-        mProgressBar.setOnClickListener(this);
+        ButterKnife.bind(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this,R.style.MyAlertDialog);
+        builder.setView(R.layout.logining);
+        ad = builder.create();
     }
 
 
 
-
-
-    @Override
+    @OnClick({R.id.login_button, R.id.register_start, R.id.login_anonymity})
     public void onClick(View view) {
         switch (view.getId()) {
-
-            case R.id.login_button:     //登录
-                LoginEmail = etLoginEmail.getText().toString();
-                LoginPassword = etLoginPassword.getText().toString();
-                if(ExceptionUtil.isException(LoginEmail,LoginPassword,LoginActivity.this)) break;
-
-                login();
+            case R.id.login_button://登录
+                LoginEmail = loginEmail.getText().toString();
+                LoginPassword = loginPassword.getText().toString();
+                if (ExceptionUtil.isException(LoginEmail, LoginPassword, LoginActivity.this)) break;
+                ad.show();
+                GizWifiSDK.sharedInstance().userLogin(LoginEmail, LoginPassword);
                 break;
 
             case R.id.login_anonymity:
-
                 GizWifiSDK.sharedInstance().userLoginAnonymous();
+                ad.show();
                 break;
 
             case R.id.register_start:
-
-                startActivity(new Intent(LoginActivity.this,RegisterActivity.class));
-                break;
-
-            case R.id.progressBar:
-
-                mProgressBar.setVisibility(View.GONE);
-                loginButton.setEnabled(true);
-                // 伸展按钮
-                CircularAnimUtil.show(loginButton);
+                startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
                 break;
         }
-
     }
 
 
-
-    //登录实现
-    private void login() {
-        loginButton.setEnabled(false);
-        mProgressBar.setVisibility(View.VISIBLE);
-        CircularAnimUtil.hide(loginButton);    // 收缩按钮
-/*        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                GizWifiSDK.sharedInstance().userLogin(LoginEmail, LoginPassword);
-            }
-        },1000);*/
-        GizWifiSDK.sharedInstance().userLogin(LoginEmail, LoginPassword);
-
-
-    }
-
-
-    // 登录成功按钮
+    //登录回调
     @Override
-    protected View loginSucceedButton() {
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                finish();
-            }
-        },1000);
-        return loginButton;
+    protected void mDidUserLogin(GizWifiErrorCode result) {
+        Log.e(TAG, "didUserLogin: 准备判断result");
+        ToastUtil.showToast(LoginActivity.this, "即将完成");
+        if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
+            // 登录成功
+            ToastUtil.showToast(LoginActivity.this, "登录成功");
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        } else {
+            // 登录失败
+            ad.dismiss();
+            ToastUtil.showToast(LoginActivity.this, "登录失败");
 
+        }
     }
-
-
-    //登录失败
-    @Override
-    protected void loginFail() {
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                ToastUtil.showToast(LoginActivity.this, "登录失败");
-                mProgressBar.setVisibility(View.GONE);
-                loginButton.setEnabled(true);
-                // 伸展按钮
-                CircularAnimUtil.show(loginButton);
-            }
-        },1000);
-
-
-
-    }
-
-
-
 }

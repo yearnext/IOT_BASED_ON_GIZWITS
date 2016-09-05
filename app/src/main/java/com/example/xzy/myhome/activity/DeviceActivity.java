@@ -15,6 +15,8 @@ import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import butterknife.ButterKnife;
+
 import static com.example.xzy.myhome.R.id.toggleButton_motor;
 
 public class DeviceActivity extends BaseActivity implements View.OnClickListener {
@@ -31,9 +33,10 @@ public class DeviceActivity extends BaseActivity implements View.OnClickListener
     SeekBar seekBarMotor;
     int toggleMotorData;
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device);
+        ButterKnife.bind(this);
         initViews();
         Intent intent = getIntent();
         GizWifiSDK.sharedInstance().setListener(mListener);

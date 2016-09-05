@@ -26,7 +26,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     List<GizWifiDevice> devices = GizWifiSDK.sharedInstance().getDeviceList();
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         GizWifiSDK.sharedInstance().setListener(mListener);

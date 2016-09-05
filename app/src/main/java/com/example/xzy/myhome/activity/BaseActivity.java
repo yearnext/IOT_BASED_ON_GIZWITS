@@ -1,14 +1,12 @@
 package com.example.xzy.myhome.activity;
 
+import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
-import com.example.xzy.myhome.R;
-import com.example.xzy.myhome.util.CircularAnimUtil;
-import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
+import com.gizwits.gizwifisdk.api.GizWifiSDK;
 import com.gizwits.gizwifisdk.enumration.GizEventType;
 import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
 import com.gizwits.gizwifisdk.listener.GizWifiDeviceListener;
@@ -23,8 +21,13 @@ public abstract class BaseActivity extends AppCompatActivity {
     String RegisterPassword;
     protected String mUid;
     protected String mToken;
-    protected final String TAG = "BaseActivity";
+    protected final String TAG = getClass().getSimpleName();
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        GizWifiSDK.sharedInstance().setListener(mListener);
+    }
 
     GizWifiSDKListener mListener = new GizWifiSDKListener() {
         @Override
@@ -50,33 +53,13 @@ public abstract class BaseActivity extends AppCompatActivity {
         public  void didUserLogin(GizWifiErrorCode result, String uid, String token) {
             mUid = uid;
             mToken = token;
-            if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
-                // 登录成功
-                View view =loginSucceedButton();
-                // 登录成功
-                ToastUtil.showToast(BaseActivity.this, "登录成功");
-                CircularAnimUtil.startActivity(BaseActivity.this, MainActivity.class, view, R.color.colorAccent);
-            } else {
-                // 登录失败
-                loginFail();
-
-            }
+            Log.d(TAG, "didUserLogin: 成功回调");
+            mDidUserLogin(result);
         }
         //注册回调
         @Override
         public void didRegisterUser(GizWifiErrorCode result, String uid,  String token) {
-            if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
-
-               // 注册成功
-                registerSucceed();
-
-
-
-            } else {
-                // 注册失败
-                Toast.makeText(BaseActivity.this, "邮箱注册失败", Toast.LENGTH_SHORT).show();
-                registerFail();
-            }
+            MDidRegisterUser(result);
         }
         //绑定结果回调
         @Override
@@ -134,15 +117,13 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     };
 
-        // 实现回调
         protected void MdidReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn){};
         protected void MdidDiscovered(GizWifiErrorCode result, List<GizWifiDevice> deviceList){};
-        protected View loginSucceedButton(){
-            return null;
-        };       //登录成功按钮
         protected void registerSucceed(){};    //注册成功
         protected void loginFail() {}          // 登录失败
         protected void registerFail(){}        //注册失败
 
 
+    protected  void mDidUserLogin(GizWifiErrorCode result){}; //登录回调
+    protected  void MDidRegisterUser(GizWifiErrorCode result){};//登录回调
 }

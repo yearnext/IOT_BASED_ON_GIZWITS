@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-
+apply plugin: 'android-apt'
 android {
     compileSdkVersion 24
     buildToolsVersion "24.0.1"
@@ -33,4 +33,6 @@ dependencies {
     compile files('libs/BLEasyConfig.jar')
     compile files('libs/easylink_only.jar')
     compile files('libs/libEsptouch_v0.3.3.4_3.jar')
+    compile 'com.jakewharton:butterknife:8.4.0'
+    apt 'com.jakewharton:butterknife-compiler:8.4.0'
 }

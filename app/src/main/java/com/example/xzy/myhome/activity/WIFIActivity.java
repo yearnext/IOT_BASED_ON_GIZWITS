@@ -16,7 +16,7 @@ import java.util.List;
 public class WIFIActivity extends BaseActivity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wifi);
         GizWifiSDK.sharedInstance().setListener(mListener);
