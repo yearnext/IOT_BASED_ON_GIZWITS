@@ -3,4 +3,21 @@
     <string name="prompt_email">邮箱</string>
     <string name="prompt_password">密码</string>
     <string name="action_sign_in">sign_in</string>
+    <string name="configuration_message">请先把设备切换到Airlink模式,再输入Wi-Fi密码,以连接您的智能设备</string>
+    <string name="add_device">添加设备</string>
+    <string name="choose_wifi_list_title">SSID</string>
+    <string name="softPsw_hint">密码</string>
+    <string name="next">下一步</string>
+    <string name="five_wifi">注: 暂不支持5G频道的Wi-Fi网络</string>
+    <string name="AirLinkTitle">尝试连接WIFI……</string>
+    <string name="AirLinkMessage">大概需要1分钟,请耐心等待</string>
+    <string name="devicelist">设备列表</string>
+    <string name="item_01">刷新设备</string>
+    <string name="item_02">解绑列表第一个设备</string>
+    <string name="menu_add">增加</string>
+    <string name="menu_refresh">刷新</string>
+    <string name="menu_delete">删除</string>
+    <string name="toolbar">&#160;&#160;设备列表</string>
+    <string name="checkbox">CheckBox</string>
+    <string name="forget_password">忘记密码?</string>
 </resources>

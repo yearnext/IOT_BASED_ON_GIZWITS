@@ -9,72 +9,65 @@
     tools:context="com.example.xzy.myhome.activity.WIFIActivity">
 
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="230dp"
-        android:orientation="vertical">
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:text="设备WIFI登陆"
-            android:textSize="30sp"
-            android:gravity="center"
-            tools:ignore="HardcodedText" />
-        <EditText
-            android:layout_width="match_parent"
+        <ImageView
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:hint="WIFI SSID"
-            android:id="@+id/editText_wifi_ssd"
-            android:inputType="textEmailAddress" />
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="WIFI password"
-            android:inputType="textPassword"
-            android:id="@+id/editText_wifi_password"/>
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="UDP广播"
-            android:id="@+id/button_wifi_login"
-            tools:ignore="HardcodedText" />
+            android:layout_marginBottom="15dp"
+            android:src="@drawable/nodevice"
+            android:layout_gravity="center"
+            android:contentDescription="@string/add_device" />
 
-
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:weightSum="1">
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:text="AP连接方式"
-            android:textSize="30sp"
-            android:gravity="center"
-            tools:ignore="HardcodedText" />
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="AP SSID"
-            android:id="@+id/editText_AP_ssd"
-            android:inputType="textEmailAddress" />
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="AP password"
-            android:inputType="textPassword"
-            android:id="@+id/editText_AP_password"/>
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="AP热点"
-            android:id="@+id/button_AP_login"
-            tools:ignore="HardcodedText" />
-        <TextView
+            android:id="@+id/textView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="使用机智云提供的模组固件，设备产生的Wifi热点以“XPG-GAgent-”开头，密码为” 123456789”。其他厂商提供的模组，SoftAP热点名称由各自厂商指定。"
-            android:layout_weight="2.23" />
-    </LinearLayout>
+            android:layout_margin="10dp"
+            android:layout_gravity="center"
+            android:text="@string/configuration_message" />
+
+
+
+
+
+
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+
+        <EditText
+            android:id="@+id/editText_wifi_ssd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/choose_wifi_list_title"
+            android:textSize="14sp" />
+    </android.support.design.widget.TextInputLayout>
+
+
+
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/editText_wifi_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/softPsw_hint"
+            android:inputType="textPassword"
+            android:textSize="14sp" />
+    </android.support.design.widget.TextInputLayout>
+
+
+        <Button
+            android:id="@+id/button_wifi_login"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="40dp"
+            android:background="@drawable/button_shape"
+            android:text="@string/next" />
+
 </LinearLayout>
+

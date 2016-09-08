@@ -6,47 +6,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.example.xzy.myhome.activity.MainActivity">
+    <android.support.v7.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/tb_device_list"
+        android:background="@color/colorPrimaryDark">
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/button_wifi"
-        android:text="硬件设备WIFI接入"/>
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/button_find"
-        android:text="搜索设备"/>
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/button_subscription"
-        android:text="设备订阅（现默认订阅设备1）"/>
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/button_bound_no_lan"
-        android:text="非局域网设备绑定（待开发）"/>
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/set_massage"
-        android:text="设置设备的绑定信息（待开发）"/>
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/button_remove_bound"
-        android:text="设备解绑（待开发）"/>
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/button_massage"
-        android:text="获取设备硬件信息（待开发）"/>
+    </android.support.v7.widget.Toolbar>
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="启动设备控制界面"
-        android:id="@+id/button_device"
-        android:layout_gravity="center_horizontal" />
+
 </LinearLayout>

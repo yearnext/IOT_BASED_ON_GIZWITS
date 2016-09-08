@@ -5,8 +5,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
 import com.gizwits.gizwifisdk.api.GizWifiSDK;
+import com.gizwits.gizwifisdk.api.GizWifiSSID;
 import com.gizwits.gizwifisdk.enumration.GizEventType;
 import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
 import com.gizwits.gizwifisdk.listener.GizWifiDeviceListener;
@@ -19,9 +21,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class BaseActivity extends AppCompatActivity {
     String RegisterEmail;
     String RegisterPassword;
-    protected String mUid;
-    protected String mToken;
+    String mUid;
+    String mToken;
+    String mDid;
     protected final String TAG = getClass().getSimpleName();
+    // 使用缓存的设备列表刷新UI
+    List<GizWifiDevice> devices = GizWifiSDK.sharedInstance().getDeviceList();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -30,6 +35,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     GizWifiSDKListener mListener = new GizWifiSDKListener() {
+
+
         @Override
         public void didNotifyEvent(GizEventType eventType, Object eventSource, GizWifiErrorCode eventID, String eventMessage) {
             if (eventType == GizEventType.GizEventSDK) {
@@ -48,27 +55,28 @@ public abstract class BaseActivity extends AppCompatActivity {
             }
 
         }
-        //登录回调
-        @Override
+
+        @Override    //登录回调
         public  void didUserLogin(GizWifiErrorCode result, String uid, String token) {
             mUid = uid;
             mToken = token;
-            Log.d(TAG, "didUserLogin: 成功回调");
-            mDidUserLogin(result);
+            mDidUserLogin(result,uid,token);
         }
-        //注册回调
-        @Override
+        @Override   //注册回调
         public void didRegisterUser(GizWifiErrorCode result, String uid,  String token) {
             MDidRegisterUser(result);
         }
-        //绑定结果回调
-        @Override
+        @Override   //绑定结果回调
         public void didDiscovered(GizWifiErrorCode result, List<GizWifiDevice> deviceList) {
-            MdidDiscovered( result,  deviceList);
+
+            devices = deviceList;
+            ToastUtil.showToast(BaseActivity.this,"size="+devices.size()+"   "+devices);
+            MdidDiscovered( result);
         }
 
         @Override
         public void didBindDevice(GizWifiErrorCode result, String did) {
+            mDid=did;
             if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
                 Toast.makeText(BaseActivity.this,"绑定成功" , Toast.LENGTH_SHORT).show();
 
@@ -82,15 +90,13 @@ public abstract class BaseActivity extends AppCompatActivity {
         //
         @Override
         public  void didSetDeviceOnboarding (GizWifiErrorCode result, String mac, String did, String productKey) {
-            if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
-                Toast.makeText(BaseActivity.this, "配置成功", Toast.LENGTH_SHORT).show();
-                Log.d("WIFI", "didSetDeviceOnboarding:配置成功 ");
-                // 配置成功
-            } else {
-                Toast.makeText(BaseActivity.this, "配置失败", Toast.LENGTH_SHORT).show();
-                Log.e("WIFI", "didSetDeviceOnboarding:配置失败   "+result);
-                // 配置失败
-            }
+            mDidSetDeviceOnboarding(result, mac, did, productKey);
+
+        }
+
+        @Override
+        public void didGetSSIDList(GizWifiErrorCode result, List<GizWifiSSID> ssids) {
+            mDidGetSSIDList(result, ssids);
         }
     };
 
@@ -118,12 +124,14 @@ public abstract class BaseActivity extends AppCompatActivity {
     };
 
         protected void MdidReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn){};
-        protected void MdidDiscovered(GizWifiErrorCode result, List<GizWifiDevice> deviceList){};
-        protected void registerSucceed(){};    //注册成功
-        protected void loginFail() {}          // 登录失败
-        protected void registerFail(){}        //注册失败
+        protected void MdidDiscovered(GizWifiErrorCode result){};
 
-
-    protected  void mDidUserLogin(GizWifiErrorCode result){}; //登录回调
-    protected  void MDidRegisterUser(GizWifiErrorCode result){};//登录回调
+    //登录回调
+    protected  void mDidUserLogin(GizWifiErrorCode result, String uid, String token){};
+    //注册回调
+    protected  void MDidRegisterUser(GizWifiErrorCode result){};
+    //WIFI配置回调
+    protected  void mDidSetDeviceOnboarding (GizWifiErrorCode result, String mac, String did, String productKey) {}
+    //在AP模式下获取WIFI列表
+    protected  void mDidGetSSIDList(GizWifiErrorCode result, List<GizWifiSSID> ssids){}
 }

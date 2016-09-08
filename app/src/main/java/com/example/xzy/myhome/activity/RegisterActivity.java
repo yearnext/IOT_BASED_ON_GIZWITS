@@ -1,5 +1,6 @@
 package com.example.xzy.myhome.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.widget.EditText;
@@ -7,6 +8,7 @@ import android.widget.Toast;
 
 import com.example.xzy.myhome.R;
 import com.example.xzy.myhome.util.ExceptionUtil;
+import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiSDK;
 import com.gizwits.gizwifisdk.enumration.GizUserAccountType;
 import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
@@ -50,6 +52,20 @@ public class RegisterActivity extends BaseActivity {
         if (ExceptionUtil.isException(RegisterEmail, RegisterPassword, RegisterActivity.this))
             return;
         GizWifiSDK.sharedInstance().registerUser(RegisterEmail, RegisterPassword, null, GizUserAccountType.GizUserEmail);
+    }
+
+    //登录回调
+    @Override
+    protected void mDidUserLogin(GizWifiErrorCode result, String uid, String token) {
+        if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
+            Intent intent = new Intent(RegisterActivity.this, WIFIActivity.class);
+            startActivity(intent);
+            finish();
+        } else {
+
+            ToastUtil.showToast(RegisterActivity.this, "登录失败");
+
+        }
     }
 }
 

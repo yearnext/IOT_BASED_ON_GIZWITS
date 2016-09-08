@@ -11,15 +11,15 @@
 
 
     <ImageView
+        android:layout_marginTop="20dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:paddingBottom="40dp"
-        android:paddingTop="40dp"
-        android:src="@drawable/failsoft" />
+        android:src="@drawable/qid" />
 
 
     <LinearLayout
+        android:layout_marginTop="30dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -51,15 +51,26 @@
         </android.support.design.widget.TextInputLayout>
 
 
+
+            <TextView
+                android:layout_width="match_parent"
+                android:gravity="end"
+                android:layout_height="wrap_content"
+                android:text="@string/forget_password"/>
+
+
+
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="登录"
+            android:background="@drawable/button_shape"
             android:layout_marginTop="40dp"
             android:layout_marginBottom="40dp"
             android:id="@+id/login_button" />
 
     </LinearLayout>
+
     <LinearLayout
         android:layout_marginTop="10dp"
         android:layout_width="match_parent"
