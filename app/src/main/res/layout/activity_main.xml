@@ -10,9 +10,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/tb_device_list"
-        android:background="@color/colorPrimaryDark">
+        android:background="@color/colorPrimary">
 
     </android.support.v7.widget.Toolbar>
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/lv_device_list">
+    </ListView>
 
 
 </LinearLayout>

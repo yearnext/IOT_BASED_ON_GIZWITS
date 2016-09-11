@@ -1,112 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:stretchColumns="1"
+    android:orientation="vertical"
     tools:context="com.example.xzy.myhome.activity.DeviceActivity">
 
-    <TableRow>
-        <TextView
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:textSize="30sp"
-            android:text="灯状态：" />
 
-        <TextView
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:textSize="30sp"
-            android:id="@+id/textView_LED"
-            android:text="关"/>
-
-
-        <ToggleButton
-            android:layout_height="wrap_content"
-            android:textOff="点击开灯"
-            android:textOn="点击关灯"
-            android:id="@+id/toggleButton_LED" />
-    </TableRow>
-
-
-    <TableRow>
-        <TextView
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:textSize="30sp"
-            android:text="插座状态：" />
-
-        <TextView
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:textSize="30sp"
-            android:id="@+id/textView_socket"
-            android:text="关"/>
-
-
-        <ToggleButton
-            android:layout_height="wrap_content"
-            android:textOff="打开插座"
-            android:textOn="关闭插座"
-            android:id="@+id/toggleButton_socket" />
-    </TableRow>
-
-
-    <TableRow>
-        <TextView
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:textSize="30sp"
-            android:text="门铃状态："/>
-
-        <TextView
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:id="@+id/textView_doorbell"
-            android:text="关"/>
-
-
-
-
-    </TableRow>
-    <TableRow>
-        <TextView
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:textSize="30sp"
-            android:text="电机值："/>
-
-        <TextView
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:textSize="30sp"
-            android:id="@+id/textView_motor"
-            android:text="关"/>
-        <ToggleButton
-            android:layout_height="wrap_content"
-            android:textOff="打开电机"
-            android:textOn="关闭电机"
-            android:id="@+id/toggleButton_motor" />
-
-
-
-    </TableRow>
-
-    <TableRow
+    <TextView
+        android:id="@+id/textView_data"
+        android:layout_width="wrap_content"
+        android:layout_height="200dp"
+        android:text="数据1"/>
+    <EditText
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:id="@+id/editText_data" />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/button_data"
+        android:text="数据发送"/>
 
-        <SeekBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/seekBar_motor"
-            android:max="100"
-            android:progress="1"
-
-            android:layout_span="3" />
-
-    </TableRow>
-
-
-</TableLayout>
+</LinearLayout>

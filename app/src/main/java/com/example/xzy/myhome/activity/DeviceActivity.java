@@ -2,180 +2,107 @@ package com.example.xzy.myhome.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.util.Log;
 import android.view.View;
-import android.widget.SeekBar;
+import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.example.xzy.myhome.R;
+import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
-import com.gizwits.gizwifisdk.api.GizWifiSDK;
 import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
-import static com.example.xzy.myhome.R.id.toggleButton_motor;
+import static com.mxchip.helper.ProbeReqData.bytesToHex;
 
-public class DeviceActivity extends BaseActivity implements View.OnClickListener {
+public class DeviceActivity extends BaseActivity {
     GizWifiDevice mDevice;
-    int sn;
-    ConcurrentHashMap<String, Object> command = new ConcurrentHashMap<String, Object>();
-    TextView textViewLED;
-    TextView textViewDoorbell;
-    TextView textViewMotor;
-    TextView textViewSocket;
-    ToggleButton toggleButtonLED;
-    ToggleButton toggleButtonMotor;
-    ToggleButton toggleButtonSocket;
-    SeekBar seekBarMotor;
-    int toggleMotorData;
+    @BindView(R.id.textView_data)
+    TextView textViewData;
+    @BindView(R.id.editText_data)
+    EditText editTextData;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device);
         ButterKnife.bind(this);
-        initViews();
         Intent intent = getIntent();
-        GizWifiSDK.sharedInstance().setListener(mListener);
         mDevice = intent.getParcelableExtra("mDevice");
         mDevice.setListener(mDeviceListener);
         mDevice.getDeviceStatus();
+
+
     }
 
-    private void initViews() {
-        toggleButtonLED = (ToggleButton) findViewById(R.id.toggleButton_LED);
-        toggleButtonLED.setOnClickListener(this);
-        toggleButtonMotor = (ToggleButton) findViewById(toggleButton_motor);
-        toggleButtonMotor.setOnClickListener(this);
-        toggleButtonSocket = (ToggleButton) findViewById(R.id.toggleButton_socket);
-        toggleButtonSocket.setOnClickListener(this);
-        textViewLED = (TextView) findViewById(R.id.textView_LED);
-        textViewDoorbell = (TextView) findViewById(R.id.textView_doorbell);
-        textViewMotor = (TextView) findViewById(R.id.textView_motor);
-        textViewSocket = (TextView) findViewById(R.id.textView_socket);
-        seekBarMotor = (SeekBar) findViewById(R.id.seekBar_motor);
-
-        seekBarMotor.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                toggleMotorData = i;
-                textViewMotor.setText(toggleMotorData+"");
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                command.put("Motor_data",toggleMotorData);
-                mDevice.write(command, sn);
-
-            }
-        });
-    }
 
     // 实现回调
-        @Override
-        public void MdidReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn) {
-
-            // 已定义的设备数据点，有布尔、数值和枚举型数据
+    @Override
+    public void MdidReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn) {
+       if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
+           ToastUtil.showToast(DeviceActivity.this,"数据开始解析");
+            // 普通数据点类型，有布尔型、整形和枚举型数据，该种类型一般为可读写
             if (dataMap.get("data") != null) {
                 ConcurrentHashMap<String, Object> map = (ConcurrentHashMap<String, Object>) dataMap.get("data");
-
-                // 普通数据点，打印对应的key和value
-                for (String key : map.keySet()) {
-                    String data= map.get(key).toString();
-                   Toast.makeText(DeviceActivity.this,
-                            key+data, Toast.LENGTH_SHORT).show();
-                    //判断数据
-                    if (key.equals("Motor_toggle")) {
-                        toggleButtonMotor.setChecked(data.equals("true"));
-
-
-                    } else if (key.equals("Socket_toggle")){
-                        toggleButtonSocket.setChecked(data.equals("true"));
-                        if (data.equals("true"))
-                            textViewSocket.setText("开");
-                        else{
-                            textViewSocket.setText("关");
-                        }
-
-
-                    } else if (key.equals("LED_toggle")) {
-                        toggleButtonLED.setChecked(data.equals("true"));
-                        if (data.equals("true"))
-                            textViewLED.setText("开");
-                        else{
-                            textViewLED.setText("关");
-                        }
-
-                    } else if (key.equals("Motor_data")) {
-                        toggleMotorData = Integer.parseInt(data);
-                        seekBarMotor.setProgress(Integer.parseInt(data));
-                        textViewMotor.setText(toggleMotorData+"");
-
-
-
-                    } else if (key.equals("Doorbell_toggle")) {
-                        if (data.equals("true"))
-                            textViewDoorbell.setText("有人按门铃");
-                        else{
-                            textViewDoorbell.setText("没有人按门铃");
-                        }
-
-                    } else {
-                        Toast.makeText(DeviceActivity.this, "有未定义数据点", Toast.LENGTH_SHORT).show();
-                    }
+                // 扩展数据点，key为"kuozhan"
+                byte[] bytes = (byte[]) map.get("Packet");
+                if (bytes==null) Log.e(TAG, "MdidReceiveData: "+"bytes为空" );
+                else {
+                for (byte a : bytes) {
+                    Log.e(TAG, "MdidReceiveData: "+a);
                 }
-
-            }
+                String string = bytesToHex(bytes);
+                textViewData.setText(string);}
+                     }
         }
 
 
+    }
 
 
-    @Override
+
+    @OnClick({R.id.button_data})
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.toggleButton_LED:
-                if (toggleButtonLED.isChecked()) {
-                    textViewLED.setText("开");
-                    command.put("LED_toggle", true);
-                    mDevice.write(command, sn);
-                } else {
-                    textViewLED.setText("关");
-                    command.put("LED_toggle", false);
-                    mDevice.write(command, sn);
-                }
+            case R.id.button_data:
+                Editable editText = editTextData.getText();
+                String s = editText.toString();
+                Log.e(TAG, "onClick: "+ s );
+                byte[] b = HexString2Bytes(s);
+                ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
+                dataMap.put("Packet", b);
+                mDevice.write(dataMap, 0);
                 break;
-            case R.id.toggleButton_motor:
-                if (toggleButtonMotor.isChecked()) {
-                    command.put("Motor_toggle", true);
-                    mDevice.write(command, sn);
 
-                } else {
-                    command.put("Motor_toggle", false);
-                    mDevice.write(command, sn);
-
-                }
-                break;
-            case R.id.toggleButton_socket:
-                if (toggleButtonSocket.isChecked()) {
-                    textViewSocket.setText("开");
-                    command.put("Socket_toggle", true);
-                    mDevice.write(command, sn);
-
-                } else {
-                    textViewSocket.setText("关");
-                    command.put("Socket_toggle", false);
-                    mDevice.write(command, sn);
-                }
-                break;
         }
     }
+
+
+    public static byte[] HexString2Bytes(String src){
+        byte[] tmp = src.getBytes();
+        byte[] ret = new byte[src.length()/2+1];
+        int i;
+        for(i=0; i<src.length() / 2; i++){
+            ret[i] = uniteBytes(tmp[i * 2], tmp[i * 2 + 1]);
+        }
+        if (src.length() % 2 != 0) {
+            ret[i]=uniteBytes(tmp[i * 2], (byte) 48);
+        }
+        return ret;
+    }
+
+    public static byte uniteBytes(byte src0, byte src1) {
+        byte _b0 = Byte.decode("0x" + new String(new byte[]{src0})).byteValue();
+        _b0 = (byte)(_b0 << 4);
+        byte _b1 = Byte.decode("0x" + new String(new byte[]{src1})).byteValue();
+        byte ret = (byte)(_b0 ^ _b1);
+        return ret;
+    }
 }
+

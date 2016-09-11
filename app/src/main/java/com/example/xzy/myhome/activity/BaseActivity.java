@@ -23,7 +23,9 @@ public abstract class BaseActivity extends AppCompatActivity {
     String RegisterPassword;
     String mUid;
     String mToken;
-    String mDid;
+    String mDid="FD5NHUDiroQ7XZycWMJRuV";
+    List<String> pks;
+
     protected final String TAG = getClass().getSimpleName();
     // 使用缓存的设备列表刷新UI
     List<GizWifiDevice> devices = GizWifiSDK.sharedInstance().getDeviceList();
@@ -68,10 +70,9 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
         @Override   //绑定结果回调
         public void didDiscovered(GizWifiErrorCode result, List<GizWifiDevice> deviceList) {
-
+            ToastUtil.showToast(BaseActivity.this,deviceList+"");
             devices = deviceList;
-            ToastUtil.showToast(BaseActivity.this,"size="+devices.size()+"   "+devices);
-            MdidDiscovered( result);
+            mDidDiscovered( result);
         }
 
         @Override
@@ -98,6 +99,17 @@ public abstract class BaseActivity extends AppCompatActivity {
         public void didGetSSIDList(GizWifiErrorCode result, List<GizWifiSSID> ssids) {
             mDidGetSSIDList(result, ssids);
         }
+        //设备解绑
+        @Override
+        public void didUnbindDevice(GizWifiErrorCode result, String did) {
+            if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
+                Toast.makeText(BaseActivity.this,"解绑成功" , Toast.LENGTH_SHORT).show();
+                // 解绑成功
+            } else {
+                Toast.makeText(BaseActivity.this,"解绑失败" , Toast.LENGTH_SHORT).show();
+                // 解绑失败
+            }
+        }
     };
 
 
@@ -107,7 +119,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         @Override
         public  void didSetSubscribe(GizWifiErrorCode result, GizWifiDevice device, boolean isSubscribed) {
             if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
-                Toast.makeText(BaseActivity.this,"订阅或解除订阅成功" , Toast.LENGTH_SHORT).show();
+                Toast.makeText(BaseActivity.this,"订阅成功" , Toast.LENGTH_SHORT).show();
 
                 // 订阅或解除订阅成功
             } else {
@@ -124,7 +136,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     };
 
         protected void MdidReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn){};
-        protected void MdidDiscovered(GizWifiErrorCode result){};
+
 
     //登录回调
     protected  void mDidUserLogin(GizWifiErrorCode result, String uid, String token){};
@@ -134,4 +146,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected  void mDidSetDeviceOnboarding (GizWifiErrorCode result, String mac, String did, String productKey) {}
     //在AP模式下获取WIFI列表
     protected  void mDidGetSSIDList(GizWifiErrorCode result, List<GizWifiSSID> ssids){}
+    //设备发现回调
+    protected void mDidDiscovered(GizWifiErrorCode result){};
 }
