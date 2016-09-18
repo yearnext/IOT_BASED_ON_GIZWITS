@@ -120,11 +120,14 @@ public abstract class BaseActivity extends AppCompatActivity {
         public  void didSetSubscribe(GizWifiErrorCode result, GizWifiDevice device, boolean isSubscribed) {
             if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
                 Toast.makeText(BaseActivity.this,"订阅成功" , Toast.LENGTH_SHORT).show();
+                Log.i(TAG, "didSetSubscribe: 订阅成功");
 
                 // 订阅或解除订阅成功
             } else {
                 // 失败
-                Toast.makeText(BaseActivity.this,"订阅或解除订阅失败" , Toast.LENGTH_SHORT).show();
+                Toast.makeText(BaseActivity.this,"订阅失败" , Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "didSetSubscribe: 订阅失败 result="+result);
+
 
 
             }

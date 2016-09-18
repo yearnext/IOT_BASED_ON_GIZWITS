@@ -21,5 +21,10 @@
         android:layout_height="wrap_content"
         android:id="@+id/button_data"
         android:text="数据发送"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/button_data_test"
+        android:text="数据测试"/>
 
 </LinearLayout>

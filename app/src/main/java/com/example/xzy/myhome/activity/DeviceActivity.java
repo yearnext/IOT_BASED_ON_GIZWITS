@@ -9,7 +9,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.example.xzy.myhome.R;
-import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
 import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
 
@@ -45,64 +44,85 @@ public class DeviceActivity extends BaseActivity {
     // 实现回调
     @Override
     public void MdidReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn) {
-       if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
-           ToastUtil.showToast(DeviceActivity.this,"数据开始解析");
+        if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
+            Log.i(TAG, "MdidReceiveData: 接收到云端数据");
             // 普通数据点类型，有布尔型、整形和枚举型数据，该种类型一般为可读写
             if (dataMap.get("data") != null) {
-                ConcurrentHashMap<String, Object> map = (ConcurrentHashMap<String, Object>) dataMap.get("data");
-                // 扩展数据点，key为"kuozhan"
+                Log.i(TAG, "MdidReceiveData: 解析已定义数据");
+                ConcurrentHashMap<String, Object> map = (ConcurrentHashMap<String, Object>)dataMap.get("data");
+                Log.i(TAG, "MdidReceiveData: "+map);
                 byte[] bytes = (byte[]) map.get("Packet");
-                if (bytes==null) Log.e(TAG, "MdidReceiveData: "+"bytes为空" );
+
+
+                if (bytes == null) Log.e(TAG, "MdidReceiveData: " + "bytes为空");
                 else {
-                for (byte a : bytes) {
-                    Log.e(TAG, "MdidReceiveData: "+a);
+                    for (byte a : bytes) {
+                        Log.e(TAG, "MdidReceiveData: " + a);
+                    }
+                    String string = bytesToHex(bytes);
+                    textViewData.setText(string);
                 }
-                String string = bytesToHex(bytes);
-                textViewData.setText(string);}
-                     }
+            }
+            //无定义数据
+            if (dataMap.get("binary") != null) {
+                byte[] binary = (byte[]) dataMap.get("binary");
+                Log.e(TAG, "无定义数据 Binary data:"
+                        + bytesToHex(binary));
+            }
+        }else {
+            Log.e(TAG, "MdidReceiveData: 数据点回调失败 result=" +result);
         }
 
 
     }
 
 
-
-    @OnClick({R.id.button_data})
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.button_data:
-                Editable editText = editTextData.getText();
-                String s = editText.toString();
-                Log.e(TAG, "onClick: "+ s );
-                byte[] b = HexString2Bytes(s);
-                ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
-                dataMap.put("Packet", b);
-                mDevice.write(dataMap, 0);
-                break;
-
-        }
+    private void test() {
+        byte[] input1 = {11, 11, 11, 6, 15, 16, 17};
+        ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
+        dataMap.put("Packet", input1);
+        mDevice.write(dataMap, 0);
     }
 
 
-    public static byte[] HexString2Bytes(String src){
+    public static byte[] HexString2Bytes(String src) {
         byte[] tmp = src.getBytes();
-        byte[] ret = new byte[src.length()/2+1];
+        byte[] ret = new byte[src.length() / 2 + 1];
         int i;
-        for(i=0; i<src.length() / 2; i++){
+        for (i = 0; i < src.length() / 2; i++) {
             ret[i] = uniteBytes(tmp[i * 2], tmp[i * 2 + 1]);
         }
         if (src.length() % 2 != 0) {
-            ret[i]=uniteBytes(tmp[i * 2], (byte) 48);
+            ret[i] = uniteBytes(tmp[i * 2], (byte) 48);
         }
         return ret;
     }
 
     public static byte uniteBytes(byte src0, byte src1) {
         byte _b0 = Byte.decode("0x" + new String(new byte[]{src0})).byteValue();
-        _b0 = (byte)(_b0 << 4);
+        _b0 = (byte) (_b0 << 4);
         byte _b1 = Byte.decode("0x" + new String(new byte[]{src1})).byteValue();
-        byte ret = (byte)(_b0 ^ _b1);
+        byte ret = (byte) (_b0 ^ _b1);
         return ret;
+    }
+
+
+    @OnClick({R.id.button_data, R.id.button_data_test})
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.button_data:
+                Editable editText = editTextData.getText();
+                String s = editText.toString();
+                Log.e(TAG, "onClick: " + s);
+                byte[] b = HexString2Bytes(s);
+                ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
+                dataMap.put("Packet", b);
+                mDevice.write(dataMap, 0);
+                break;
+            case R.id.button_data_test:
+                test();
+                break;
+        }
     }
 }
 

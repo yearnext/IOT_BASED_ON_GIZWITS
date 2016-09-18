@@ -30,7 +30,7 @@ public class MainActivity extends BaseActivity {
     @BindView(R.id.lv_device_list)
     ListView lvDeviceList;
     ArrayAdapter<String> arrayAdapter;
-    String[] data=new String[5];
+    String[] data=new String[devices.size()];
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -42,12 +42,14 @@ public class MainActivity extends BaseActivity {
         mDid = intent.getStringExtra("mDid");
         mToken = intent.getStringExtra("mToken");
         if (mDevice != null) {
-            mDid = mDevice.getDid();
-            data = new String[]{mDid};
+            if (devices.size() != 0) {
+                for (int i=0;i < devices.size();i++){
+                    String aDevice = devices.get(i).getDid();
+                    data[i] = aDevice;
+                }
+            }
 
         }
-
-
         //toolbarList
         tbDeviceList.setLogo(R.drawable.ic_storage_black_24dp);
         tbDeviceList.setTitle(R.string.toolbar);
@@ -91,7 +93,7 @@ public class MainActivity extends BaseActivity {
         lvDeviceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                GizWifiDevice mDevice = devices.get(1);
+                mDevice = devices.get(i);
                 mDevice.setListener(mDeviceListener);
                 mDevice.setSubscribe(true);
                 Intent intent = new Intent(MainActivity.this, DeviceActivity.class);
@@ -105,19 +107,15 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void mDidDiscovered(GizWifiErrorCode result) {
-        //Snackbar.make(tbDeviceList, "设备数量:" + devices.size(), Snackbar.LENGTH_LONG).show();
-        //StringBuffer stringBuffer = new StringBuffer();
         Log.e(TAG, "mDidDiscovered: "+devices.size());
         if (devices.size() != 0) {
             for (int i1=0;i1 < devices.size();i1++){
                 String aDevice = devices.get(i1).getDid();
                 data[i1] = aDevice;
-                //stringBuffer.append(aDevice);
             }
             arrayAdapter.notifyDataSetChanged();
         }
     }
-
 
 
 }
