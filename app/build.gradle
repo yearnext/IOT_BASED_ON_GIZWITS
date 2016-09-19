@@ -25,14 +25,16 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:design:24.1.1'
     compile 'com.android.support:appcompat-v7:24.1.1'
-    compile files('libs/OneShotConfig.jar')
-    compile files('libs/libForEElink.jar')
-    compile files('libs/simpleconfiglib.jar')
-    compile files('libs/LSFSK_1.0.jar')
-    compile files('libs/GizWifiSDK.jar')
-    compile files('libs/BLEasyConfig.jar')
-    compile files('libs/easylink_only.jar')
-    compile files('libs/libEsptouch_v0.3.3.4_3.jar')
     compile 'com.jakewharton:butterknife:8.4.0'
     apt 'com.jakewharton:butterknife-compiler:8.4.0'
+    compile files('libs/BLEasyConfig.jar')
+    compile files('libs/easylink2.0.jar')
+    compile files('libs/GizWifiSDK.jar')
+    compile files('libs/simpleconfigwizardlib.jar')
+    compile files('libs/OneShotConfig.jar')
+    compile files('libs/LSFSK_1.0.jar')
+    compile files('libs/libForEElink.jar')
+    compile files('libs/libEsptouch_v0.3.3.4_3.jar')
+    compile files('libs/Lark7618SDK_noudp1606031910_0101.jar')
+    compile files('libs/hiflying-iots-android-smartlink7.0.2.jar')
 }

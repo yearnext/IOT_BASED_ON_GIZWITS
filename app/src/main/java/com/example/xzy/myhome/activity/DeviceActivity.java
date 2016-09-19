@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.example.xzy.myhome.R;
+import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
 import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
 
@@ -36,14 +37,12 @@ public class DeviceActivity extends BaseActivity {
         mDevice = intent.getParcelableExtra("mDevice");
         mDevice.setListener(mDeviceListener);
         mDevice.getDeviceStatus();
-
-
     }
 
 
     // 实现回调
     @Override
-    public void MdidReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn) {
+    public void mDidReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn) {
         if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
             Log.i(TAG, "MdidReceiveData: 接收到云端数据");
             // 普通数据点类型，有布尔型、整形和枚举型数据，该种类型一般为可读写
@@ -51,9 +50,8 @@ public class DeviceActivity extends BaseActivity {
                 Log.i(TAG, "MdidReceiveData: 解析已定义数据");
                 ConcurrentHashMap<String, Object> map = (ConcurrentHashMap<String, Object>)dataMap.get("data");
                 Log.i(TAG, "MdidReceiveData: "+map);
+                System.out.print(map);
                 byte[] bytes = (byte[]) map.get("Packet");
-
-
                 if (bytes == null) Log.e(TAG, "MdidReceiveData: " + "bytes为空");
                 else {
                     for (byte a : bytes) {
@@ -70,7 +68,11 @@ public class DeviceActivity extends BaseActivity {
                         + bytesToHex(binary));
             }
         }else {
-            Log.e(TAG, "MdidReceiveData: 数据点回调失败 result=" +result);
+            if (result == GizWifiErrorCode.GIZ_SDK_DEVICE_NOT_READY) {
+                ToastUtil.showToast(DeviceActivity.this,"设备处于未就绪状态");
+            } else {
+                Log.e(TAG, "MdidReceiveData: 数据点回调失败 result=" +result);
+            }
         }
 
 

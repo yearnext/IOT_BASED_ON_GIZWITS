@@ -22,7 +22,8 @@ public class RegisterActivity extends BaseActivity {
     EditText registerEmail;
     @BindView(R.id.register_password)
     EditText registerPassword;
-
+    String RegisterEmail;
+    String RegisterPassword;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

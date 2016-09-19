@@ -11,21 +11,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.example.xzy.myhome.Config;
 import com.example.xzy.myhome.R;
 import com.example.xzy.myhome.util.ExceptionUtil;
 import com.example.xzy.myhome.util.ToastUtil;
-import com.gizwits.gizwifisdk.api.GizWifiDevice;
 import com.gizwits.gizwifisdk.api.GizWifiSDK;
 import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
-
-import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-
-import static android.R.attr.data;
 
 public class LoginActivity extends BaseActivity {
     @BindView(R.id.login_email)
@@ -94,37 +88,17 @@ public class LoginActivity extends BaseActivity {
         Log.e(TAG, "didUserLogin: 准备判断result");
         if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
             // 主动刷新绑定设备列表、指定筛选的设备productKey
-            pks = new ArrayList<String>();
-            pks.add(Config.PRODUCT_KEY);
-            GizWifiSDK.sharedInstance().getBoundDevices(uid, token, pks);
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            intent.putExtra("mUid", uid);
+            intent.putExtra("mToken", token);
+            startActivity(intent);
+            ToastUtil.showToast(LoginActivity.this, "登录成功");
+            finish();
         } else {
             // 登录失败
             ad.dismiss();
             ToastUtil.showToast(LoginActivity.this, "登录失败");
-
         }
     }
-    //设备绑定结果回调
-    @Override
-    protected void mDidDiscovered(GizWifiErrorCode result){
-        if (devices.size()==0){
-            ToastUtil.showToast(LoginActivity.this, "登录成功"+devices.size());
-            Intent intent = new Intent(LoginActivity.this, WIFIActivity.class);
-            startActivity(intent);
-            finish();
-        }else {
-            GizWifiDevice device = devices.get(0);
-            ToastUtil.showToast(LoginActivity.this, "登录成功"+devices.size()+"   "+data);
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            Bundle bundle = new Bundle();
-            bundle.putParcelable("mDevice", device);
-            intent.putExtras(bundle);
-            intent.putExtra("mUid", mUid);
-            intent.putExtra("mToken", mToken);
-            startActivity(intent);
-            finish();
-        }
 
-
-    };
 }
