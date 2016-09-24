@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/min10"
+        android:title="10分钟后"/>
+    <item android:id="@+id/min20"
+        android:title="20分钟后"/>
+    <item android:id="@+id/min30"
+        android:title="30分钟后"/>
+    <item android:id="@+id/min60"
+        android:title="60分钟后"/>
+    <item android:id="@+id/min90"
+        android:title="90分钟后"/>
+
+</menu>

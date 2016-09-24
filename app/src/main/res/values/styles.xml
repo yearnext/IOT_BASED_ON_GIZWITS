@@ -15,6 +15,11 @@
 
     </style>
 
-
+    <style name="AlertDialog.AppCompat.mTime" parent="Theme.AppCompat.Light.Dialog" >
+    <item name="colorAccent">@color/colorPrimary</item>
+    </style>
+    <style name="AlertDialog.AppCompat.TimePicker" parent="Theme.AppCompat.Light.Dialog.Alert" >
+        <item name="colorAccent">@color/colorPrimary</item>
+    </style>
 
 </resources>

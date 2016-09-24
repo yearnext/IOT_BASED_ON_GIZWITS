@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/time_set"
+        android:title="定时" />
+    <item
+        android:id="@+id/countdown_set"
+        android:title="倒计时" />
+
+
+
+
+</menu>

@@ -1,9 +1,11 @@
 package com.example.xzy.myhome.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.EditText;
@@ -30,41 +32,48 @@ public class WIFIActivity extends BaseActivity {
     EditText editTextWifiPassword;
 
     AlertDialog alertDialog;
+    private SharedPreferences preferences;
+    private SharedPreferences.Editor editor;
+    String ssid;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wifi);
         ButterKnife.bind(this);
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
         WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-        String ssid = wifiInfo.getSSID().replaceAll("\"","");
-        editTextWifiSsd.setText(ssid);
-        editTextWifiSsd.setSelection(ssid.length());
-        /*Button APlogin = (Button) findViewById(R.id.button_AP_login);
-        APlogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String APSSD = editTextAPSsd.getText().toString();
-                String APPassword = editTextAPPassword.getText().toString();
-                //// TODO: 16/9/1 热点密码设置
-                GizWifiSDK.sharedInstance().setDeviceOnboarding("CMCC-506", "abc123456", GizWifiConfigureMode.GizWifiSoftAP, null, 60, null);
+        ssid = wifiInfo.getSSID().replaceAll("\"", "");
+        String wifiPassword = preferences.getString(ssid, null);
+        if (!ssid.equals("<unknown ssid>")) {
+            editTextWifiSsd.setText(ssid);
+            editTextWifiSsd.setSelection(ssid.length());
+        }
 
-            }
-        });*/
+
+        if (wifiPassword != null) {
+            editTextWifiPassword.setText(wifiPassword);
+        }
+
     }
 
 
     @OnClick(R.id.button_wifi_login)
     public void onClick() {
-        String WifiSSD = editTextWifiSsd.getText().toString();
-        String WifiPassword = editTextWifiPassword.getText().toString();
+        String wifiSSD = editTextWifiSsd.getText().toString();
+        String wifiPassword = editTextWifiPassword.getText().toString();
         List<GizWifiGAgentType> types = new ArrayList<GizWifiGAgentType>();
         types.add(GizWifiGAgentType.GizGAgentESP);
-        GizWifiSDK.sharedInstance().setDeviceOnboarding(WifiSSD, WifiPassword, GizWifiConfigureMode.GizWifiAirLink, null, 30, types);
+        GizWifiSDK.sharedInstance().setDeviceOnboarding(wifiSSD, wifiPassword, GizWifiConfigureMode.GizWifiAirLink, null, 30, types);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         alertDialog=builder.setTitle(R.string.AirLinkTitle)
                 .setMessage(R.string.AirLinkMessage)
                 .setCancelable(false).show();
+        editor = preferences.edit();
+        editor.putString(ssid,wifiPassword);
+        editor.commit();
 
     }
 

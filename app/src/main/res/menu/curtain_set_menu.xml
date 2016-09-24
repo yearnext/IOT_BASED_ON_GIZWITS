@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/time_set"
+        android:title="设置定时" />
+    <item
+        android:id="@+id/countdown_set"
+        android:title="倒计时" />
+    <item
+        android:id="@+id/humidity_set"
+        android:title="湿度设置" />
+
+
+</menu>

@@ -76,7 +76,7 @@ public class LoginActivity extends BaseActivity {
                 break;
 
             case R.id.register_start:
-                startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
+                startActivity(new Intent(LoginActivity.this, Main2Activity.class));
                 break;
         }
     }
@@ -87,8 +87,7 @@ public class LoginActivity extends BaseActivity {
     protected void mDidUserLogin(GizWifiErrorCode result, String uid, String token) {
         Log.e(TAG, "didUserLogin: 准备判断result");
         if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
-            // 主动刷新绑定设备列表、指定筛选的设备productKey
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+           Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             intent.putExtra("mUid", uid);
             intent.putExtra("mToken", token);
             startActivity(intent);

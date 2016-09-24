@@ -28,6 +28,8 @@ public class DeviceActivity extends BaseActivity {
     @BindView(R.id.editText_data)
     EditText editTextData;
 
+    int aa;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,17 +49,16 @@ public class DeviceActivity extends BaseActivity {
             Log.i(TAG, "MdidReceiveData: 接收到云端数据");
             // 普通数据点类型，有布尔型、整形和枚举型数据，该种类型一般为可读写
             if (dataMap.get("data") != null) {
-                Log.i(TAG, "MdidReceiveData: 解析已定义数据");
                 ConcurrentHashMap<String, Object> map = (ConcurrentHashMap<String, Object>)dataMap.get("data");
-                Log.i(TAG, "MdidReceiveData: "+map);
-                System.out.print(map);
                 byte[] bytes = (byte[]) map.get("Packet");
                 if (bytes == null) Log.e(TAG, "MdidReceiveData: " + "bytes为空");
                 else {
                     for (byte a : bytes) {
-                        Log.e(TAG, "MdidReceiveData: " + a);
+                        Log.e(TAG, "第:"+aa+"次:" + a);
                     }
                     String string = bytesToHex(bytes);
+                    aa++;
+                    ToastUtil.showToast(DeviceActivity.this,"第"+aa+"次:" +string);
                     textViewData.setText(string);
                 }
             }

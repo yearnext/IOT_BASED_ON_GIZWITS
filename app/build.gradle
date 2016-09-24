@@ -37,4 +37,6 @@ dependencies {
     compile files('libs/libEsptouch_v0.3.3.4_3.jar')
     compile files('libs/Lark7618SDK_noudp1606031910_0101.jar')
     compile files('libs/hiflying-iots-android-smartlink7.0.2.jar')
+    compile 'com.android.support:recyclerview-v7:24.1.1'
+    compile 'com.android.support:cardview-v7:24.1.1'
 }
