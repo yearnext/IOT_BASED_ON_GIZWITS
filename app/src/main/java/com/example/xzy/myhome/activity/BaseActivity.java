@@ -139,6 +139,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     //设备状态回调
     protected void mDidUpdateNetStatus(GizWifiDevice device, GizWifiDeviceNetStatus netStatus) {
+        ToastUtil.showToast(BaseActivity.this, "设备状态变为:" + netStatus);
         switch (netStatus) {
             case GizDeviceOnline:
                 ToastUtil.showToast(BaseActivity.this, device.getProductName() +"设备状态变为:在线");
@@ -155,7 +156,8 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         }
 
-        Log.e(TAG, "mDidUpdateNetStatus: "+device.getProductName() + "   " + netStatus);
+
+        Log.i(TAG, "mDidUpdateNetStatus: b   "+device.getProductName() + "   " + netStatus);
     }
 
     //数据点更新
@@ -172,8 +174,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     ;
 
     //注册回调
-    protected void MDidRegisterUser(GizWifiErrorCode result) {
-    }
+    protected void MDidRegisterUser(GizWifiErrorCode result) {    }
 
     ;
 

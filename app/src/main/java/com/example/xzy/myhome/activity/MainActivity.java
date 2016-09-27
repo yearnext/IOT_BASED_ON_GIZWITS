@@ -17,7 +17,6 @@ import com.example.xzy.myhome.R;
 import com.example.xzy.myhome.adapter.IotRecyckerViewAdapter;
 import com.example.xzy.myhome.bean.IotDevice;
 import com.example.xzy.myhome.util.BooleanTranslateUtil;
-import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
 import com.gizwits.gizwifisdk.api.GizWifiSDK;
 import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
@@ -79,9 +78,8 @@ public class MainActivity extends BaseActivity {
                         break;
 
                     case R.id.refresh_item:
-                        if (mDevice != null) {
-                            ToastUtil.showToast(MainActivity.this, mDevice.getNetStatus().toString());
-                        }
+
+                        refresh();
 
                         break;
 
@@ -117,12 +115,32 @@ public class MainActivity extends BaseActivity {
                         .setSubscribed(BooleanTranslateUtil.translateString(device.isSubscribed()));
                 iotDeviceList.add(iotDevice);
             }
+
         } else {
             emptyList.setVisibility(View.VISIBLE);
             rvDeviceList.setVisibility(View.GONE);
         }
 
+
     }
+    protected void refresh() {
+        if (devices.size() != 0)
+            iotDeviceList = new ArrayList<IotDevice>();
+            for (GizWifiDevice device : devices) {
+                IotDevice iotDevice = new IotDevice();
+                iotDevice
+                        .setBind(BooleanTranslateUtil.translateString(device.isBind()))
+                        .setDid(device.getDid())
+                        .setDisable(BooleanTranslateUtil.translateString(device.isDisabled()))
+                        .setLan(BooleanTranslateUtil.translateString(device.isLAN()))
+                        .setMac(device.getMacAddress())
+                        .setNetStatus(device.getNetStatus().toString())
+                        .setSubscribed(BooleanTranslateUtil.translateString(device.isSubscribed()));
+                iotDeviceList.add(iotDevice);
+    }
+        iotAdapter.notifyDataSetChanged();
+    }
+
 
 
     private void initRecyclerView() {
@@ -137,7 +155,7 @@ public class MainActivity extends BaseActivity {
                 mDevice = devices.get(position);
                 mDevice.setListener(mDeviceListener);
                 mDevice.setSubscribe(true);
-                Intent intent = new Intent(MainActivity.this, DeviceActivity.class);
+                Intent intent = new Intent(MainActivity.this, Main2Activity.class);
                 Bundle bundle = new Bundle();
                 bundle.putParcelable("mDevice", mDevice);
                 intent.putExtras(bundle);

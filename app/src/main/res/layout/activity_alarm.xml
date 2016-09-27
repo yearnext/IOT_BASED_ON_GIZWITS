@@ -15,6 +15,7 @@
         <Button
             android:layout_width="40dp"
             android:layout_height="wrap_content"
+            android:id="@+id/button_ok"
             android:layout_marginLeft="160dp"
             android:text="确定"
             android:background="?android:attr/selectableItemBackgroundBorderless"
@@ -41,6 +42,7 @@
             android:layout_height="wrap_content"
             android:textSize="23dp"
             android:text="8:00"
+            android:id="@+id/start_time_button"
             android:background="?android:attr/selectableItemBackgroundBorderless"/>
 
 
@@ -74,6 +76,7 @@
             android:layout_height="wrap_content"
             android:textSize="23dp"
             android:text="8:00"
+            android:id="@+id/close_time_button"
             android:background="?android:attr/selectableItemBackgroundBorderless"/>
 
 
@@ -100,74 +103,96 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
         <RadioButton
+            android:id="@+id/radio_button_every_day"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="每天工作"
+            android:onClick="onClick"
            />
         <RadioButton
+            android:id="@+id/radio_button_one"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="工作一次"
+            android:onClick="onClick"
+            android:selectAllOnFocus="true"
             />
         <RadioButton
+            android:id="@+id/radio_button_custom"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="自定义模式"
+            android:onClick="onClick"
+
             />
 
 
     </RadioGroup>
     <FrameLayout
+        android:id="@+id/fr_custom"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
-        android:background="#b0bec5">
+        android:background="#b0bec5"
+        android:visibility="gone">
     </FrameLayout>
 
 
-    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/rg_custom"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-        <RadioButton
+        android:orientation="vertical"
+        android:visibility="gone">
+        <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="星期一"
+            android:id="@+id/checkbox_mon"
             />
 
-        <RadioButton
+        <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/checkbox_tue"
             android:text="星期二" />
 
-        <RadioButton
+        <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/checkbox_wed"
+
             android:text="星期三"
             />
-        <RadioButton
+        <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/checkbox_thu"
+
             android:text="星期四"
             />
-        <RadioButton
+        <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/checkbox_fri"
             android:text="星期五"
            />
-        <RadioButton
+        <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/checkbox_sat"
             android:text="星期六"
            />
-        <RadioButton
+        <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/checkbox_sun"
             android:text="星期日" />
 
 
-    </RadioGroup>
+    </LinearLayout>
 
 
 </LinearLayout>

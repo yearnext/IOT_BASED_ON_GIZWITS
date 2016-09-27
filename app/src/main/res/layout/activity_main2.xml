@@ -10,7 +10,8 @@
         android:id="@+id/tb_device_list1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"></android.support.v7.widget.Toolbar>
+        android:background="@color/colorPrimary">
+    </android.support.v7.widget.Toolbar>
 
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
@@ -41,15 +42,15 @@
                 android:layout_width="140dp"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
-                android:text="20℃/30℃"
-                android:textSize="30dp" />
+                android:text="@string/empty"
+                android:textSize="30sp" />
 
             <TextView
                 android:layout_width="140dp"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="40dp"
-                android:text="70%/80%"
-                android:textSize="30dp" />
+                android:text="@string/empty"
+                android:textSize="30sp" />
         </LinearLayout>
 
 
@@ -64,62 +65,122 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginLeft="5dp">
+            android:layout_marginLeft="5dp"
+            android:orientation="vertical">
 
             <ImageView
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:src="@drawable/lamp" />
 
-            <TextView
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="     状态:亮"
-                android:textSize="16dp" />
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="     状态:"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/empty"
+                    android:id="@+id/tv_lamp_switch"
+                    android:textSize="16sp" />
+
+
+            </LinearLayout>
+
 
         </LinearLayout>
 
         <LinearLayout
-            android:layout_marginLeft="100dp"
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="115dp">
+            android:layout_height="115dp"
+            android:layout_marginLeft="100dp"
+            android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="定时时间: 3:00-4:00"
-                />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="倒计时:100S"
-                />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="定时模式: 一 二 三 四 "/>
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingLeft="160dp"
-                android:paddingTop="15dp"
                 android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="定时时间: " />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_lamp_timing"
+                    android:text="@string/empty" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="倒计时: " />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_lamp_countdown"
+                    android:text="@string/empty" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="定时模式: " />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_lamp_model"
+                    android:text="@string/empty" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingLeft="160dp"
+                android:paddingTop="15dp">
 
                 <ImageButton
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/ic_power_settings_new_black_24dp"
                     android:layout_marginRight="8dp"
-                    android:background="?android:attr/selectableItemBackgroundBorderless"/>
+                    android:id="@+id/button_lamp_switch"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_power_settings_new_black_24dp" />
+
                 <ImageButton
+                    android:id="@+id/button_lamp_set"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:id="@+id/button_lamp_set"
-                    android:src="@drawable/ic_more_vert_black_24dp"
-                    android:background="?android:attr/selectableItemBackgroundBorderless" />
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_more_vert_black_24dp" />
 
 
             </LinearLayout>
@@ -127,6 +188,7 @@
 
         </LinearLayout>
     </android.support.v7.widget.CardView>
+
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -143,61 +205,121 @@
                 android:padding="15dp"
                 android:src="@drawable/curtain" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="      状态:开"
-                android:textSize="16dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_marginLeft="100dp"
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="115dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="定时时间: 3:00-4:00"
-                />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="倒计时:100S"
-                />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="定时模式: 一 二 三 四 "/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingLeft="160dp"
                 android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="     状态:"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_curtain_switch"
+                    android:text="@string/empty"
+                    android:textSize="16sp" />
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="115dp"
+            android:layout_marginLeft="100dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="定时时间: " />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_curtain_timing"
+                    android:text="@string/empty" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="倒计时: " />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_curtain_countdown"
+                    android:text="@string/empty" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="定时模式: " />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_curtain_model"
+                    android:text="@string/empty" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingLeft="160dp">
 
                 <ImageButton
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/ic_power_settings_new_black_24dp"
                     android:layout_marginRight="8dp"
-                    android:background="?android:attr/selectableItemBackgroundBorderless"/>
+                    android:id="@+id/button_curtain_switch"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_power_settings_new_black_24dp" />
+
                 <ImageButton
+                    android:id="@+id/button_curtain_set"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/ic_more_vert_black_24dp"
-                    android:background="?android:attr/selectableItemBackgroundBorderless" />
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_more_vert_black_24dp" />
+
 
             </LinearLayout>
 
 
         </LinearLayout>
     </android.support.v7.widget.CardView>
+
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -215,63 +337,122 @@
                 android:padding="20dp"
                 android:src="@drawable/socket" />
 
-            <TextView
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="      状态:开"
-                android:textSize="16dp" />
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="     状态:"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_socket_switch"
+                    android:text="@string/empty"
+                    android:textSize="16sp" />
+
+
+            </LinearLayout>
 
         </LinearLayout>
 
+
         <LinearLayout
-            android:layout_marginLeft="100dp"
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="115dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="定时时间: 3:00-4:00"
-                />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="倒计时:100S"
-                />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="定时模式: 一 二 三 四 "/>
+            android:layout_height="115dp"
+            android:layout_marginLeft="100dp"
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingLeft="160dp"
-                android:paddingTop="15dp"
                 android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="定时时间: " />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_socket_timing"
+                    android:text="@string/empty" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="倒计时: " />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_socket_countdown"
+                    android:text="@string/empty" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="定时模式: " />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_socket_model"
+                    android:text="@string/empty" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingLeft="160dp"
+                android:paddingTop="15dp">
 
                 <ImageButton
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/ic_power_settings_new_black_24dp"
                     android:layout_marginRight="8dp"
-                    android:background="?android:attr/selectableItemBackgroundBorderless"/>
+                    android:id="@+id/button_socket_switch"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_power_settings_new_black_24dp" />
+
                 <ImageButton
+                    android:id="@+id/button_socket_set"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/ic_more_vert_black_24dp"
-                    android:background="?android:attr/selectableItemBackgroundBorderless" />
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_more_vert_black_24dp" />
 
 
             </LinearLayout>
 
 
         </LinearLayout>
+
     </android.support.v7.widget.CardView>
-
-
 
 
 </LinearLayout>

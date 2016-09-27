@@ -21,4 +21,6 @@
     <string name="checkbox">CheckBox</string>
     <string name="forget_password">忘记密码?</string>
     <string name="toolbar1">智能设备</string>
+    <string name="empty">n/a</string>
+
 </resources>
