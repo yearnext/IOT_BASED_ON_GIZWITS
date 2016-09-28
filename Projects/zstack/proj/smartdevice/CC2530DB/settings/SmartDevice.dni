@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=-1204378028
+Checksum=62741041
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -61,13 +61,6 @@ Freq=50000000
 Fmt0={W}0:activeTaskID	4	0
 Fmt1={W}0:events	4	0
 Fmt2={W}1:a	3	0
-[Log file]
-LoggingEnabled=_ 0
-LogFile=_ ""
-Category=_ 0
-[TermIOLog]
-LoggingEnabled=_ 0
-LogFile=_ ""
 [Breakpoints]
 Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits.c}.65.5" 1 0 0 0 "" 0 ""
 Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\Source\smart_device.c}.108.5" 1 0 0 0 "" 0 ""
@@ -75,6 +68,13 @@ Count=2
 [ChipconEmu]
 Stop timers on halt=0
 Leave target running=1
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
 [Aliases]
 Count=0
 SuppressDialog=0
