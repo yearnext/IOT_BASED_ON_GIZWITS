@@ -229,7 +229,7 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
  */
 static void zclSamrtDevice_SendPeriodic_Message( void )
 {
-    uint8 data[] = {1,2,3,4,5,6,7,8,9,10};
+    uint8 data[] = {1,2,3,4,5,6,7,8,9};
     if( AF_DataRequest(&SmartDevice_Periodic_DstAddr,
                        &SmartDevice_epDesc,
                        SmartDevice_Report_ClustersID,

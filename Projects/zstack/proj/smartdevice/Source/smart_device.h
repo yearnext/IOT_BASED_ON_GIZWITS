@@ -42,6 +42,7 @@
 #define SmartHome_ProfileID            (0x00FA)
 
 #define SmartDevice_ProfileID SmartHome_ProfileID
+
 /** 设备ID */
 #define SmartDevice_DeviceID (0x0001)
 /** 设备版本号 */
@@ -50,10 +51,16 @@
 /** 簇的数量 */
 #define SamrtDevice_ClustersNum (sizeof(zclSmartDevice_InClusterList)/sizeof(zclSmartDevice_InClusterList[0]))
 #define SmartDevice_Report_ClustersID  (0x0001)
-
+/** 设备上报时间 */
 #define SmartDevice_Report_Time (3000)
-
+/** 设备上报事件 */
 #define SmartDevice_Report_Enent (0x0008)
+
+#define SmartDevice_InCoord  (1)
+#define SmartDevice_InRouter (2)
+#define SmartDevice_InEnd    (3)
+
+#define SmartDevice_Status SmartDevice_InCoord
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
