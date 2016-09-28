@@ -14,6 +14,12 @@ sfr = "P0",	"SFR",	0x80,	1,	base=16,	modified
 sfr = "P1",	"SFR",	0x90,	1,	base=16,	modified
 sfr = "P2",	"SFR",	0xa0,	1,	base=16,	modified
 sfr = "IEN0",	"SFR",	0xa8,	1,	base=16,	modified
+sfr = "IEN1",	"SFR",	0xb8,	1,	base=16,	modified
+sfr = "IEN2",	"SFR",	0x9a,	1,	base=16,	modified
+sfr = "TCON",	"SFR",	0x88,	1,	base=16,	modified
+sfr = "S0CON",	"SFR",	0x98,	1,	base=16,	modified
+sfr = "S1CON",	"SFR",	0x9b,	1,	base=16,	modified
+sfr = "IRCON",	"SFR",	0xc0,	1,	base=16,	modified
 sfr = "IRCON2",	"SFR",	0xe8,	1,	base=16,	modified
 sfr = "IP1",	"SFR",	0xb9,	1,	base=16,	modified
 sfr = "IP0",	"SFR",	0xa9,	1,	base=16,	modified
@@ -122,15 +128,14 @@ sfr = "T4CC1",	"SFR",	0xef,	1,	base=16,	modified
 sfr = "TIMIF",	"SFR",	0xd8,	1,	base=16,	modified
 sfr = "U0CSR",	"SFR",	0x86,	1,	base=16,	modified
 sfr = "U0UCR",	"SFR",	0xc4,	1,	base=16,	modified
+sfr = "U0GCR",	"SFR",	0xc5,	1,	base=16,	modified
 sfr = "U0DBUF",	"SFR",	0xc1,	1,	base=16,	modified
 sfr = "U0BAUD",	"SFR",	0xc2,	1,	base=16,	modified
-sfr = "U0BAUD.BAUD_M",	"SFR",	0xc2,	1,	base=16,	modified
 sfr = "U1CSR",	"SFR",	0xf8,	1,	base=16,	modified
 sfr = "U1UCR",	"SFR",	0xfb,	1,	base=16,	modified
 sfr = "U1GCR",	"SFR",	0xfc,	1,	base=16,	modified
 sfr = "U1DBUF",	"SFR",	0xf9,	1,	base=16,	modified
 sfr = "U1BAUD",	"SFR",	0xfa,	1,	base=16,	modified
-sfr = "U1BAUD.BAUD_M",	"SFR",	0xfa,	1,	base=16,	modified
 sfr = "WDCTL",	"SFR",	0xc9,	1,	base=16,	modified
 sfr = "FCTL",	"XData",	0x6270,	1,	base=16,	modified
 sfr = "FADDRL",	"XData",	0x6271,	1,	base=16,	modified
@@ -159,7 +164,6 @@ sfr = "FSMSTAT1",	"XData",	0x6193,	1,	base=16,	modified
 sfr = "FIFOPCTRL",	"XData",	0x6194,	1,	base=16,	modified
 sfr = "FSMCTRL",	"XData",	0x6195,	1,	base=16,	modified
 sfr = "CCACTRL0",	"XData",	0x6196,	1,	base=16,	modified
-sfr = "CCACTRL0.CCA_THR",	"XData",	0x6196,	1,	base=16,	modified
 sfr = "CCACTRL1",	"XData",	0x6197,	1,	base=16,	modified
 sfr = "RSSI",	"XData",	0x6198,	1,	base=16,	modified
 sfr = "RSSISTAT",	"XData",	0x6199,	1,	base=16,	modified
@@ -217,88 +221,6 @@ sfr = "CSPPROG9",	"XData",	0x61c9,	1,	base=16,	modified
 sfr = "CSPPROG10",	"XData",	0x61ca,	1,	base=16,	modified
 sfr = "CSPPROG11",	"XData",	0x61cb,	1,	base=16,	modified
 sfr = "CSPPROG12",	"XData",	0x61cc,	1,	base=16,	modified
-sfr = "IEN0.URX1IE",	"SFR",	0xa8,	1,	base=16,	modified
-sfr = "IEN0.URX0IE",	"SFR",	0xa8,	1,	base=16,	modified
-sfr = "IEN0.ADCIE",	"SFR",	0xa8,	1,	base=16,	modified
-sfr = "IEN0.RFERRIE",	"SFR",	0xa8,	1,	base=16,	modified
-sfr = "IEN1",	"SFR",	0xb8,	1,	base=16,	modified
-sfr = "IEN1.P0IE",	"SFR",	0xb8,	1,	base=16,	modified
-sfr = "IEN1.T4IE",	"SFR",	0xb8,	1,	base=16,	modified
-sfr = "IEN1.T3IE",	"SFR",	0xb8,	1,	base=16,	modified
-sfr = "IEN1.T2IE",	"SFR",	0xb8,	1,	base=16,	modified
-sfr = "IEN1.T1IE",	"SFR",	0xb8,	1,	base=16,	modified
-sfr = "IEN1.DMAIE",	"SFR",	0xb8,	1,	base=16,	modified
-sfr = "IEN2",	"SFR",	0x9a,	1,	base=16,	modified
-sfr = "IEN2.WDTIE",	"SFR",	0x9a,	1,	base=16,	modified
-sfr = "IEN2.P1IE",	"SFR",	0x9a,	1,	base=16,	modified
-sfr = "IEN2.UTX1IE",	"SFR",	0x9a,	1,	base=16,	modified
-sfr = "IEN2.UTX0IE",	"SFR",	0x9a,	1,	base=16,	modified
-sfr = "IEN2.P2IE",	"SFR",	0x9a,	1,	base=16,	modified
-sfr = "IEN2.RFIE",	"SFR",	0x9a,	1,	base=16,	modified
-sfr = "TCON",	"SFR",	0x88,	1,	base=16,	modified
-sfr = "TCON.URX1IF",	"SFR",	0x88,	1,	base=16,	modified
-sfr = "TCON.ADCIF",	"SFR",	0x88,	1,	base=16,	modified
-sfr = "TCON.URX0IF",	"SFR",	0x88,	1,	base=16,	modified
-sfr = "TCON.IT1",	"SFR",	0x88,	1,	base=16,	modified
-sfr = "TCON.RFERRIF",	"SFR",	0x88,	1,	base=16,	modified
-sfr = "TCON.IT0",	"SFR",	0x88,	1,	base=16,	modified
-sfr = "S0CON",	"SFR",	0x98,	1,	base=16,	modified
-sfr = "S0CON.ENCIF_1",	"SFR",	0x98,	1,	base=16,	modified
-sfr = "S0CON.ENCIF_0",	"SFR",	0x98,	1,	base=16,	modified
-sfr = "S1CON",	"SFR",	0x9b,	1,	base=16,	modified
-sfr = "S1CON.RFIF_1",	"SFR",	0x9b,	1,	base=16,	modified
-sfr = "S1CON.RFIF_0",	"SFR",	0x9b,	1,	base=16,	modified
-sfr = "IRCON",	"SFR",	0xc0,	1,	base=16,	modified
-sfr = "IRCON.STIF",	"SFR",	0xc0,	1,	base=16,	modified
-sfr = "IRCON.P0IF",	"SFR",	0xc0,	1,	base=16,	modified
-sfr = "IRCON.T4IF",	"SFR",	0xc0,	1,	base=16,	modified
-sfr = "IRCON.T3IF",	"SFR",	0xc0,	1,	base=16,	modified
-sfr = "IRCON.T2IF",	"SFR",	0xc0,	1,	base=16,	modified
-sfr = "IRCON.T1IF",	"SFR",	0xc0,	1,	base=16,	modified
-sfr = "T2IRQF.TIMER2_PERF",	"SFR",	0xa1,	1,	base=16,	modified
-sfr = "T2CTRL.TIMER2_RUN",	"SFR",	0x94,	1,	base=16,	modified
-sfr = "TIMIF.T4CH1IF",	"SFR",	0xd8,	1,	base=16,	modified
-sfr = "U0CSR.SLAVE",	"SFR",	0x86,	1,	base=16,	modified
-sfr = "U0UCR.START",	"SFR",	0xc4,	1,	base=16,	modified
-sfr = "U0GCR",	"SFR",	0xc5,	1,	base=16,	modified
-sfr = "U0GCR.CPHA",	"SFR",	0xc5,	1,	base=16,	modified
-sfr = "U1UCR.D9",	"SFR",	0xfb,	1,	base=16,	modified
-sfr = "CSPPROG13",	"XData",	0x61cd,	1,	base=16,	modified
-sfr = "CSPPROG14",	"XData",	0x61ce,	1,	base=16,	modified
-sfr = "CSPPROG15",	"XData",	0x61cf,	1,	base=16,	modified
-sfr = "CSPPROG16",	"XData",	0x61d0,	1,	base=16,	modified
-sfr = "CSPPROG17",	"XData",	0x61d1,	1,	base=16,	modified
-sfr = "CSPPROG18",	"XData",	0x61d2,	1,	base=16,	modified
-sfr = "CSPPROG19",	"XData",	0x61d3,	1,	base=16,	modified
-sfr = "CSPPROG20",	"XData",	0x61d4,	1,	base=16,	modified
-sfr = "CSPPROG21",	"XData",	0x61d5,	1,	base=16,	modified
-sfr = "CSPPROG22",	"XData",	0x61d6,	1,	base=16,	modified
-sfr = "CSPPROG23",	"XData",	0x61d7,	1,	base=16,	modified
-sfr = "CSPCTRL",	"XData",	0x61e0,	1,	base=16,	modified
-sfr = "CSPCTRL.MCU_CTRL",	"XData",	0x61e0,	1,	base=16,	modified
-sfr = "CSPSTAT",	"XData",	0x61e1,	1,	base=16,	modified
-sfr = "CSPSTAT.CSP_RUNNING",	"XData",	0x61e1,	1,	base=16,	modified
-sfr = "CSPSTAT.CSP_PC",	"XData",	0x61e1,	1,	base=16,	modified
-sfr = "CSPX",	"XData",	0x61e2,	1,	base=16,	modified
-sfr = "CSPY",	"XData",	0x61e3,	1,	base=16,	modified
-sfr = "CSPZ",	"XData",	0x61e4,	1,	base=16,	modified
-sfr = "CSPT",	"XData",	0x61e5,	1,	base=16,	modified
-sfr = "DBGDATA",	"XData",	0x6260,	1,	base=16,	modified
-sfr = "CHVER",	"XData",	0x6249,	1,	base=16,	modified
-sfr = "CHVER.VERSION",	"XData",	0x6249,	1,	base=16,	modified
-sfr = "CHIPID",	"XData",	0x624a,	1,	base=16,	modified
-sfr = "CHIPINFO0",	"XData",	0x6276,	1,	base=16,	modified
-sfr = "CHIPINFO0.FLASHSIZE",	"XData",	0x6276,	1,	base=16,	modified
-sfr = "CHIPINFO0.USB",	"XData",	0x6276,	1,	base=16,	modified
-sfr = "CHIPINFO1",	"XData",	0x6277,	1,	base=16,	modified
-sfr = "CHIPINFO1.SRAMSIZE",	"XData",	0x6277,	1,	base=16,	modified
-sfr = "IEN1",	"SFR",	0xb8,	1,	base=16,	modified
-sfr = "IEN2",	"SFR",	0x9a,	1,	base=16,	modified
-sfr = "TCON",	"SFR",	0x88,	1,	base=16,	modified
-sfr = "S0CON",	"SFR",	0x98,	1,	base=16,	modified
-sfr = "S1CON",	"SFR",	0x9b,	1,	base=16,	modified
-sfr = "IRCON",	"SFR",	0xc0,	1,	base=16,	modified
-sfr = "U0GCR",	"SFR",	0xc5,	1,	base=16,	modified
 sfr = "CSPPROG13",	"XData",	0x61cd,	1,	base=16,	modified
 sfr = "CSPPROG14",	"XData",	0x61ce,	1,	base=16,	modified
 sfr = "CSPPROG15",	"XData",	0x61cf,	1,	base=16,	modified
@@ -318,10 +240,13 @@ sfr = "CSPZ",	"XData",	0x61e4,	1,	base=16,	modified
 sfr = "CSPT",	"XData",	0x61e5,	1,	base=16,	modified
 sfr = "DBGDATA",	"XData",	0x6260,	1,	base=16,	modified
 sfr = "CHVER",	"XData",	0x6249,	1,	base=16,	modified
-sfr = "CHVER.VERSION",	"XData",	0x6249,	1,	base=16,	modified
 sfr = "CHIPID",	"XData",	0x624a,	1,	base=16,	modified
 sfr = "CHIPINFO0",	"XData",	0x6276,	1,	base=16,	modified
 sfr = "CHIPINFO1",	"XData",	0x6277,	1,	base=16,	modified
+sfr = "U0BAUD.BAUD_M",	"SFR",	0xc2,	1,	base=16,	modified
+sfr = "U1BAUD.BAUD_M",	"SFR",	0xfa,	1,	base=16,	modified
+sfr = "CCACTRL0.CCA_THR",	"XData",	0x6196,	1,	base=16,	modified
+sfr = "CHVER.VERSION",	"XData",	0x6249,	1,	base=16,	modified
 sfr = "DPL",	"SFR",	0x82,	1,	base=16,	modified
 sfr = "DPH",	"SFR",	0x83,	1,	base=16,	modified
 sfr = "IE",	"SFR",	0xa8,	1,	base=16,	modified
@@ -467,7 +392,8 @@ sfr = "SBUF",	"SFR",	0x99,	1,	base=16,	modified
 [SfrGroupInfo]
 group = "Custom", "ADCL", "ADCH", "RNDL", "RNDH", "ADCCON1", "ADCCON2"
 group = "Custom", "ADCCON3", "TR0", "ENCDI", "ENCDO", "ENCCS", "P0"
-group = "Custom", "P1", "P2", "IEN0", "IRCON2", "IP1", "IP0"
+group = "Custom", "P1", "P2", "IEN0", "IEN1", "IEN2", "TCON"
+group = "Custom", "S0CON", "S1CON", "IRCON", "IRCON2", "IP1", "IP0"
 group = "Custom", "ACC", "DPS", "MPAGE", "DMAIRQ", "DMA1CFGL", "DMA1CFGH"
 group = "Custom", "DMA0CFGL", "DMA0CFGH", "DMAARM", "DMAREQ", "P0IFG", "P1IFG"
 group = "Custom", "P2IFG", "PICTL", "P0IEN", "P1IEN", "P2IEN", "P0INP"
@@ -485,20 +411,24 @@ group = "Custom", "T1CC4L", "IRCTL", "T2MSEL", "T2M0", "T2M1", "T2MOVF0"
 group = "Custom", "T2MOVF1", "T2MOVF2", "T2IRQF", "T2IRQM", "T2CTRL", "T2EVTCFG"
 group = "Custom", "T3CNT", "T3CTL", "T3CCTL0", "T3CC0", "T3CCTL1", "T3CC1"
 group = "Custom", "T4CNT", "T4CTL", "T4CCTL0", "T4CC0", "T4CCTL1", "T4CC1"
-group = "Custom", "TIMIF", "U0CSR", "U0UCR", "U0DBUF", "U0BAUD", "U0BAUD.BAUD_M"
-group = "Custom", "U1CSR", "U1UCR", "U1GCR", "U1DBUF", "U1BAUD", "U1BAUD.BAUD_M"
-group = "Custom", "WDCTL", "FCTL", "FADDRL", "FADDRH", "FWDATA", "FRMFILT0"
-group = "Custom", "FRMFILT1", "SRCMATCH", "SRCSHORTEN0", "SRCSHORTEN1", "SRCSHORTEN2", "SRCEXTEN0"
-group = "Custom", "SRCEXTEN1", "SRCEXTEN2", "FRMCTRL0", "FRMCTRL1", "RXENABLE", "RXMASKSET"
-group = "Custom", "RXMASKCLR", "FREQTUNE", "FREQCTRL", "TXPOWER", "TXCTRL", "FSMSTAT0"
-group = "Custom", "FSMSTAT1", "FIFOPCTRL", "FSMCTRL", "CCACTRL0", "CCACTRL0.CCA_THR", "CCACTRL1"
-group = "Custom", "RSSI", "RSSISTAT", "RXFIRST", "RXFIFOCNT", "TXFIFOCNT", "RXFIRST_PTR"
-group = "Custom", "RXLAST_PTR", "RXP1_PTR", "TXFIRST_PTR", "TXLAST_PTR", "RFIRQM0", "RFIRQM1"
-group = "Custom", "RFERRM", "RFRND", "MDMCTRL0", "MDMCTRL1", "FREQEST", "RXCTRL"
-group = "Custom", "FSCTRL", "FSCAL0", "FSCAL1", "FSCAL2", "FSCAL3", "AGCCTRL0"
-group = "Custom", "AGCCTRL1", "AGCCTRL2", "AGCCTRL3", "ADCTEST0", "ADCTEST1", "ADCTEST2"
-group = "Custom", "MDMTEST0", "MDMTEST1", "DACTEST0", "DACTEST1", "DACTEST2", "ATEST"
-group = "Custom", "PTEST0", "PTEST1", "TXFILTCFG", "RFC_OBS_CTRL0", "RFC_OBS_CTRL1", "RFC_OBS_CTRL2"
-group = "Custom", "RFST", "CSPPROG0", "CSPPROG1", "CSPPROG2", "CSPPROG3", "CSPPROG4"
-group = "Custom", "CSPPROG5", "CSPPROG6", "CSPPROG7", "CSPPROG8", "CSPPROG9", "CSPPROG10"
-group = "Custom", "CSPPROG11", "CSPPROG12"
+group = "Custom", "TIMIF", "U0CSR", "U0UCR", "U0GCR", "U0DBUF", "U0BAUD"
+group = "Custom", "U1CSR", "U1UCR", "U1GCR", "U1DBUF", "U1BAUD", "WDCTL"
+group = "Custom", "FCTL", "FADDRL", "FADDRH", "FWDATA", "FRMFILT0", "FRMFILT1"
+group = "Custom", "SRCMATCH", "SRCSHORTEN0", "SRCSHORTEN1", "SRCSHORTEN2", "SRCEXTEN0", "SRCEXTEN1"
+group = "Custom", "SRCEXTEN2", "FRMCTRL0", "FRMCTRL1", "RXENABLE", "RXMASKSET", "RXMASKCLR"
+group = "Custom", "FREQTUNE", "FREQCTRL", "TXPOWER", "TXCTRL", "FSMSTAT0", "FSMSTAT1"
+group = "Custom", "FIFOPCTRL", "FSMCTRL", "CCACTRL0", "CCACTRL1", "RSSI", "RSSISTAT"
+group = "Custom", "RXFIRST", "RXFIFOCNT", "TXFIFOCNT", "RXFIRST_PTR", "RXLAST_PTR", "RXP1_PTR"
+group = "Custom", "TXFIRST_PTR", "TXLAST_PTR", "RFIRQM0", "RFIRQM1", "RFERRM", "RFRND"
+group = "Custom", "MDMCTRL0", "MDMCTRL1", "FREQEST", "RXCTRL", "FSCTRL", "FSCAL0"
+group = "Custom", "FSCAL1", "FSCAL2", "FSCAL3", "AGCCTRL0", "AGCCTRL1", "AGCCTRL2"
+group = "Custom", "AGCCTRL3", "ADCTEST0", "ADCTEST1", "ADCTEST2", "MDMTEST0", "MDMTEST1"
+group = "Custom", "DACTEST0", "DACTEST1", "DACTEST2", "ATEST", "PTEST0", "PTEST1"
+group = "Custom", "TXFILTCFG", "RFC_OBS_CTRL0", "RFC_OBS_CTRL1", "RFC_OBS_CTRL2", "RFST", "CSPPROG0"
+group = "Custom", "CSPPROG1", "CSPPROG2", "CSPPROG3", "CSPPROG4", "CSPPROG5", "CSPPROG6"
+group = "Custom", "CSPPROG7", "CSPPROG8", "CSPPROG9", "CSPPROG10", "CSPPROG11", "CSPPROG12"
+group = "Custom", "CSPPROG13", "CSPPROG14", "CSPPROG15", "CSPPROG16", "CSPPROG17", "CSPPROG18"
+group = "Custom", "CSPPROG19", "CSPPROG20", "CSPPROG21", "CSPPROG22", "CSPPROG23", "CSPCTRL"
+group = "Custom", "CSPSTAT", "CSPX", "CSPY", "CSPZ", "CSPT", "DBGDATA"
+group = "Custom", "CHVER", "CHIPID", "CHIPINFO0", "CHIPINFO1", "U0BAUD.BAUD_M", "U1BAUD.BAUD_M"
+group = "Custom", "CCACTRL0.CCA_THR", "CHVER.VERSION"

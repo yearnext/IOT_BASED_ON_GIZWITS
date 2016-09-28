@@ -45,6 +45,10 @@
 
 #include "smart_device.h"
 
+#if defined ( USE_GIZWITS_MOD )
+#include "gizwits.h"
+#endif
+
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
@@ -68,6 +72,9 @@ const pTaskEventHandlerFn tasksArr[] = {
   ZDNwkMgr_event_loop,
 #endif
     SamrtDevice_ProcessEven,
+#if defined ( USE_GIZWITS_MOD )
+    Gizwits_ProcessEven,
+#endif
 };
 
 const uint8 tasksCnt = sizeof( tasksArr ) / sizeof( tasksArr[0] );
@@ -85,7 +92,6 @@ uint16 *tasksEvents;
 void osalInitTasks( void )
 {
   uint8 taskID = 0;
-
   tasksEvents = (uint16 *)osal_mem_alloc( sizeof( uint16 ) * tasksCnt);
   osal_memset( tasksEvents, 0, (sizeof( uint16 ) * tasksCnt));
 
@@ -104,7 +110,10 @@ void osalInitTasks( void )
   ZDNwkMgr_Init( taskID++ );
 #endif
 //  zcl_Init( taskID++ );
-  SmartDevice_Init( taskID );
+  SmartDevice_Init( taskID++ );
+#if defined ( USE_GIZWITS_MOD )
+  app_gizwits_init(taskID);
+#endif
 
 }
 
