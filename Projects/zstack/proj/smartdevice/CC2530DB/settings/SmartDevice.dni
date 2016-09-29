@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=62741041
+Checksum=1440229428
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -57,13 +57,16 @@ Enabled=0
 ShowSource=1
 [Simulator]
 Freq=50000000
+[array_types]
+Fmt0=uint8 [128]	4	0
 [watch_formats]
 Fmt0={W}0:activeTaskID	4	0
 Fmt1={W}0:events	4	0
 Fmt2={W}1:a	3	0
+Fmt3={W}1:gizwits_uart_status	4	0
 [Breakpoints]
-Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits.c}.65.5" 1 0 0 0 "" 0 ""
-Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\Source\smart_device.c}.108.5" 1 0 0 0 "" 0 ""
+Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits_protocol.c}.1023.9" 1 0 0 0 "" 0 ""
+Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits_protocol.c}.569.5" 1 0 0 0 "" 0 ""
 Count=2
 [ChipconEmu]
 Stop timers on halt=0
