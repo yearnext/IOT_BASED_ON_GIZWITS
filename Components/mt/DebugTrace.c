@@ -113,7 +113,7 @@
  * @return  void
  */
 void debug_msg( byte compID, byte severity, byte numParams, UINT16 param1,
-																								UINT16 param2, UINT16 param3 )
+				 UINT16 param2, UINT16 param3 )
 {
 
   mtDebugMsg_t *mtDebugMsg;

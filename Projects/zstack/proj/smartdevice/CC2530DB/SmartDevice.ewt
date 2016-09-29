@@ -6808,6 +6808,15 @@
         <name>$PROJ_DIR$\..\Source\gizwits_protocol.h</name>
       </file>
     </group>
+    <group>
+      <name>MyProtocol</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\myprotocol.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\myprotocol.h</name>
+      </file>
+    </group>
     <file>
       <name>$PROJ_DIR$\..\Source\OSAL_Init.c</name>
     </file>

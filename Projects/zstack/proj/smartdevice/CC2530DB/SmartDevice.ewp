@@ -7120,7 +7120,7 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>11111</state>
+          <state>00000</state>
         </option>
         <option>
           <name>CCObjUseModuleName</name>
@@ -7259,7 +7259,7 @@
         </option>
         <option>
           <name>CCOptLevel</name>
-          <state>3</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCOptStrategy</name>
@@ -7268,7 +7268,7 @@
         </option>
         <option>
           <name>CCOptLevelSlave</name>
-          <state>3</state>
+          <state>0</state>
         </option>
         <option>
           <name>CompilerMisraRules04</name>
@@ -7916,6 +7916,15 @@
         <excluded>
           <configuration>CoordinatorEB</configuration>
         </excluded>
+      </file>
+    </group>
+    <group>
+      <name>MyProtocol</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\myprotocol.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\myprotocol.h</name>
       </file>
     </group>
     <file>
