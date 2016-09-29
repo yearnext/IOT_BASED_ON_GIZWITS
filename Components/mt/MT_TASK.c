@@ -198,7 +198,7 @@ static void MT_ProcessIncomingCommand( mtOSALSerialData_t *msg )
     case CMD_SERIAL_MSG:
       MT_ProcessIncoming(msg_ptr);
       break;
-
+      
     case CMD_DEBUG_MSG:
       MT_ProcessDebugMsg( (mtDebugMsg_t *)msg );
       break;

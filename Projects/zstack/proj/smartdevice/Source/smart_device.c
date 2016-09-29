@@ -105,9 +105,6 @@ void SmartDevice_Init( byte task_id )
     SmartDevice_NwkState = DEV_INIT;
     SmartDevice_TransID = 0;
     
-    MT_UartInit();
-    MT_UartRegisterTaskID(zclSmartDevice_TaskID);
-    
     /** 注册AF层应用对象 */
     SmartDevice_epDesc.endPoint = SmartDevice_EndPoint;
     SmartDevice_epDesc.simpleDesc = (SimpleDescriptionFormat_t *)&zclSmartDevice_SimpleDesc;
@@ -130,7 +127,7 @@ void SmartDevice_Init( byte task_id )
     osal_memcpy( SmartDevice_Group.name, "Group 1", sizeof("Group 1") );
     aps_AddGroup(SmartDevice_EndPoint, &SmartDevice_Group);
     
-    HalUARTWrite(0,"Smart device init finish!\n",sizeof("Smart device init finish!\n"));
+//    HalUARTWrite(0,"Smart device init finish!\n",sizeof("Smart device init finish!\n"));
 }
  
 /**
@@ -167,17 +164,17 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
                     switch( SmartDevice_NwkState )
                     {
                         case DEV_ROUTER:
-                            HalUARTWrite(0,"I am Router Device!\n",sizeof("I am Router Device!\n"));
+//                            HalUARTWrite(0,"I am Router Device!\n",sizeof("I am Router Device!\n"));
                             osal_start_timerEx( zclSmartDevice_TaskID, SmartDevice_Report_Enent,
                                                 SmartDevice_Report_Time );
                                 break;
                         case DEV_END_DEVICE:
-                            HalUARTWrite(0,"I am End Device!\n",sizeof("I am End Device!\n"));
+//                            HalUARTWrite(0,"I am End Device!\n",sizeof("I am End Device!\n"));
                             osal_start_timerEx( zclSmartDevice_TaskID, SmartDevice_Report_Enent,
                                                 SmartDevice_Report_Time );
                                 break;
                         case DEV_ZB_COORD:
-                            HalUARTWrite(0,"I am Coord Device!\n",sizeof("I am Coord Device!\n"));
+//                            HalUARTWrite(0,"I am Coord Device!\n",sizeof("I am Coord Device!\n"));
                                 break;
                         case DEV_NWK_DISC:
                             HalUARTWrite(0,"Discovering PAN's to join!\n",sizeof("Discovering PAN's to join!\n"));
@@ -239,11 +236,11 @@ static void zclSamrtDevice_SendPeriodic_Message( void )
                        AF_DISCV_ROUTE,
                        AF_DEFAULT_RADIUS) == afStatus_SUCCESS )
     {
-        HalUARTWrite(0,"Send data finish!\n",sizeof("Send data finish!\n"));
+//        HalUARTWrite(0,"Send data finish!\n",sizeof("Send data finish!\n"));
     }
     else
     {
-        HalUARTWrite(0,"Send data failed!\n",sizeof("Send data finish!\n"));
+//        HalUARTWrite(0,"Send data failed!\n",sizeof("Send data finish!\n"));
     }
 }
  
@@ -260,9 +257,9 @@ static void zclSmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt )
     switch( pkt->clusterId )
     {
         case SmartDevice_Report_ClustersID:
-            HalUARTWrite(0,"Get data is \n",sizeof("Get data is \n"));
-            HalUARTWrite(0,pkt->cmd.Data,pkt->cmd.DataLength);
-            HalUARTWrite(0,"\n",sizeof(uint8));
+//            HalUARTWrite(0,"Get data is \n",sizeof("Get data is \n"));
+//            HalUARTWrite(0,pkt->cmd.Data,pkt->cmd.DataLength);
+//            HalUARTWrite(0,"\n",sizeof(uint8));
             break;
         default:
             break;

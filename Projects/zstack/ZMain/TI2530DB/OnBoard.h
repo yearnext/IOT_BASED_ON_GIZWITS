@@ -160,6 +160,7 @@ extern uint8 aExtendedAddress[8];
 #else
   #undef ZAPP_PORT
 #endif
+
 #if defined (ZTOOL_P1)
   #define ZTOOL_PORT HAL_UART_PORT_0
 #elif defined (ZTOOL_P2)
@@ -168,8 +169,8 @@ extern uint8 aExtendedAddress[8];
   #undef ZTOOL_PORT
 #endif
 
-#define MT_UART_TX_BUFF_MAX  128
-#define MT_UART_RX_BUFF_MAX  128
+#define MT_UART_TX_BUFF_MAX  256
+#define MT_UART_RX_BUFF_MAX  256
 #define MT_UART_THRESHOLD   (MT_UART_RX_BUFF_MAX / 2)
 #define MT_UART_IDLE_TIMEOUT 6
 
@@ -213,7 +214,8 @@ extern uint8 aExtendedAddress[8];
  */
 #if !defined INT_HEAP_LEN
 #if defined RTR_NWK
-  #define INT_HEAP_LEN  3072
+//  #define INT_HEAP_LEN  3072
+    #define INT_HEAP_LEN  2048
 #else
   #define INT_HEAP_LEN  2048
 #endif

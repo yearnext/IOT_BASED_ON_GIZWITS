@@ -46,7 +46,7 @@
 #include "MT.h"
 #include "MT_UART.h"
 #include "OSAL_Memory.h"
-
+#include <string.h>
 
 /***************************************************************************************************
  * MACROS
@@ -70,12 +70,12 @@
 byte App_TaskID;
 
 /* ZTool protocal parameters */
-uint8 state;
-uint8  CMD_Token[2];
-uint8  LEN_Token;
-uint8  FSC_Token;
+//uint8 state;
+//uint8  CMD_Token[2];
+//uint8  LEN_Token;
+//uint8  FSC_Token;
 mtOSALSerialData_t  *pMsg;
-uint8  tempDataLen;
+//uint8  tempDataLen;
 
 #if defined (ZAPP_P1) || defined (ZAPP_P2)
 uint16  MT_UartMaxZAppBufLen;
@@ -105,7 +105,7 @@ void MT_UartInit ()
 
   /* UART Configuration */
   uartConfig.configured           = TRUE;
-  uartConfig.baudRate             = MT_UART_DEFAULT_BAUDRATE;
+  uartConfig.baudRate             = HAL_UART_BR_9600;
   uartConfig.flowControl          = MT_UART_DEFAULT_OVERFLOW;
   uartConfig.flowControlThreshold = MT_UART_DEFAULT_THRESHOLD;
   uartConfig.rx.maxBufSize        = MT_UART_DEFAULT_MAX_RX_BUFF;
@@ -122,7 +122,21 @@ void MT_UartInit ()
 
   /* Start UART */
 #if defined (MT_UART_DEFAULT_PORT)
-  HalUARTOpen (MT_UART_DEFAULT_PORT, &uartConfig);
+//  HalUARTOpen (MT_UART_DEFAULT_PORT, &uartConfig);
+  HalUARTOpen (HAL_UART_PORT_0, &uartConfig);
+  
+  /* UART Configuration */
+  uartConfig.configured           = TRUE;
+  uartConfig.baudRate             = HAL_UART_BR_115200;
+  uartConfig.flowControl          = MT_UART_DEFAULT_OVERFLOW;
+  uartConfig.flowControlThreshold = MT_UART_DEFAULT_THRESHOLD;
+  uartConfig.rx.maxBufSize        = MT_UART_DEFAULT_MAX_RX_BUFF;
+  uartConfig.tx.maxBufSize        = MT_UART_DEFAULT_MAX_TX_BUFF;
+  uartConfig.idleTimeout          = MT_UART_DEFAULT_IDLE_TIMEOUT;
+  uartConfig.intEnable            = TRUE;
+  uartConfig.callBackFunc         = MT_UartProcessZToolData;
+HalUARTOpen (HAL_UART_PORT_1, &uartConfig);
+  
 #else
   /* Silence IAR compiler warning */
   (void)uartConfig;
@@ -194,114 +208,32 @@ byte MT_UartCalcFCS( uint8 *msg_ptr, uint8 len )
  ***************************************************************************************************/
 void MT_UartProcessZToolData ( uint8 port, uint8 event )
 {
-  uint8  ch;
-  uint8  bytesInRxBuffer;
-  
-  (void)event;  // Intentionally unreferenced parameter
+    uint8 num = 0; 
+    uint8 buff[MT_UART_DEFAULT_MAX_RX_BUFF];
+    (void)event;  // Intentionally unreferenced parameter
 
-  while (Hal_UART_RxBufLen(port))
-  {
-    HalUARTRead (port, &ch, 1);
-
-    switch (state)
+    if( port == HAL_UART_PORT_0 )
     {
-      case SOP_STATE:
-        if (ch == MT_UART_SOF)
-          state = LEN_STATE;
-        break;
-
-      case LEN_STATE:
-        LEN_Token = ch;
-
-        tempDataLen = 0;
-
-        /* Allocate memory for the data */
-        pMsg = (mtOSALSerialData_t *)osal_msg_allocate( sizeof ( mtOSALSerialData_t ) +
-                                                        MT_RPC_FRAME_HDR_SZ + LEN_Token );
-
-        if (pMsg)
+        while( Hal_UART_RxBufLen(port) )
         {
-          /* Fill up what we can */
-          pMsg->hdr.event = CMD_SERIAL_MSG;
-          pMsg->msg = (uint8*)(pMsg+1);
-          pMsg->msg[MT_RPC_POS_LEN] = LEN_Token;
-          state = CMD_STATE1;
-        }
-        else
-        {
-          state = SOP_STATE;
-          return;
-        }
-        break;
-
-      case CMD_STATE1:
-        pMsg->msg[MT_RPC_POS_CMD0] = ch;
-        state = CMD_STATE2;
-        break;
-
-      case CMD_STATE2:
-        pMsg->msg[MT_RPC_POS_CMD1] = ch;
-        /* If there is no data, skip to FCS state */
-        if (LEN_Token)
-        {
-          state = DATA_STATE;
-        }
-        else
-        {
-          state = FCS_STATE;
-        }
-        break;
-
-      case DATA_STATE:
-
-        /* Fill in the buffer the first byte of the data */
-        pMsg->msg[MT_RPC_FRAME_HDR_SZ + tempDataLen++] = ch;
-
-        /* Check number of bytes left in the Rx buffer */
-        bytesInRxBuffer = Hal_UART_RxBufLen(port);
-
-        /* If the remain of the data is there, read them all, otherwise, just read enough */
-        if (bytesInRxBuffer <= LEN_Token - tempDataLen)
-        {
-          HalUARTRead (port, &pMsg->msg[MT_RPC_FRAME_HDR_SZ + tempDataLen], bytesInRxBuffer);
-          tempDataLen += bytesInRxBuffer;
-        }
-        else
-        {
-          HalUARTRead (port, &pMsg->msg[MT_RPC_FRAME_HDR_SZ + tempDataLen], LEN_Token - tempDataLen);
-          tempDataLen += (LEN_Token - tempDataLen);
+            HalUARTRead(HAL_UART_PORT_0,&buff[num++],1);
         }
 
-        /* If number of bytes read is equal to data length, time to move on to FCS */
-        if ( tempDataLen == LEN_Token )
-            state = FCS_STATE;
-
-        break;
-
-      case FCS_STATE:
-
-        FSC_Token = ch;
-
-        /* Make sure it's correct */
-        if ((MT_UartCalcFCS ((uint8*)&pMsg->msg[0], MT_RPC_FRAME_HDR_SZ + LEN_Token) == FSC_Token))
+        if( num )
         {
-          osal_msg_send( App_TaskID, (byte *)pMsg );
+            pMsg = (mtOSALSerialData_t *)osal_msg_allocate( sizeof ( mtOSALSerialData_t ) + num + 1 );
+            if ( pMsg != NULL )
+            {
+                pMsg->hdr.event = CMD_SERIAL_MSG;
+                pMsg->msg = (uint8*)(pMsg+1);
+                pMsg->msg[0] = num;
+                memcpy(&pMsg->msg[1],&buff,num);
+                
+                osal_msg_send( App_TaskID, (byte *)pMsg );
+                osal_msg_deallocate ( (uint8 *)pMsg );
+            }
         }
-        else
-        {
-          /* deallocate the msg */
-          osal_msg_deallocate ( (uint8 *)pMsg );
-        }
-
-        /* Reset the state, send or discard the buffers at this point */
-        state = SOP_STATE;
-
-        break;
-
-      default:
-       break;
     }
-  }
 }
 
 #if defined (ZAPP_P1) || defined (ZAPP_P2)
