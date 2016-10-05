@@ -106,7 +106,9 @@ static devStates_t SmartDevice_NwkState;
 static uint8 SmartDevice_TransID;
 
 #if defined ( USE_GIZWITS_MOD ) 
-    static uint8 Device_Msg_Timer = 0;
+    static uint16 Device_Msg_Timer = 0;
+    static uint8 Gizwits_Msg_Timer = 0;
+    static uint8 Gizwits_Timer = 0;
 #endif
 
 /* Private functions ---------------------------------------------------------*/
@@ -248,8 +250,17 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
             }
         }
  
-        gizTimerMs();
-        gizwitsHandle(&currentDataPoint);
+        if( ++Gizwits_Timer >= Gizwits_Timer_Time )
+        {
+            gizTimerMs();
+            Gizwits_Timer = 0;
+        }
+        
+        if( ++Gizwits_Msg_Timer >= Gizwits_Handler_Time )
+        {
+            gizwitsHandle(&currentDataPoint);
+            Gizwits_Msg_Timer = 0;
+        }
 #else        
         SamrtDevice_SendPeriodic_Message();
 #endif

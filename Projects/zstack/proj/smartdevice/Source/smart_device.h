@@ -52,9 +52,9 @@
 #define SamrtDevice_ClustersNum (sizeof(zclSmartDevice_InClusterList)/sizeof(zclSmartDevice_InClusterList[0]))
 #define SmartDevice_Report_ClustersID  (0x0001)
 
-#if !defined ( USE_GIZWITS_MOD )
+#if defined ( USE_GIZWITS_MOD )
 /** 定时器时间 */
-#define SMART_DEVICE_TIME       (50)
+#define SMART_DEVICE_TIME       (10)
 #else
 #define SMART_DEVICE_TIME       (3000)
 #endif
@@ -66,18 +66,18 @@
 /** 设备上报事件 */
 //#define SmartDevice_Report_Enent (0x0008)
 
-//#if defined ( USE_GIZWITS_MOD )
+#if defined ( USE_GIZWITS_MOD )
 ///** 机智云定时器定时时间 */
-//#define Gizwits_Timer_Time (100)
+#define Gizwits_Timer_Time (10/SMART_DEVICE_TIME)
 ///** 机智云定时器事件 */
 //#define Gizwits_Timer_Enent (0x0004)
 //
 ///** 机智云事件处理时间 */
-//#define Gizwits_Handler_Time (50)
+#define Gizwits_Handler_Time (50/SMART_DEVICE_TIME)
 ///** 机智云事件处理 */
 //#define Gizwits_Handler_Enent (0x0002)
 //
-//#endif
+#endif
 
 #define SmartDevice_InCoord  (1)
 #define SmartDevice_InRouter (2)
