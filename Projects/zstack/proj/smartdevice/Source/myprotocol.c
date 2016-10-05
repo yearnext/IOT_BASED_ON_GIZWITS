@@ -50,12 +50,12 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define MYPROTOCOL_PACKET_SIZE     (sizeof(myprotocol_format))
+#define MYPROTOCOL_PACKET_SIZE     (sizeof(MYPROTOCOL_FORMAT))
 #define MYPROTOCOL_PACKET_REPORT() gizwitsReport((uint8 *)&tx_packet)
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-static myprotocol_format tx_packet;
+static MYPROTOCOL_FORMAT tx_packet;
 //static myprotocol_format rx_packet;
 
 /* Private functions ---------------------------------------------------------*/
@@ -70,8 +70,7 @@ static myprotocol_format tx_packet;
  */
 void myprotocol_init( void )
 {
-    memset(&tx_packet,0,sizeof(myprotocol_format));
-//    memset(&rx_packet,0,sizeof(myprotocol_format));
+    memset(&tx_packet,0,sizeof(MYPROTOCOL_FORMAT));
 }
 
 /**
@@ -110,7 +109,7 @@ uint8 myprotocol_compute_checksum( uint8 *packet )
  */
 void myprotocol_creat_errcode_packet( uint8 sn )
 {
-    memset(&tx_packet,0,sizeof(myprotocol_format));
+    memset(&tx_packet,0,MYPROTOCOL_PACKET_SIZE);
     
     tx_packet.commtype = MYPROTOCOL_COMM_ERROR;
     tx_packet.sn = sn;
@@ -127,7 +126,7 @@ void myprotocol_creat_errcode_packet( uint8 sn )
  */
 void myprotocol_creat_commend_packet( uint8 sn )
 {
-    memset(&tx_packet,0,sizeof(myprotocol_format));
+    memset(&tx_packet,0,MYPROTOCOL_PACKET_SIZE);
     
     tx_packet.commtype = MYPROTOCOL_COMM_END;
     tx_packet.sn = sn;
@@ -142,9 +141,9 @@ void myprotocol_creat_commend_packet( uint8 sn )
  * @note        None
  *******************************************************************************
  */
-void myprotocol_create_writeack_packet(myprotocol_format *packet)
+void myprotocol_create_writeack_packet(MYPROTOCOL_FORMAT *packet)
 {
-    memset(&tx_packet,0,sizeof(myprotocol_format));
+    memset(&tx_packet,0,MYPROTOCOL_PACKET_SIZE);
     
     tx_packet.commtype = MTPROTOCOL_W2D_WRITE_ACK;
     tx_packet.sn = packet->sn;
@@ -159,9 +158,9 @@ void myprotocol_create_writeack_packet(myprotocol_format *packet)
  * @note        None
  *******************************************************************************
  */
-void myprotocol_create_readack_packet(myprotocol_format *packet)
+void myprotocol_create_readack_packet(MYPROTOCOL_FORMAT *packet)
 {
-    memset(&tx_packet,0,sizeof(myprotocol_format));
+    memset(&tx_packet,0,MYPROTOCOL_PACKET_SIZE);
     
     tx_packet.commtype = MYPROTOCOL_W2D_READ_ACK;
     tx_packet.sn = packet->sn;
@@ -178,7 +177,7 @@ void myprotocol_create_readack_packet(myprotocol_format *packet)
  */
 bool myprotocol_packet_check( uint8 *data )
 {
-    myprotocol_format *packet = (myprotocol_format *)data;
+    MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)data;
     
 //    if( data == NULL )
 //    {
@@ -211,7 +210,7 @@ bool myprotocol_packet_check( uint8 *data )
  */
 void myprotocol_packet_handler( uint8 *report_data, uint8 *packet_data )
 {
-    myprotocol_format *packet = (myprotocol_format *)packet_data;
+    MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)packet_data;
     
 //    if( report_data == NULL || packet_data == NULL )
 //    {

@@ -48,7 +48,7 @@ typedef enum
 #define RB_MAX_LEN         (MAX_PACKAGE_LEN*1)///< 环形缓冲区最大长度
 #define min(a, b) (a)<(b)?(a):(b)             ///< 获取最小值
 
-#define SEND_MAX_TIME   60                   ///< 3000ms重发
+#define SEND_MAX_TIME   30                   ///< 3000ms重发
 #define SEND_MAX_NUM    2                     ///< 重发次数
 
 #define protocol_VERSION "00000004"           ///< protocol版本号

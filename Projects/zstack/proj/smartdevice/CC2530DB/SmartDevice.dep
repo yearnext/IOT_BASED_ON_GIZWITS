@@ -2,7 +2,7 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>2843955105</fileChecksum>
+  <fileChecksum>2409622272</fileChecksum>
   <configuration>
     <name>Coord_Gizwits</name>
     <outputs>
@@ -402,6 +402,11 @@
       <file>$PROJ_DIR$\..\..\..\ZMain\TI2530DB\ZMain.c</file>
       <file>$PROJ_DIR$\..\..\..\..\..\Components\stack\zdo\ZDObject.c</file>
       <file>$PROJ_DIR$\..\..\..\..\..\Components\stack\zdo\ZDProfile.c</file>
+      <file>$PROJ_DIR$\Coord_Gizwits\Obj\devicelist.pbi</file>
+      <file>$PROJ_DIR$\Coord_Gizwits\Obj\devicelist.r51</file>
+      <file>$PROJ_DIR$\Coord_Gizwits\Obj\devicelist.__cstat.et</file>
+      <file>$PROJ_DIR$\..\Source\devicelist.h</file>
+      <file>$PROJ_DIR$\..\Source\devicelist.c</file>
     </outputs>
     <file>
       <name>[ROOT_NODE]</name>
@@ -417,7 +422,7 @@
       <inputs>
         <tool>
           <name>XLINK</name>
-          <file> 371 68 183 215 141 376 378 38 207 63 90 201 42 66 64 115 35 81 186 197 91 39 88 34 72 65 192 175 76 18 191 44 174 74 40 8 190 52 70 85 37 89 212 45 204 198 4 5 22 10 172 208 187 195 6 105 30 47 138 118 29 12 62 48 43 55 144 137 226 189 203 61 41 139</file>
+          <file> 371 68 183 215 141 376 378 38 397 207 63 90 201 42 66 64 115 35 81 186 197 91 39 88 34 72 65 192 175 76 18 191 44 174 74 40 8 190 52 70 85 37 89 212 45 204 198 4 5 22 10 172 208 187 195 6 105 30 47 138 118 29 12 62 48 43 55 144 137 226 189 203 61 41 139</file>
         </tool>
       </inputs>
     </file>
@@ -498,7 +503,7 @@
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 391 251 242 229 332 228 84 205 364 244 210 264 260 276 368 308 327 362 261 336</file>
+          <file> 391 229 205 251 242 364 332 228 84 244 210 264 260 276 368 308 327 362 261 336</file>
         </tool>
       </inputs>
     </file>
@@ -525,7 +530,7 @@
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 205 242 264 308 260 276 240 368 332 327 261 210 244 251 364 229 228 84 391 336 362</file>
+          <file> 332 205 242 264 308 260 276 240 368 327 261 362 210 244 251 364 229 228 84 391 336</file>
         </tool>
       </inputs>
     </file>
@@ -579,7 +584,7 @@
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 346 386 373 332 352 355 232 264 362 83 327 375 353 381 357 365 350 368 237 361 298 382 300 364 229 336 272 351 342 344 383 379 347</file>
+          <file> 386 350 332 368 344 351 355 232 264 362 357 327 375 353 381 364 298 373 237 361 382 300 229 336 365 352 383 379 347 272 83 346 342</file>
         </tool>
       </inputs>
     </file>
@@ -606,7 +611,7 @@
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 368 355 305 350 353 373 276 375 247 352 357 364 351 344 251 232 332 264 336 365 379 261 260 327 345 342 391 308 229 362 386 381 272 83 346 298 383 84 228 283 240 242</file>
+          <file> 368 327 305 332 264 365 375 247 336 351 357 353 352 379 229 251 373 232 364 350 355 344 84 228 283 345 342 391 308 362 386 381 272 83 346 298 383 276 261 260 240 242</file>
         </tool>
       </inputs>
     </file>
@@ -2266,6 +2271,33 @@
         <tool>
           <name>BICOMP</name>
           <file> 350 386 368 344 383 364 229 347 332 381 357 373 286 382 353 83 342 355 298 346 327 379 387 264 362 272 365 352 375 336 351</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\devicelist.c</name>
+      <outputs>
+        <tool>
+          <name>ICC8051</name>
+          <file> 397</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 398</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 396</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICC8051</name>
+          <file> 370 363 399 332 264 229 336</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 399 336 332 264 229</file>
         </tool>
       </inputs>
     </file>
