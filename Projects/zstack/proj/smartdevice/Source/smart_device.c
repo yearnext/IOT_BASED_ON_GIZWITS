@@ -43,14 +43,32 @@
 #include "MT_UART.h"
 #include "hal_uart.h"
 
+#if defined ( USE_GIZWITS_MOD )
+#include "gizwits.h"
+#endif
+
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
+dataPoint_t currentDataPoint;
+ 
 /* Private define ------------------------------------------------------------*/
+/**
+* @name 日志打印宏定义
+* @{
+*/
+#define USE_SMARTDEVICE_DEBUG 1
+
+#if USE_SMARTDEVICE_DEBUG
+    #define DEVICE_LOG(n) HalUARTWrite(1,n,sizeof(n))  ///<运行日志打印
+#else 
+    #define DEVICE_LOG(n)
+#endif
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /** 任务ID */
-static byte zclSmartDevice_TaskID;
+static byte SmartDevice_TaskID;
 
 /** 端点描述符 */
 static endPointDesc_t SmartDevice_epDesc;
@@ -86,8 +104,13 @@ static devStates_t SmartDevice_NwkState;
 
 /** 发送ID */
 static uint8 SmartDevice_TransID;
+
+#if defined ( USE_GIZWITS_MOD ) 
+    static uint8 Device_Msg_Timer = 0;
+#endif
+
 /* Private functions ---------------------------------------------------------*/
-void zclSamrtDevice_SendPeriodic_Message( void );
+void SamrtDevice_SendPeriodic_Message( void );
 void zclSmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt );
 
 /* Exported functions --------------------------------------------------------*/
@@ -101,14 +124,23 @@ void zclSmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt );
  */
 void SmartDevice_Init( byte task_id )
 {
-    zclSmartDevice_TaskID = task_id;
+    SmartDevice_TaskID = task_id;
     SmartDevice_NwkState = DEV_INIT;
     SmartDevice_TransID = 0;
+    
+    MT_UartInit();
+    MT_UartRegisterTaskID(SmartDevice_TaskID);
+    
+#if defined ( USE_GIZWITS_MOD )   
+    app_gizwits_init();
+    
+    osal_start_timerEx( SmartDevice_TaskID, SMART_DEVICE_TIMER_EVEN, SMART_DEVICE_TIME );
+#endif
     
     /** 注册AF层应用对象 */
     SmartDevice_epDesc.endPoint = SmartDevice_EndPoint;
     SmartDevice_epDesc.simpleDesc = (SimpleDescriptionFormat_t *)&zclSmartDevice_SimpleDesc;
-    SmartDevice_epDesc.task_id = &zclSmartDevice_TaskID;
+    SmartDevice_epDesc.task_id = &SmartDevice_TaskID;
     SmartDevice_epDesc.latencyReq = noLatencyReqs;
     afRegister(&SmartDevice_epDesc);
     
@@ -118,16 +150,14 @@ void SmartDevice_Init( byte task_id )
     SmartDevice_Periodic_DstAddr.endPoint = SmartDevice_EndPoint;
     
     /**  注册按键事件 */
-    RegisterForKeys( zclSmartDevice_TaskID );
-    // Register the Application to receive the unprocessed Foundation command/response messages
-//    zcl_registerForMsg( zclSmartDevice_TaskID );
+    RegisterForKeys( SmartDevice_TaskID );
 
     /** 创建一个组表 */
     SmartDevice_Group.ID = 0x0001;
     osal_memcpy( SmartDevice_Group.name, "Group 1", sizeof("Group 1") );
     aps_AddGroup(SmartDevice_EndPoint, &SmartDevice_Group);
     
-//    HalUARTWrite(0,"Smart device init finish!\n",sizeof("Smart device init finish!\n"));
+    DEVICE_LOG("Smart device init finish!\n");
 }
  
 /**
@@ -142,11 +172,12 @@ void SmartDevice_Init( byte task_id )
 uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
 {
     afIncomingMSGPacket_t *MSGpkt;
+    
     (void)task_id;
         
     if( events & SYS_EVENT_MSG )
     {
-        MSGpkt = (afIncomingMSGPacket_t *)osal_msg_receive(zclSmartDevice_TaskID);
+        MSGpkt = (afIncomingMSGPacket_t *)osal_msg_receive(SmartDevice_TaskID);
         while( MSGpkt )
         {
             switch( MSGpkt->hdr.event )
@@ -164,20 +195,26 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
                     switch( SmartDevice_NwkState )
                     {
                         case DEV_ROUTER:
-//                            HalUARTWrite(0,"I am Router Device!\n",sizeof("I am Router Device!\n"));
-                            osal_start_timerEx( zclSmartDevice_TaskID, SmartDevice_Report_Enent,
-                                                SmartDevice_Report_Time );
+                            DEVICE_LOG("I am Router Device!\n");
+#if !defined ( USE_GIZWITS_MOD )
+                            osal_start_timerEx( SmartDevice_TaskID, 
+                                                SMART_DEVICE_TIMER_EVEN, 
+                                                SMART_DEVICE_TIME );
+#endif
                                 break;
                         case DEV_END_DEVICE:
-//                            HalUARTWrite(0,"I am End Device!\n",sizeof("I am End Device!\n"));
-                            osal_start_timerEx( zclSmartDevice_TaskID, SmartDevice_Report_Enent,
-                                                SmartDevice_Report_Time );
+#if !defined ( USE_GIZWITS_MOD )
+                            DEVICE_LOG("I am End Device!\n");
+                            osal_start_timerEx( SmartDevice_TaskID, 
+                                                SMART_DEVICE_TIMER_EVEN, 
+                                                SMART_DEVICE_TIME );
+#endif
                                 break;
                         case DEV_ZB_COORD:
-//                            HalUARTWrite(0,"I am Coord Device!\n",sizeof("I am Coord Device!\n"));
+                            DEVICE_LOG("I am Coord Device!\n");
                                 break;
                         case DEV_NWK_DISC:
-                            HalUARTWrite(0,"Discovering PAN's to join!\n",sizeof("Discovering PAN's to join!\n"));
+                            DEVICE_LOG("Discovering PAN's to join!\n");
                             break;
                         default:
                             break;
@@ -191,27 +228,39 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
             
             // Release the memory
             osal_msg_deallocate( (uint8 *)MSGpkt );
-            MSGpkt = (afIncomingMSGPacket_t *)osal_msg_receive(zclSmartDevice_TaskID);
+            MSGpkt = (afIncomingMSGPacket_t *)osal_msg_receive(SmartDevice_TaskID);
         }
         
         // return unprocessed events
         return (events ^ SYS_EVENT_MSG);
     }
-    
-    /** 周期发送数据任务 */
-    if ( events & SmartDevice_Report_Enent )
+ 
+    if( events & SMART_DEVICE_TIMER_EVEN )
     {
-        // 数据上报
-        zclSamrtDevice_SendPeriodic_Message();
-
-        // Setup to send message again in normal period (+ a little jitter)
-        osal_start_timerEx( zclSmartDevice_TaskID, SmartDevice_Report_Enent,
-        (SmartDevice_Report_Time + (osal_rand() & 0x00FF)) );
-
-        // return unprocessed events
-            return (events ^ SmartDevice_Report_Enent);
+#if defined ( USE_GIZWITS_MOD )
+        if( SmartDevice_NwkState == DEV_ROUTER \
+            || SmartDevice_NwkState == DEV_END_DEVICE )
+        {
+            if( ++Device_Msg_Timer >= SmartDevice_Report_Time )
+            {
+                SamrtDevice_SendPeriodic_Message();
+                Device_Msg_Timer = 0;
+            }
+        }
+ 
+        gizTimerMs();
+        gizwitsHandle(&currentDataPoint);
+#else        
+        SamrtDevice_SendPeriodic_Message();
+#endif
+        
+        osal_start_timerEx( SmartDevice_TaskID, 
+                            SMART_DEVICE_TIMER_EVEN, 
+                            SMART_DEVICE_TIME );
+        
+        return (events ^ SMART_DEVICE_TIMER_EVEN);
     }
-       
+    
     // Discard unknown events
     return 0;
 }
@@ -224,7 +273,7 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
  * @note        None
  *******************************************************************************
  */
-static void zclSamrtDevice_SendPeriodic_Message( void )
+static void SamrtDevice_SendPeriodic_Message( void )
 {
     uint8 data[] = {1,2,3,4,5,6,7,8,9};
     if( AF_DataRequest(&SmartDevice_Periodic_DstAddr,

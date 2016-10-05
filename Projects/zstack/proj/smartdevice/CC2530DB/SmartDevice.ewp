@@ -7975,9 +7975,6 @@
         <name>$PROJ_DIR$\..\..\..\..\..\Components\hal\include\hal_key.h</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\Components\hal\include\hal_lcd.h</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\..\..\..\..\..\Components\hal\include\hal_led.h</name>
       </file>
       <file>
@@ -8013,9 +8010,6 @@
           </file>
           <file>
             <name>$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_key.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_lcd.c</name>
           </file>
           <file>
             <name>$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_led.c</name>
