@@ -47,6 +47,7 @@
 #include "MT_UART.h"
 #include "OSAL_Memory.h"
 #include <string.h>
+#include "gizwits.h"
 
 /***************************************************************************************************
  * MACROS
@@ -208,30 +209,15 @@ byte MT_UartCalcFCS( uint8 *msg_ptr, uint8 len )
  ***************************************************************************************************/
 void MT_UartProcessZToolData ( uint8 port, uint8 event )
 {
-    uint8 num = 0; 
-    uint8 buff[MT_UART_DEFAULT_MAX_RX_BUFF];
+    uint8 data = 0;
     (void)event;  // Intentionally unreferenced parameter
 
     if( port == HAL_UART_PORT_0 )
     {
         while( Hal_UART_RxBufLen(port) )
         {
-            HalUARTRead(HAL_UART_PORT_0,&buff[num++],1);
-        }
-
-        if( num )
-        {
-            pMsg = (mtOSALSerialData_t *)osal_msg_allocate( sizeof ( mtOSALSerialData_t ) + num + 1 );
-            if ( pMsg != NULL )
-            {
-                pMsg->hdr.event = CMD_SERIAL_MSG;
-                pMsg->msg = (uint8*)(pMsg+1);
-                pMsg->msg[0] = num;
-                memcpy(&pMsg->msg[1],&buff,num);
-                
-                osal_msg_send( App_TaskID, (byte *)pMsg );
-                osal_msg_deallocate ( (uint8 *)pMsg );
-            }
+            HalUARTRead(HAL_UART_PORT_0,&data,1);
+            gizPutData(&data,1);
         }
     }
 }
