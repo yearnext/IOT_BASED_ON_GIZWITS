@@ -215,7 +215,7 @@ int32 gizPutData(uint8 *buf, uint32 len)
 * @param none
 * @return none
 */
-void gizTimerMs(void)
+void gizTimer10Ms(void)
 {
     gizwitsProtocol.timerMsCount++;
 }

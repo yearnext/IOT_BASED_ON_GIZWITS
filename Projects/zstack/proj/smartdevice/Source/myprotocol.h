@@ -32,6 +32,8 @@
 /** 通讯格式 MAC地址大小 */
 #define MYPROTOCOL_MAC_ADDR_SIZE  (6)
 
+#define MYPROTOCOL_TICK_CMD (0x00)
+
 /* Exported types ------------------------------------------------------------*/
 typedef enum
 {
@@ -45,6 +47,7 @@ typedef enum
     MYPROTOCOL_D2W_REPORT_WAIT,
     MYPROTOCOL_D2W_REPORT_ACK,
     MYPROTOCOL_COMM_ERROR,
+    MYPROTOCOL_COMM_TICK,
 }myprotocol_commtype;
 
 typedef enum
@@ -53,6 +56,7 @@ typedef enum
     MYPROTOCOL_DEVICE_LIGHT,
     MYPROTOCOL_DEVICE_SOCKET,
     MYPROTOCOL_DEVICE_CURTAIN,
+    MYPROTOCOL_DEVICE_HT_SENSOR,
     MYPROTOCOL_DEVICE_END,
 }MYPROTOCOL_DEVICE;
 
@@ -64,9 +68,9 @@ typedef struct
 
 typedef struct
 {
-    uint8 user_data_len;
-    uint8 device_cmd;
-    uint8 user_data[MYPROTOCOL_USER_DATA_SIZE];
+    uint8 cmd;
+    uint8 len;
+    uint8 data[MYPROTOCOL_USER_DATA_SIZE];
 }MYPROTOCOL_USER_DATA;
 
 typedef struct
@@ -86,6 +90,8 @@ typedef struct
 extern void myprotocol_init( void );
 
 extern void myprotocol_packet_handler( uint8 *report_data, uint8 *packet_data );
+
+extern uint8 myprotocol_compute_checksum( uint8 *packet );
 
 #endif      /* __myprotocol_H__ */
 
