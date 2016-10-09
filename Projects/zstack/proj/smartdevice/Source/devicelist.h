@@ -32,24 +32,25 @@ typedef struct _USER_NODE_
 {
 	struct _USER_NODE_ *next;
 	void *data;
-}NODE,*LIST_NODE,**LIST_HEAD;
+}NODE, *LIST_NODE, **LIST_HEAD;
 
 typedef enum
 {
-    DEVICE_COORD = 0x00,
-    DEVICE_LIGHT,
-    DEVICE_SOCKET,
-    DEVICE_CURTAIN,
-//    DEVICE_END,
+	DEVICE_COORD = 0x00,
+	DEVICE_LIGHT,
+	DEVICE_SOCKET,
+	DEVICE_CURTAIN,
+	//    DEVICE_END,
 }DEVICE_TYPE;
 
 typedef struct
 {
-    DEVICE_TYPE device;
-    uint16 shortaddr;
+	DEVICE_TYPE device;
+	uint16 shortaddr;
+	uint8 tick;
 }DEVICE_INFO;
 
-typedef bool(*visit_func)(void *ctx, void **list);
+typedef bool(*visit_func)(void **ctx, void **list);
 
 typedef LIST_NODE DEVICE_LIST_HEAD;
 
@@ -58,6 +59,9 @@ typedef LIST_NODE DEVICE_LIST_HEAD;
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
+extern void Del_ZombieDevice_ForList(void);
+
+extern void Del_DeviceTickCount( void );
 
 #endif      /* __MY_DEVICE_LIST_H__ */
 

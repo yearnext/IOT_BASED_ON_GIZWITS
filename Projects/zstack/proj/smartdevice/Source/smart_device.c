@@ -29,7 +29,8 @@
 #include "aps_groups.h"
 #include "ZDApp.h"
 #include "ZGlobals.h"
-
+#include <string.h>
+#include "NLMEDE.h"
 #include "smart_device.h"
 
 #include "onboard.h"
@@ -42,9 +43,11 @@
 #include "MT.h"
 #include "MT_UART.h"
 #include "hal_uart.h"
+#include "myprotocol.h"
 
 #if defined ( USE_GIZWITS_MOD )
 #include "gizwits.h"
+#include "devicelist.h"
 #endif
 
 /* Exported macro ------------------------------------------------------------*/
@@ -76,7 +79,7 @@ static endPointDesc_t SmartDevice_epDesc;
 /** 簇表 */
 const cId_t zclSmartDevice_InClusterList[] =
 {
-    SmartDevice_Report_ClustersID,
+    SmartDevice_Comm_ClustersID,
 };
 
 /** 简单描述符 */
@@ -109,11 +112,13 @@ static uint8 SmartDevice_TransID;
     static uint16 Device_Msg_Timer = 0;
     static uint8 Gizwits_Msg_Timer = 0;
     static uint8 Gizwits_Timer = 0;
+    static uint16 Device_Clear_Timer = 0;
 #endif
 
 /* Private functions ---------------------------------------------------------*/
-void SamrtDevice_SendPeriodic_Message( void );
-void zclSmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt );
+void SamrtDevice_Tick_Message( void );
+void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt );
+void SmartDevice_Message_Handler( void *packet );
 
 /* Exported functions --------------------------------------------------------*/
 /**
@@ -188,7 +193,7 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
                     break;
                 /** 接收到数据 */
                 case AF_INCOMING_MSG_CMD:
-                    zclSmartDevice_MessageMSGCB(MSGpkt);
+                    SmartDevice_MessageMSGCB(MSGpkt);
                     break;
                 /** 状态改变 */
                 case ZDO_STATE_CHANGE:
@@ -243,26 +248,34 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
         if( SmartDevice_NwkState == DEV_ROUTER \
             || SmartDevice_NwkState == DEV_END_DEVICE )
         {
-            if( ++Device_Msg_Timer >= SmartDevice_Report_Time )
+            if( ++Device_Msg_Timer >= DEVICE_TICK_TIME )
             {
-                SamrtDevice_SendPeriodic_Message();
+                SamrtDevice_Tick_Message();
                 Device_Msg_Timer = 0;
             }
         }
  
-        if( ++Gizwits_Timer >= Gizwits_Timer_Time )
+        if( ++Gizwits_Timer >= GIZWITS_TIMER_TIME )
         {
-            gizTimerMs();
+            gizTimer10Ms();
             Gizwits_Timer = 0;
         }
         
-        if( ++Gizwits_Msg_Timer >= Gizwits_Handler_Time )
+        if( ++Gizwits_Msg_Timer >= GIZWITS_HANDLER_TIME )
         {
             gizwitsHandle(&currentDataPoint);
             Gizwits_Msg_Timer = 0;
         }
+        
+        if( ++Device_Clear_Timer >= CLEAR_ZOMBIE_DEVICE_TIME )
+        {
+            Del_ZombieDevice_ForList();
+            Del_DeviceTickCount();
+            Device_Clear_Timer = 0;
+        }
+        
 #else        
-        SamrtDevice_SendPeriodic_Message();
+        SamrtDevice_Tick_Message();
 #endif
         
         osal_start_timerEx( SmartDevice_TaskID, 
@@ -284,14 +297,36 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
  * @note        None
  *******************************************************************************
  */
-static void SamrtDevice_SendPeriodic_Message( void )
+static void SamrtDevice_Tick_Message( void )
 {
-    uint8 data[] = {1,2,3,4,5,6,7,8,9};
+    MYPROTOCOL_FORMAT packet;
+    MYPROTOCOL_DEVICE_INFO device_info;
+    memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
+    
+    packet.commtype = MYPROTOCOL_COMM_TICK;
+    packet.sn = 0;
+    device_info.addr = NLME_GetShortAddr();
+#if (SmartDevice_ProfileID) == (SmartLight_ProfileID)
+    device_info.device = MYPROTOCOL_DEVICE_LIGHT;
+#elif (SmartDevice_ProfileID) == (SmartSwitch_ProfileID)
+    device_info.device = MYPROTOCOL_DEVICE_SOCKET;
+#elif (SmartDevice_ProfileID) == (SmartCurtain_ProfileID)
+    device_info.device = MYPROTOCOL_DEVICE_CURTAIN;
+#elif (SmartDevice_ProfileID) == (SmartCurtain_ProfileID)
+    device_info.device = MYPROTOCOL_DEVICE_HT_SENSOR;
+#else 
+    device_info.device = MYPROTOCOL_DEVICE_COORD;
+#endif
+    memcpy(&packet.user_data.data,&device_info,sizeof(MYPROTOCOL_DEVICE_INFO));
+    packet.user_data.cmd = MYPROTOCOL_TICK_CMD;
+    packet.user_data.len = sizeof(MYPROTOCOL_DEVICE_INFO);
+    packet.check_sum = myprotocol_compute_checksum((uint8 *)&packet);
+    
     if( AF_DataRequest(&SmartDevice_Periodic_DstAddr,
                        &SmartDevice_epDesc,
-                       SmartDevice_Report_ClustersID,
-                       sizeof(data),
-                       (uint8 *)&data,
+                       SmartDevice_Comm_ClustersID,
+                       sizeof(MYPROTOCOL_FORMAT),
+                       (uint8 *)&packet,
                        &SmartDevice_TransID,
                        AF_DISCV_ROUTE,
                        AF_DEFAULT_RADIUS) == afStatus_SUCCESS )
@@ -312,18 +347,21 @@ static void SamrtDevice_SendPeriodic_Message( void )
  * @note        None
  *******************************************************************************
  */
-static void zclSmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt )
+static void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt )
 {
     switch( pkt->clusterId )
     {
-        case SmartDevice_Report_ClustersID:
-//            HalUARTWrite(0,"Get data is \n",sizeof("Get data is \n"));
-//            HalUARTWrite(0,pkt->cmd.Data,pkt->cmd.DataLength);
-//            HalUARTWrite(0,"\n",sizeof(uint8));
+        case SmartDevice_Comm_ClustersID:
+            SmartDevice_Message_Handler(&pkt->cmd.Data);
             break;
         default:
             break;
     }
+}
+
+static void SmartDevice_Message_Handler( void *packet )
+{
+    
 }
  
 /** @}*/     /* smartlight模块 */

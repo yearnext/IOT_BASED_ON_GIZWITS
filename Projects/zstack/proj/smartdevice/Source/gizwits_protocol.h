@@ -326,10 +326,9 @@ int32 gizwitsHandle(dataPoint_t *currentData);
 int32 gizwitsSetMode(uint8 mode);
 int32 gizwitsSetBind( void );
 /**@} */
-void gizTimerMs(void);
+void gizTimer10Ms(void);
 int32 gizPutData(uint8 *buf, uint32 len);
 uint32 gizGetTimerCount(void);
-void gizTimerMs(void);
 
 int32 gizwitsReport( uint8 *packet );
 
