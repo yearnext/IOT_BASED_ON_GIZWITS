@@ -53,8 +53,10 @@
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
+#if defined ( USE_GIZWITS_MOD )
 dataPoint_t currentDataPoint;
- 
+#endif
+
 /* Private define ------------------------------------------------------------*/
 /**
 * @name 日志打印宏定义
@@ -63,8 +65,12 @@ dataPoint_t currentDataPoint;
 #define USE_SMARTDEVICE_DEBUG 1
 
 #if USE_SMARTDEVICE_DEBUG
-    #define DEVICE_LOG(n) HalUARTWrite(1,n,sizeof(n))  ///<运行日志打印
-#else 
+    #if defined ( USE_GIZWITS_MOD )
+        #define DEVICE_LOG(n) HalUARTWrite(1,n,sizeof(n))  ///<运行日志打印
+    #else
+        #define DEVICE_LOG(n) HalUARTWrite(0,n,sizeof(n))  ///<运行日志打印
+    #endif
+#else
     #define DEVICE_LOG(n)
 #endif
 
@@ -118,7 +124,7 @@ static uint8 SmartDevice_TransID;
 /* Private functions ---------------------------------------------------------*/
 void SamrtDevice_Tick_Message( void );
 void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt );
-void SmartDevice_Message_Handler( void *packet );
+void SmartDevice_Message_Handler( void *data );
 
 /* Exported functions --------------------------------------------------------*/
 /**
@@ -210,8 +216,9 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
 #endif
                                 break;
                         case DEV_END_DEVICE:
-#if !defined ( USE_GIZWITS_MOD )
                             DEVICE_LOG("I am End Device!\n");
+#if !defined ( USE_GIZWITS_MOD )
+                            
                             osal_start_timerEx( SmartDevice_TaskID, 
                                                 SMART_DEVICE_TIMER_EVEN, 
                                                 SMART_DEVICE_TIME );
@@ -352,16 +359,61 @@ static void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt )
     switch( pkt->clusterId )
     {
         case SmartDevice_Comm_ClustersID:
-            SmartDevice_Message_Handler(&pkt->cmd.Data);
+            SmartDevice_Message_Handler(pkt->cmd.Data);
             break;
         default:
             break;
     }
 }
 
-static void SmartDevice_Message_Handler( void *packet )
+/**
+ *******************************************************************************
+ * @brief        SmartDevice数据包处理
+ * @param       [in]   pkt    信息
+ * @return      [out]  void
+ * @note        None
+ *******************************************************************************
+ */
+static void SmartDevice_Message_Handler( void *data )
 {
+    MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)data;
     
+    if( packet->check_sum != myprotocol_compute_checksum(data) )
+    {
+        return;
+    }
+    
+    switch( packet->commtype )
+    {
+        case MYPROTOCOL_COMM_TICK:
+#if defined ( USE_GIZWITS_MOD )
+            // 如果为父设备
+            if( NLME_GetCoordShortAddr() == NLME_GetShortAddr() )
+            {
+                DEVICE_INFO *device_info = (DEVICE_INFO *)packet->user_data.data;
+                
+                // 添加设备
+                if( Add_Device_Forlist(device_info) == false )
+                {
+                    // 增加设备心跳计数
+                    Add_DeviceTick_ForList(device_info);
+                }
+            }
+#else
+            
+#endif
+            break;
+        case MYPROTOCOL_W2D_READ_WAIT:
+            break;
+        case MYPROTOCOL_W2D_WRITE_WAIT:
+            break;
+        case MYPROTOCOL_D2W_READ_ACK:
+            break;
+        case MYPROTOCOL_D2W_REPORT_ACK:
+            break;
+        default:
+            break;
+    }   
 }
  
 /** @}*/     /* smartlight模块 */

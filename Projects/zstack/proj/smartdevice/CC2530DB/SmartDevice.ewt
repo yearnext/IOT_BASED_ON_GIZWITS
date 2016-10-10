@@ -6788,6 +6788,15 @@
   <group>
     <name>App</name>
     <group>
+      <name>DeviceList</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\devicelist.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\devicelist.h</name>
+      </file>
+    </group>
+    <group>
       <name>Gizwits</name>
       <file>
         <name>$PROJ_DIR$\..\Source\gizwits.c</name>
