@@ -17,8 +17,6 @@
  ******************************************************************************
  */
 
-#if defined ( USE_GIZWITS_MOD )
-
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __MY_DEVICE_LIST_H__
 #define __MY_DEVICE_LIST_H__
@@ -59,9 +57,17 @@ typedef LIST_NODE DEVICE_LIST_HEAD;
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern void Del_ZombieDevice_ForList(void);
+#if defined ( USE_GIZWITS_MOD )
+
+extern void Del_ZombieDevice_ForList( void );
 
 extern void Del_DeviceTickCount( void );
+
+extern bool Check_Device_InList( DEVICE_INFO * );
+
+extern bool Add_Device_Forlist( DEVICE_INFO * );
+
+extern void Add_DeviceTick_ForList( DEVICE_INFO * );
 
 #endif      /* __MY_DEVICE_LIST_H__ */
 

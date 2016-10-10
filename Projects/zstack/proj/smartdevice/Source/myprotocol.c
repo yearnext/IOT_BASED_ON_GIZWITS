@@ -22,8 +22,6 @@
  * @{
  */
 
-#if defined ( USE_GIZWITS_MOD )
-
 /* Includes ------------------------------------------------------------------*/
 #include "myprotocol.h"
 #include "hal_uart.h"
@@ -200,6 +198,8 @@ bool myprotocol_packet_check( uint8 *data )
     return true;
 }
 
+#if defined ( USE_GIZWITS_MOD )       
+ 
 /**
  *******************************************************************************
  * @brief       数据包处理函数
@@ -256,6 +256,7 @@ void myprotocol_packet_handler( uint8 *report_data, uint8 *packet_data )
 }
 
 #endif
+
 /** @}*/     /* myprotocol模块 */
 
 /**********************************END OF FILE*********************************/

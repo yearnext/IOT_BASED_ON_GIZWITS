@@ -106,7 +106,11 @@ void MT_UartInit ()
 
   /* UART Configuration */
   uartConfig.configured           = TRUE;
+#if defined ( USE_GIZWITS_MOD )
   uartConfig.baudRate             = HAL_UART_BR_9600;
+#else
+  uartConfig.baudRate             = HAL_UART_BR_115200;
+#endif
   uartConfig.flowControl          = MT_UART_DEFAULT_OVERFLOW;
   uartConfig.flowControlThreshold = MT_UART_DEFAULT_THRESHOLD;
   uartConfig.rx.maxBufSize        = MT_UART_DEFAULT_MAX_RX_BUFF;
@@ -136,7 +140,7 @@ void MT_UartInit ()
   uartConfig.idleTimeout          = MT_UART_DEFAULT_IDLE_TIMEOUT;
   uartConfig.intEnable            = TRUE;
   uartConfig.callBackFunc         = MT_UartProcessZToolData;
-HalUARTOpen (HAL_UART_PORT_1, &uartConfig);
+  HalUARTOpen (HAL_UART_PORT_1, &uartConfig);
   
 #else
   /* Silence IAR compiler warning */
@@ -209,6 +213,7 @@ byte MT_UartCalcFCS( uint8 *msg_ptr, uint8 len )
  ***************************************************************************************************/
 void MT_UartProcessZToolData ( uint8 port, uint8 event )
 {
+#if defined ( USE_GIZWITS_MOD )
     uint8 data = 0;
     (void)event;  // Intentionally unreferenced parameter
 
@@ -220,6 +225,7 @@ void MT_UartProcessZToolData ( uint8 port, uint8 event )
             gizPutData(&data,1);
         }
     }
+#endif
 }
 
 #if defined (ZAPP_P1) || defined (ZAPP_P2)

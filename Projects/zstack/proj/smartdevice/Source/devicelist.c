@@ -309,6 +309,20 @@ bool clr_all_device_tick(void **ctx, void **list)
 
 /**
  *******************************************************************************
+ * @brief       检测设备是否在设备列表中
+ * @param       [in/out]  ctx     上下文
+ *              [in/out]  list    链表
+ * @return      [in/out]  status  状态
+ * @note        None
+ *******************************************************************************
+ */
+bool Check_Device_InList( DEVICE_INFO *info )
+{
+    return list_foreach((void **)&head, find_device_inlist, (void **)info);
+}
+
+/**
+ *******************************************************************************
  * @brief       添加设备到设备列表中
  * @param       [in/out]  ctx     上下文
  *              [in/out]  list    链表
@@ -316,21 +330,21 @@ bool clr_all_device_tick(void **ctx, void **list)
  * @note        None
  *******************************************************************************
  */
-bool Add_Device_Forlist(DEVICE_INFO info)
+bool Add_Device_Forlist(DEVICE_INFO *info)
 {
 	bool status = false;
 	DEVICE_INFO *device_info = NULL;
 	NODE *list_node = NULL;
 
-	if (list_foreach((void **)&head, find_device_inlist, (void **)&info) == false)
+	if (list_foreach((void **)&head, find_device_inlist, (void **)info) == false)
 	{
 		device_info = (DEVICE_INFO *)osal_mem_alloc(sizeof(DEVICE_INFO));
 		list_node = (NODE *)osal_mem_alloc(sizeof(NODE));
 
 		if (device_info != NULL && list_node != NULL)
 		{
-			device_info->device = info.device;
-			device_info->shortaddr = info.shortaddr;
+			device_info->device = info->device;
+			device_info->shortaddr = info->shortaddr;
 			device_info->tick = 1;
 
 			list_node->data = (void *)device_info;
@@ -348,7 +362,7 @@ bool Add_Device_Forlist(DEVICE_INFO info)
 	}
 	else
 	{
-		status = true;
+		status = false;
 	}
 
 	return status;
@@ -441,6 +455,19 @@ void Del_ZombieDevice_ForList(void)
 void Del_DeviceTickCount( void )
 {
     list_foreach((void **)&head, clr_all_device_tick, NULL);
+}
+
+/**
+ *******************************************************************************
+ * @brief       增加设备的心跳计数
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void Add_DeviceTick_ForList( DEVICE_INFO *info )
+{
+    list_foreach((void **)&head, add_device_tick, (void **)info);
 }
 
 #endif

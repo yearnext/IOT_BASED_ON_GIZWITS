@@ -17,8 +17,6 @@
  ******************************************************************************
  */
 
-#if defined ( USE_GIZWITS_MOD )
-
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __MY_PROTOCOL_H__
 #define __MY_PROTOCOL_H__
@@ -94,7 +92,5 @@ extern void myprotocol_packet_handler( uint8 *report_data, uint8 *packet_data );
 extern uint8 myprotocol_compute_checksum( uint8 *packet );
 
 #endif      /* __myprotocol_H__ */
-
-#endif
 
 /**********************************END OF FILE*********************************/

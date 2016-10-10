@@ -41,7 +41,7 @@
 /** 智能家居类型设备ID */
 #define SmartHome_ProfileID            (0x00FA)
 
-#define SmartDevice_ProfileID SmartHome_ProfileID
+#define SmartDevice_ProfileID SmartLight_ProfileID
 
 /** 设备ID */
 #define SmartDevice_DeviceID (0x0001)
