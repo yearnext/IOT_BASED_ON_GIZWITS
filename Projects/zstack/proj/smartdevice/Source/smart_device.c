@@ -398,6 +398,8 @@ static void SmartDevice_Message_Handler( void *data )
                     // 增加设备心跳计数
                     Add_DeviceTick_ForList(device_info);
                 }
+                
+                DEVICE_LOG("Coord get one end device tick packet!\n");
             }
 #else
             
