@@ -27,6 +27,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "devicelist.h"
 #include "OSAL_Memory.h"
+#include <string.h>
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -173,15 +174,15 @@ bool node_find(void **ctx, void **list)
 bool find_device_inlist(void **ctx, void **list)
 {
 	bool status = false;
-	DEVICE_INFO *list_info = NULL;
+	DEVICE_INFO *node_info = NULL;
 	DEVICE_INFO *device_info = (DEVICE_INFO *)ctx;
 
 	if (*list != NULL)
 	{
-		list_info = ((LIST_NODE)(*list))->data;
+		node_info = ((LIST_NODE)(*list))->data;
 
-		if (list_info->device == device_info->device \
-			&& list_info->shortaddr == device_info->shortaddr)
+		if (node_info->device.device == device_info->device.device \
+			&& memcmp(node_info, device_info, sizeof(node_info->device)) == 0)
 		{
 			status = true;
 		}
@@ -202,15 +203,15 @@ bool find_device_inlist(void **ctx, void **list)
 bool get_device_addr(void **ctx, void **list)
 {
 	bool status = false;
-	DEVICE_INFO *list_info = NULL;
+	DEVICE_INFO *node_info = NULL;
 	DEVICE_INFO *device_info = (DEVICE_INFO *)*ctx;
 
 	if (*list != NULL)
 	{
-		list_info = ((LIST_NODE)(*list))->data;
+		node_info = ((LIST_NODE)(*list))->data;
 
-		if (list_info->device == device_info->device \
-			&& list_info->shortaddr == device_info->shortaddr)
+		if (node_info->device.device == device_info->device.device \
+			&& memcmp(node_info, device_info, sizeof(node_info->device)) == 0)
 		{
 			*ctx = *list;
 			status = true;
@@ -239,8 +240,8 @@ bool add_device_tick(void **ctx, void **list)
 	{
 		node_info = ((LIST_NODE)*list)->data;
 
-		if (device_info->device == node_info->device \
-			&& device_info->shortaddr == node_info->shortaddr)
+		if (node_info->device.device == device_info->device.device \
+			&& memcmp(node_info, device_info, sizeof(node_info->device)) == 0)
 		{
 			node_info->tick++;
 			status = true;
@@ -269,8 +270,8 @@ bool clr_device_tick(void **ctx, void **list)
 	{
 		node_info = ((LIST_NODE)*list)->data;
 
-		if (device_info->device == node_info->device \
-			&& device_info->shortaddr == node_info->shortaddr)
+		if (node_info->device.device == device_info->device.device \
+			&& memcmp(node_info, device_info, sizeof(node_info->device)) == 0)
 		{
 			node_info->tick = 0;
 			status = true;
@@ -279,7 +280,7 @@ bool clr_device_tick(void **ctx, void **list)
 
 	return status;
 }
-
+  
 /**
  *******************************************************************************
  * @brief       清空所有设备的心跳数量
@@ -344,7 +345,9 @@ bool Add_Device_Forlist(DEVICE_INFO *info)
 		if (device_info != NULL && list_node != NULL)
 		{
 			device_info->device = info->device;
-			device_info->shortaddr = info->shortaddr;
+            
+            memcpy(device_info->device.mac,info->device.mac,sizeof(device_info->device.mac));
+            
 			device_info->tick = 1;
 
 			list_node->data = (void *)device_info;
@@ -427,16 +430,38 @@ bool clr_zombie_device(void **ctx, void **list)
 
 /**
  *******************************************************************************
+ * @brief       获取设备信息
+ * @param       [in/out]  ctx     上下文
+ *              [in/out]  list    链表
+ * @return      [in/out]  status  状态
+ * @note        None
+ *******************************************************************************
+ */
+bool through_id_find_deviceinfo( void **ctx, void **list )
+{
+    bool status = false;
+    uint8 *num = *ctx;
+    
+    if( --(*num) == 0 )
+    {
+        *ctx = ((LIST_NODE)(*list))->data;
+        status = true;
+    }
+    
+    return status;
+}
+
+/**
+ *******************************************************************************
  * @brief       清除列表中的所有僵尸设备
  * @param       [in/out]  void
  * @return      [in/out]  void
  * @note        None
  *******************************************************************************
  */
-void Del_ZombieDevice_ForList(void)
+void Del_ZombieDevice_ForList( void )
 {
-	uint8 device_num = 0;
-	list_foreach((void **)&head, get_node_num, (void **)&device_num);
+	uint8 device_num = Get_DeviceNum_ForList();
 
 	for (uint8 i = 0; i < device_num; i++)
 	{
@@ -468,6 +493,48 @@ void Del_DeviceTickCount( void )
 void Add_DeviceTick_ForList( DEVICE_INFO *info )
 {
     list_foreach((void **)&head, add_device_tick, (void **)info);
+}
+
+/**
+ *******************************************************************************
+ * @brief       获取设备编号所指定的设备的信息
+ * @param       [in/out]  num     设备编号
+ * @return      [in/out]  status  状态
+ * @note        None
+ *******************************************************************************
+ */
+DEVICE_INFO *Get_DeviceInfo_InList( uint8 device_id )
+{
+    uint8 *data = &device_id;
+    
+    if( device_id == 0 )
+    {
+        return NULL;
+    }
+    
+    if ( list_foreach((void **)&head, through_id_find_deviceinfo, (void **)&data) == true )
+    {
+        return ((DEVICE_INFO *)(data));
+    }
+    
+    return NULL;
+}
+
+/**
+ *******************************************************************************
+ * @brief       获取设备列表内的设备信息
+ * @param       [in/out]  num     设备编号
+ * @return      [in/out]  status  状态
+ * @note        None
+ *******************************************************************************
+ */
+uint8 Get_DeviceNum_ForList( void )
+{
+    uint8 num = 0;
+    
+    list_foreach((void **)&head, get_node_num, (void **)&num);
+    
+    return num;
 }
 
 #endif

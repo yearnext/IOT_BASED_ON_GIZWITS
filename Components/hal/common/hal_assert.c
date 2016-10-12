@@ -127,8 +127,6 @@ void halAssertHazardLights(void)
 
   HAL_TURN_OFF_LED1();
   HAL_TURN_OFF_LED2();
-  HAL_TURN_OFF_LED3();
-  HAL_TURN_OFF_LED4();
 
   /*-------------------------------------------------------------------------------
    *  Master infinite loop.
@@ -187,8 +185,6 @@ void halAssertHazardLights(void)
     /* turn off all LEDs */
     HAL_TURN_OFF_LED1();
     HAL_TURN_OFF_LED2();
-    HAL_TURN_OFF_LED3();
-    HAL_TURN_OFF_LED4();
 
     /* wait for button release */
     HAL_DEBOUNCE(!HAL_PUSH_BUTTON1());
@@ -241,15 +237,15 @@ void halAssertHazardLights(void)
         /* turn on all LEDs for first bit of byte, turn on three LEDs if not first bit */
         HAL_TURN_ON_LED1();
         HAL_TURN_ON_LED2();
-        HAL_TURN_ON_LED3();
-        if (iBit == 0)
-        {
-          HAL_TURN_ON_LED4();
-        }
-        else
-        {
-          HAL_TURN_OFF_LED4();
-        }
+
+//        if (iBit == 0)
+//        {
+//          HAL_TURN_ON_LED4();
+//        }
+//        else
+//        {
+//          HAL_TURN_OFF_LED4();
+//        }
 
         /* wait for debounced key release */
         HAL_DEBOUNCE(!HAL_PUSH_BUTTON1());
@@ -257,8 +253,6 @@ void halAssertHazardLights(void)
         /* turn off all LEDs */
         HAL_TURN_OFF_LED1();
         HAL_TURN_OFF_LED2();
-        HAL_TURN_OFF_LED3();
-        HAL_TURN_OFF_LED4();
 
         /* output value of data bit to LED1 */
         if (debugData[iByte] & (1 << (7 - iBit)))

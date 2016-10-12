@@ -401,30 +401,6 @@ void HalLedOnOff (uint8 leds, uint8 mode)
     }
   }
 
-  if (leds & HAL_LED_3)
-  {
-    if (mode == HAL_LED_MODE_ON)
-    {
-      HAL_TURN_ON_LED3();
-    }
-    else
-    {
-      HAL_TURN_OFF_LED3();
-    }
-  }
-
-  if (leds & HAL_LED_4)
-  {
-    if (mode == HAL_LED_MODE_ON)
-    {
-      HAL_TURN_ON_LED4();
-    }
-    else
-    {
-      HAL_TURN_OFF_LED4();
-    }
-  }
-
   /* Remember current state */
   if (mode)
   {
@@ -476,8 +452,6 @@ void HalLedEnterSleep( void )
   HalSleepLedState = 0;
   HalSleepLedState |= HAL_STATE_LED1();
   HalSleepLedState |= HAL_STATE_LED2() << 1;
-  HalSleepLedState |= HAL_STATE_LED3() << 2;
-  HalSleepLedState |= HAL_STATE_LED4() << 3;
 
   /* TURN OFF all LEDs to save power */
   HalLedOnOff (HAL_LED_ALL, HAL_LED_MODE_OFF);

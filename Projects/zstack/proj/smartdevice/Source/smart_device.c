@@ -37,7 +37,8 @@
 
 /* HAL */
 //#include "hal_lcd.h"
-//#include "hal_led.h"
+#include "hal_led.h"
+#include "hal_timer.h"
 //#include "hal_key.h"
 
 #include "MT.h"
@@ -125,6 +126,7 @@ static uint8 SmartDevice_TransID;
 void SamrtDevice_Tick_Message( void );
 void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt );
 void SmartDevice_Message_Handler( void *data );
+void TIMER0_ISR_Handler( uint8 timerId, uint8 channel, uint8 channelMode );
 
 /* Exported functions --------------------------------------------------------*/
 /**
@@ -144,11 +146,16 @@ void SmartDevice_Init( byte task_id )
     MT_UartInit();
     MT_UartRegisterTaskID(SmartDevice_TaskID);
     
-#if defined ( USE_GIZWITS_MOD )   
-    app_gizwits_init();
+    HalTimerConfig(HAL_TIMER_0,HAL_TIMER_MODE_NORMAL,HAL_TIMER_CHANNEL_SINGLE,
+                   HAL_TIMER_CH_MODE_OVERFLOW,1,(halTimerCBack_t)&TIMER0_ISR_Handler);
+    HalTimerStart(HAL_TIMER_0,1000);
     
+#if defined ( USE_GIZWITS_MOD )   
+    gizwitsInit();
+
     osal_start_timerEx( SmartDevice_TaskID, SMART_DEVICE_TIMER_EVEN, SMART_DEVICE_TIME );
 #endif
+    myprotocol_init();
     
     /** 注册AF层应用对象 */
     SmartDevice_epDesc.endPoint = SmartDevice_EndPoint;
@@ -171,8 +178,15 @@ void SmartDevice_Init( byte task_id )
     aps_AddGroup(SmartDevice_EndPoint, &SmartDevice_Group);
     
     DEVICE_LOG("Smart device init finish!\n");
+    HalLedSet(HAL_LED_1,HAL_LED_MODE_ON);
+    HalLedSet(HAL_LED_2,HAL_LED_MODE_ON);
 }
- 
+
+void TIMER0_ISR_Handler( uint8 timerId, uint8 channel, uint8 channelMode )
+{
+    DEVICE_LOG("TIMER0 TICK!\n");
+}
+
 /**
  *******************************************************************************
  * @brief       SmartDevice事件处理
@@ -308,11 +322,16 @@ static void SamrtDevice_Tick_Message( void )
 {
     MYPROTOCOL_FORMAT packet;
     MYPROTOCOL_DEVICE_INFO device_info;
+    uint8 *mac_addr = NULL;
+    
     memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
     
     packet.commtype = MYPROTOCOL_COMM_TICK;
     packet.sn = 0;
-    device_info.addr = NLME_GetShortAddr();
+    
+    mac_addr = NLME_GetExtAddr();
+    memcpy(&device_info.mac,mac_addr,sizeof(device_info.mac));
+
 #if (SmartDevice_ProfileID) == (SmartLight_ProfileID)
     device_info.device = MYPROTOCOL_DEVICE_LIGHT;
 #elif (SmartDevice_ProfileID) == (SmartSwitch_ProfileID)
@@ -324,31 +343,26 @@ static void SamrtDevice_Tick_Message( void )
 #else 
     device_info.device = MYPROTOCOL_DEVICE_COORD;
 #endif
+    
     memcpy(&packet.user_data.data,&device_info,sizeof(MYPROTOCOL_DEVICE_INFO));
+    
     packet.user_data.cmd = MYPROTOCOL_TICK_CMD;
     packet.user_data.len = sizeof(MYPROTOCOL_DEVICE_INFO);
     packet.check_sum = myprotocol_compute_checksum((uint8 *)&packet);
     
-    if( AF_DataRequest(&SmartDevice_Periodic_DstAddr,
-                       &SmartDevice_epDesc,
-                       SmartDevice_Comm_ClustersID,
-                       sizeof(MYPROTOCOL_FORMAT),
-                       (uint8 *)&packet,
-                       &SmartDevice_TransID,
-                       AF_DISCV_ROUTE,
-                       AF_DEFAULT_RADIUS) == afStatus_SUCCESS )
-    {
-//        HalUARTWrite(0,"Send data finish!\n",sizeof("Send data finish!\n"));
-    }
-    else
-    {
-//        HalUARTWrite(0,"Send data failed!\n",sizeof("Send data finish!\n"));
-    }
+    AF_DataRequest(&SmartDevice_Periodic_DstAddr,
+                   &SmartDevice_epDesc,
+                   SmartDevice_Comm_ClustersID,
+                   sizeof(MYPROTOCOL_FORMAT),
+                   (uint8 *)&packet,
+                   &SmartDevice_TransID,
+                   AF_DISCV_ROUTE,
+                   AF_DEFAULT_RADIUS);
 }
  
 /**
  *******************************************************************************
- * @brief        SmartDevice信息处理
+ * @brief       SmartDevice信息处理
  * @param       [in]   pkt    信息
  * @return      [out]  void
  * @note        None
@@ -368,7 +382,7 @@ static void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt )
 
 /**
  *******************************************************************************
- * @brief        SmartDevice数据包处理
+ * @brief       SmartDevice数据包处理
  * @param       [in]   pkt    信息
  * @return      [out]  void
  * @note        None
@@ -402,7 +416,7 @@ static void SmartDevice_Message_Handler( void *data )
                 DEVICE_LOG("Coord get one end device tick packet!\n");
             }
 #else
-            
+             
 #endif
             break;
         case MYPROTOCOL_W2D_READ_WAIT:
@@ -417,7 +431,7 @@ static void SmartDevice_Message_Handler( void *data )
             break;
     }   
 }
- 
+
 /** @}*/     /* smartlight模块 */
 
 /**********************************END OF FILE*********************************/

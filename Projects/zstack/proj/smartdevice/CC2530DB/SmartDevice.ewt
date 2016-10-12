@@ -6799,12 +6799,6 @@
     <group>
       <name>Gizwits</name>
       <file>
-        <name>$PROJ_DIR$\..\Source\gizwits.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\gizwits.h</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\..\Source\gizwits_product.c</name>
       </file>
       <file>

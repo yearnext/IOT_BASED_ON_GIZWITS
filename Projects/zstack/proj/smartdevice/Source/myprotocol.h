@@ -26,11 +26,14 @@
 
 /* Exported macro ------------------------------------------------------------*/
 /** 通讯格式 用户数据大小 */
-#define MYPROTOCOL_USER_DATA_SIZE (24)
+#define MYPROTOCOL_USER_DATA_SIZE (18)
 /** 通讯格式 MAC地址大小 */
-#define MYPROTOCOL_MAC_ADDR_SIZE  (6)
+#define MYPROTOCOL_MAC_ADDR_SIZE  (8)
 
 #define MYPROTOCOL_TICK_CMD (0x00)
+
+#define W2D_GET_DEVICE_NUM_CMD  (0x01)
+#define W2D_GET_DEVICE_INFO_CMD (0x02)
 
 /* Exported types ------------------------------------------------------------*/
 typedef enum
@@ -61,7 +64,7 @@ typedef enum
 typedef struct
 {
     MYPROTOCOL_DEVICE device;
-    uint16 addr;
+    uint8 mac[MYPROTOCOL_MAC_ADDR_SIZE];
 }MYPROTOCOL_DEVICE_INFO;
 
 typedef struct
@@ -70,6 +73,12 @@ typedef struct
     uint8 len;
     uint8 data[MYPROTOCOL_USER_DATA_SIZE];
 }MYPROTOCOL_USER_DATA;
+
+typedef struct
+{
+    uint8 id;
+    MYPROTOCOL_DEVICE_INFO *info;
+}MYPROTOCOL_DEVCICE_ACK;
 
 typedef struct
 {

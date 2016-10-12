@@ -57,9 +57,7 @@
  */
 void app_gizwits_init( void )
 {
-    gizwitsInit();
-    
-    myprotocol_init();
+
     
     GIZWITS_LOG("Gizwits Init Finish!\n");
 }

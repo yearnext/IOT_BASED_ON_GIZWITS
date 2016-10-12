@@ -22,7 +22,7 @@
   its documentation for any purpose.
 
   YOU FURTHER ACKNOWLEDGE AND AGREE THAT THE SOFTWARE AND DOCUMENTATION ARE
-  PROVIDED “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, 
+  PROVIDED “AS IS?WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, 
   INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, TITLE, 
   NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
   TEXAS INSTRUMENTS OR ITS LICENSORS BE LIABLE OR OBLIGATED UNDER CONTRACT,
@@ -71,16 +71,56 @@ extern "C"
 #define HAL_TIMER_MODE_CTC        0x02    // Clear Timer On Compare
 #define HAL_TIMER_MODE_MASK       (HAL_TIMER_MODE_NORMAL | HAL_TIMER_MODE_CTC)
 
+/* Timer1 channels */
+#define HAL_T1_CH0 0  
+#define HAL_T1_CH1 1  
+#define HAL_T1_CH2 2  
+#define HAL_T1_CH3 3  
+#define HAL_T1_CH4 4  
+  
 /* Channel definitions */
 #define HAL_TIMER_CHANNEL_SINGLE   0x01    // Single Channel - default
 #define HAL_TIMER_CHANNEL_A        0x02    // Channel A
 #define HAL_TIMER_CHANNEL_B        0x04    // Channel B
 #define HAL_TIMER_CHANNEL_C        0x08    // Channel C
+#define HAL_TIMER_CHANNEL_D        0x10    // Channel D
+#define HAL_TIMER_CHANNEL_E        0x20    // Channel E
 #define HAL_TIMER_CHANNEL_MASK    (HAL_TIMER_CHANNEL_SINGLE |  \
                                    HAL_TIMER_CHANNEL_A |       \
                                    HAL_TIMER_CHANNEL_B |       \
-                                   HAL_TIMER_CHANNEL_C)
+                                   HAL_TIMER_CHANNEL_C |       \
+                                   HAL_TIMER_CHANNEL_D |       \
+                                   HAL_TIMER_CHANNEL_E)
+#define HAL_TIMER_CH_MAX      0x06
 
+/* Timer 1 Channel 0 Channel compare mode definitions */
+#define HAL_TIMER1_CH0_CMP_MODE_SET_ON_COMP            0x00    // 000: Set output on compare
+#define HAL_TIMER1_CH0_CMP_MODE_CLR_ON_COMP            0x01    // 001: Clear output on compare
+#define HAL_TIMER1_CH0_CMP_MODE_TOG_ON_COMP            0x02    // 010: Toggle output on compare
+#define HAL_TIMER1_CH0_CMP_MODE_SET_ON_COMP_CLR_ON_0   0x03    // 011: Set output on compare-up, clear on 0
+#define HAL_TIMER1_CH0_CMP_MODE_CLR_ON_COMP_SET_ON_0   0x04    // 100: Clear output on compare-up, set on 0
+#define HAL_TIMER1_CH0_CMP_MODE_INIT                   0x07    // 111: Initialize output pin. CMP[2:0] is not changed
+
+/* Timer 1 Channel 1-5 channel compare mode definitions */
+#define HAL_TIMER1_CHn_CMP_MODE_SET_ON_COMP            0x00    // 000: Set output on compare                                                                   
+#define HAL_TIMER1_CHn_CMP_MODE_CLR_ON_COMP            0x01    // 001: Clear output on compare                                                                 
+#define HAL_TIMER1_CHn_CMP_MODE_TOG_ON_COMP            0x02    // 010: Toggle output on compare                                                                
+#define HAL_TIMER1_CHn_CMP_MODE_SET_ON_COMP_CLR_ON_0   0x03    // 011: Set output on compare-up, clear on compare down in up-down mode. Otherwise set output on
+                                                               // compare, clear on 0.                                                                         
+#define HAL_TIMER1_CHn_CMP_MODE_CLR_ON_COMP_SET_ON_0   0x04    // 100: Clear output on compare-up, set on compare down in up-down mode. Otherwise clear output 
+                                                               // on compare, set on 0                                                                         
+#define HAL_TIMER1_CHn_CMP_MODE_CLR_ON_CH0_SET_ON_CHn  0x05    // 101: Clear when equal T1CC0, set when equal T1CC2                                            
+#define HAL_TIMER1_CHn_CMP_MODE_SET_ON_CH0_CLR_ON_CHn  0x06    // 110: Set when equal T1CC0, clear when equal T1CC2                                            
+#define HAL_TIMER1_CHn_CMP_MODE_INIT                   0x07    // 111: Initialize output pin. CMP[2:0] is not changed.                                         
+#define HAL_TIMER1_CH_CMP_MODE_BITS                    0x38    // bits 5:3
+
+/* Timer 1 Capture mode */
+#define HAL_TIMER1_CH_CAP_MODE_NO      0x00 // 00: No capture             
+#define HAL_TIMER1_CH_CAP_MODE_RISING  0x01 // 01: Capture on rising edge 
+#define HAL_TIMER1_CH_CAP_MODE_FALLING 0x02 // 10: Capture on falling edge
+#define HAL_TIMER1_CH_CAP_MODE_ALL     0x03 // 11: Capture on all edges   
+#define HAL_TIMER1_CH_CAP_BITS         0x03 // bits 1:0
+   
 /* Channel mode definitions */
 #define HAL_TIMER_CH_MODE_INPUT_CAPTURE   0x01    // Channel Mode Input-Capture
 #define HAL_TIMER_CH_MODE_OUTPUT_COMPARE  0x02    // Channel Mode Output_Compare
@@ -179,6 +219,16 @@ extern void HalTimerTick ( void );
  */
 extern uint8 HalTimerInterruptEnable (uint8 timerId, uint8 channelMode, bool enable);
 
+/*
+ * Configures timer 1 to control 4 PWM outputs 
+ */
+void HalTimer1Init (halTimerCBack_t cBack);
+
+
+/*
+ * Set dutycycle on timer 1 PWM output channel
+ */
+void halTimer1SetChannelDuty (uint8 channel, uint16 promill);
 
 /***************************************************************************************************
 ***************************************************************************************************/
