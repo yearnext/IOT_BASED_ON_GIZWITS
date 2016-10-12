@@ -23,6 +23,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
+#include "myprotocol.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -43,8 +44,7 @@ typedef enum
 
 typedef struct
 {
-	DEVICE_TYPE device;
-	uint16 shortaddr;
+    MYPROTOCOL_DEVICE_INFO device;
 	uint8 tick;
 }DEVICE_INFO;
 
@@ -68,6 +68,10 @@ extern bool Check_Device_InList( DEVICE_INFO * );
 extern bool Add_Device_Forlist( DEVICE_INFO * );
 
 extern void Add_DeviceTick_ForList( DEVICE_INFO * );
+
+extern uint8 Get_DeviceNum_ForList( void );
+
+extern DEVICE_INFO *Get_DeviceInfo_InList( uint8 device_id );
 
 #endif      /* __MY_DEVICE_LIST_H__ */
 

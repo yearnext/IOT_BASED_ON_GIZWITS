@@ -100,7 +100,7 @@
  */
 
 #if defined (HAL_BOARD_CC2530EB_REV17) && !defined (HAL_PA_LNA) && !defined (HAL_PA_LNA_CC2590)
-  #define HAL_NUM_LEDS            3
+  #define HAL_NUM_LEDS            2
 #elif defined (HAL_BOARD_CC2530EB_REV13) || defined (HAL_PA_LNA) || defined (HAL_PA_LNA_CC2590)
   #define HAL_NUM_LEDS            1
 #else
@@ -109,25 +109,30 @@
 
 #define HAL_LED_BLINK_DELAY()   st( { volatile uint32 i; for (i=0; i<0x5800; i++) { }; } )
 
-/* 1 - Green */
+// LED1 端口信息配置
 #define LED1_BV           BV(0)
 #define LED1_SBIT         P1_0
 #define LED1_DDR          P1DIR
 #define LED1_POLARITY     ACTIVE_HIGH
+// LED2 端口信息配置
+#define LED2_BV           BV(1)
+#define LED2_SBIT         P1_1
+#define LED2_DDR          P1DIR
+#define LED2_POLARITY     ACTIVE_HIGH
 
-#if defined (HAL_BOARD_CC2530EB_REV17)
-  /* 2 - Red */
-  #define LED2_BV           BV(1)
-  #define LED2_SBIT         P1_1
-  #define LED2_DDR          P1DIR
-  #define LED2_POLARITY     ACTIVE_HIGH
-
-  /* 3 - Yellow */
-  #define LED3_BV           BV(4)
-  #define LED3_SBIT         P1_4
-  #define LED3_DDR          P1DIR
-  #define LED3_POLARITY     ACTIVE_HIGH
-#endif
+//#if defined (HAL_BOARD_CC2530EB_REV17)
+//  /* 2 - Red */
+//  #define LED2_BV           BV(1)
+//  #define LED2_SBIT         P1_1
+//  #define LED2_DDR          P1DIR
+//  #define LED2_POLARITY     ACTIVE_HIGH
+//
+//  /* 3 - Yellow */
+//  #define LED3_BV           BV(4)
+//  #define LED3_SBIT         P1_4
+//  #define LED3_DDR          P1DIR
+//  #define LED3_POLARITY     ACTIVE_HIGH
+//#endif
 
 /* ------------------------------------------------------------------------------------------------
  *                                    Push Button Configuration
@@ -148,11 +153,11 @@
 #else
   #error Unknown Board Indentifier
 #endif
-
-/* Joystick Center Press */
-#define PUSH2_BV          BV(0)
-#define PUSH2_SBIT        P2_0
-#define PUSH2_POLARITY    ACTIVE_HIGH
+//
+///* Joystick Center Press */
+//#define PUSH2_BV          BV(0)
+//#define PUSH2_SBIT        P2_0
+//#define PUSH2_POLARITY    ACTIVE_HIGH
 
 /* ------------------------------------------------------------------------------------------------
  *                         OSAL NV implemented by internal flash pages.
@@ -249,11 +254,7 @@ extern void MAC_RfFrontendSetup(void);
   LED1_DDR |= LED1_BV;                                           \
   HAL_TURN_OFF_LED2();                                           \
   LED2_DDR |= LED2_BV;                                           \
-  HAL_TURN_OFF_LED3();                                           \
-  LED3_DDR |= LED3_BV;                                           \
                                                                  \
-  /* configure tristates */                                      \
-  P0INP |= PUSH2_BV;                                             \
 }
 
 #elif defined (HAL_BOARD_CC2530EB_REV13) || defined (HAL_PA_LNA) || defined (HAL_PA_LNA_CC2590)
@@ -304,23 +305,23 @@ extern void MAC_RfFrontendSetup(void);
 
   #define HAL_TURN_OFF_LED1()       st( LED1_SBIT = LED1_POLARITY (0); )
   #define HAL_TURN_OFF_LED2()       st( LED2_SBIT = LED2_POLARITY (0); )
-  #define HAL_TURN_OFF_LED3()       st( LED3_SBIT = LED3_POLARITY (0); )
-  #define HAL_TURN_OFF_LED4()       HAL_TURN_OFF_LED1()
+//  #define HAL_TURN_OFF_LED3()       st( LED3_SBIT = LED3_POLARITY (0); )
+//  #define HAL_TURN_OFF_LED4()       HAL_TURN_OFF_LED1()
 
   #define HAL_TURN_ON_LED1()        st( LED1_SBIT = LED1_POLARITY (1); )
   #define HAL_TURN_ON_LED2()        st( LED2_SBIT = LED2_POLARITY (1); )
-  #define HAL_TURN_ON_LED3()        st( LED3_SBIT = LED3_POLARITY (1); )
-  #define HAL_TURN_ON_LED4()        HAL_TURN_ON_LED1()
+//  #define HAL_TURN_ON_LED3()        st( LED3_SBIT = LED3_POLARITY (1); )
+//  #define HAL_TURN_ON_LED4()        HAL_TURN_ON_LED1()
 
   #define HAL_TOGGLE_LED1()         st( if (LED1_SBIT) { LED1_SBIT = 0; } else { LED1_SBIT = 1;} )
   #define HAL_TOGGLE_LED2()         st( if (LED2_SBIT) { LED2_SBIT = 0; } else { LED2_SBIT = 1;} )
-  #define HAL_TOGGLE_LED3()         st( if (LED3_SBIT) { LED3_SBIT = 0; } else { LED3_SBIT = 1;} )
-  #define HAL_TOGGLE_LED4()         HAL_TOGGLE_LED1()
+//  #define HAL_TOGGLE_LED3()         st( if (LED3_SBIT) { LED3_SBIT = 0; } else { LED3_SBIT = 1;} )
+//  #define HAL_TOGGLE_LED4()         HAL_TOGGLE_LED1()
 
   #define HAL_STATE_LED1()          (LED1_POLARITY (LED1_SBIT))
   #define HAL_STATE_LED2()          (LED2_POLARITY (LED2_SBIT))
-  #define HAL_STATE_LED3()          (LED3_POLARITY (LED3_SBIT))
-  #define HAL_STATE_LED4()          HAL_STATE_LED1()
+//  #define HAL_STATE_LED3()          (LED3_POLARITY (LED3_SBIT))
+//  #define HAL_STATE_LED4()          HAL_STATE_LED1()
 
 #elif defined (HAL_BOARD_CC2530EB_REV13) || defined (HAL_PA_LNA) || defined (HAL_PA_LNA_CC2590)
 
@@ -437,7 +438,7 @@ st( \
 
 /* Set to TRUE enable LED usage, FALSE disable it */
 #ifndef HAL_LED
-#define HAL_LED FALSE
+#define HAL_LED TRUE
 #endif
 #if (!defined BLINK_LEDS) && (HAL_LED == TRUE)
 #define BLINK_LEDS

@@ -73,7 +73,7 @@ extern "C"
 #define HAL_LED_MODE_TOGGLE  0x08
 
 /* Defaults */
-#define HAL_LED_DEFAULT_MAX_LEDS      4
+#define HAL_LED_DEFAULT_MAX_LEDS      2
 #define HAL_LED_DEFAULT_DUTY_CYCLE    5
 #define HAL_LED_DEFAULT_FLASH_COUNT   50
 #define HAL_LED_DEFAULT_FLASH_TIME    1000
