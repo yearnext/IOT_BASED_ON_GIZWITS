@@ -39,6 +39,7 @@
 //#include "hal_lcd.h"
 #include "hal_led.h"
 #include "hal_timer.h"
+#include "hal_pwm.h"
 //#include "hal_key.h"
 
 #include "MT.h"
@@ -76,6 +77,8 @@ dataPoint_t currentDataPoint;
 #endif
 
 /* Private typedef -----------------------------------------------------------*/
+typedef void (*create_sd_packet)(void *ctx, MYPROTOCOL_FORMAT *packet);
+
 /* Private variables ---------------------------------------------------------*/
 /** 任务ID */
 static byte SmartDevice_TaskID;
@@ -123,10 +126,11 @@ static uint8 SmartDevice_TransID;
 #endif
 
 /* Private functions ---------------------------------------------------------*/
-void SamrtDevice_Tick_Message( void );
 void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt );
 void SmartDevice_Message_Handler( void *data );
 void TIMER0_ISR_Handler( uint8 timerId, uint8 channel, uint8 channelMode );
+void SmartDevice_Send_Message( afAddrType_t *dst_addr, create_sd_packet create_packet, void *ctx );
+void create_sdtick_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 
 /* Exported functions --------------------------------------------------------*/
 /**
@@ -150,10 +154,12 @@ void SmartDevice_Init( byte task_id )
                    HAL_TIMER_CH_MODE_OVERFLOW,1,(halTimerCBack_t)&TIMER0_ISR_Handler);
     HalTimerStart(HAL_TIMER_0,1000);
     
+    Timer4_PWM_Init();
+    
 #if defined ( USE_GIZWITS_MOD )   
     gizwitsInit();
 
-    osal_start_timerEx( SmartDevice_TaskID, SMART_DEVICE_TIMER_EVEN, SMART_DEVICE_TIME );
+//    osal_start_timerEx( SmartDevice_TaskID, SMART_DEVICE_TIMER_EVEN, SMART_DEVICE_TIME );
 #endif
     myprotocol_init();
     
@@ -184,7 +190,31 @@ void SmartDevice_Init( byte task_id )
 
 void TIMER0_ISR_Handler( uint8 timerId, uint8 channel, uint8 channelMode )
 {
-    DEVICE_LOG("TIMER0 TICK!\n");
+    static uint8 duty = 0;
+    static uint8 cnt = 0;
+    static bool status = false;
+    
+    if( ++cnt >= 100 )
+    {
+        cnt = 0;
+        
+        if( status == false )
+        {
+            if( ++duty >= 0xFF )
+            {
+                status = true;
+            }
+        }
+        else
+        {
+            if( --duty == 0 )
+            {
+                status = false;
+            }
+        }
+        
+        T4CC0 = duty;
+    }
 }
 
 /**
@@ -271,7 +301,7 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
         {
             if( ++Device_Msg_Timer >= DEVICE_TICK_TIME )
             {
-                SamrtDevice_Tick_Message();
+                SmartDevice_Send_Message((afAddrType_t *)&SmartDevice_Periodic_DstAddr,create_sdtick_packet,NULL);
                 Device_Msg_Timer = 0;
             }
         }
@@ -296,7 +326,7 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
         }
         
 #else        
-        SamrtDevice_Tick_Message();
+        SmartDevice_Send_Message((afAddrType_t *)&SmartDevice_Periodic_DstAddr,create_sdtick_packet,NULL);
 #endif
         
         osal_start_timerEx( SmartDevice_TaskID, 
@@ -309,25 +339,108 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
     // Discard unknown events
     return 0;
 }
-
+ 
 /**
  *******************************************************************************
- * @brief        SmartDevice上报数据
- * @param       [in]   void
+ * @brief       SmartDevice信息处理
+ * @param       [in]   pkt    信息
  * @return      [out]  void
  * @note        None
  *******************************************************************************
  */
-static void SamrtDevice_Tick_Message( void )
+void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt )
+{
+    if( pkt->clusterId != SmartDevice_Comm_ClustersID )
+    {
+        return;
+    }
+    
+    MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)pkt->cmd.Data;
+
+    if( packet->check_sum != myprotocol_compute_checksum(pkt->cmd.Data) )
+    {
+        return;
+    }
+    
+    switch( packet->commtype )
+    {
+        case MYPROTOCOL_COMM_TICK:
+#if defined ( USE_GIZWITS_MOD )
+            // 如果为父设备
+            DEVICE_INFO *device_info = (DEVICE_INFO *)packet->user_data.data;
+
+            // 添加设备
+            if( Add_Device_Forlist(device_info) == false )
+            {
+                // 增加设备心跳计数
+                Add_DeviceTick_ForList(device_info);
+            }
+            
+            // 心跳应答
+            SmartDevice_Send_Message(pkt->srcAddr,create_sdtick_ack_packet,&device_info->device);
+            
+            DEVICE_LOG("Coord get one end device tick packet!\n");
+#endif
+            break;
+        case MYPROTOCOL_W2D_READ_WAIT:
+            break;
+        case MYPROTOCOL_W2D_WRITE_WAIT:
+            break;
+        case MYPROTOCOL_D2W_READ_ACK:
+            break;
+        case MYPROTOCOL_D2W_REPORT_ACK:
+            break;
+        default:
+            break;
+    }
+}
+
+/**
+ *******************************************************************************
+ * @brief        SmartDevice发送信息函数
+ * @param       [in/out]   create_packet    创建数据包功能
+ *              [in/out]   ctx              上下文
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void SmartDevice_Send_Message( afAddrType_t *dst_addr, create_sd_packet create_packet, void *ctx )
 {
     MYPROTOCOL_FORMAT packet;
-    MYPROTOCOL_DEVICE_INFO device_info;
-    uint8 *mac_addr = NULL;
     
     memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
     
-    packet.commtype = MYPROTOCOL_COMM_TICK;
-    packet.sn = 0;
+    create_packet(ctx,&packet);
+    
+    packet.check_sum = myprotocol_compute_checksum((uint8 *)&packet);
+    
+    AF_DataRequest(dst_addr,
+                   &SmartDevice_epDesc,
+                   SmartDevice_Comm_ClustersID,
+                   sizeof(MYPROTOCOL_FORMAT),
+                   (uint8 *)&packet,
+                   &SmartDevice_TransID,
+                   AF_DISCV_ROUTE,
+                   AF_DEFAULT_RADIUS);
+}
+
+
+/**
+ *******************************************************************************
+ * @brief        SmartDevice发送信息函数
+ * @param       [in/out]   ctx              上下文
+ *              [in/out]   create_packet    创建数据包功能
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void create_sdtick_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
+{
+    MYPROTOCOL_DEVICE_INFO device_info;
+    uint8 *mac_addr = NULL;
+    
+    packet->commtype = MYPROTOCOL_COMM_TICK;
+    packet->sn = 0;
     
     mac_addr = NLME_GetExtAddr();
     memcpy(&device_info.mac,mac_addr,sizeof(device_info.mac));
@@ -344,92 +457,31 @@ static void SamrtDevice_Tick_Message( void )
     device_info.device = MYPROTOCOL_DEVICE_COORD;
 #endif
     
-    memcpy(&packet.user_data.data,&device_info,sizeof(MYPROTOCOL_DEVICE_INFO));
+    memcpy(&packet->user_data.data,&device_info,sizeof(MYPROTOCOL_DEVICE_INFO));
     
-    packet.user_data.cmd = MYPROTOCOL_TICK_CMD;
-    packet.user_data.len = sizeof(MYPROTOCOL_DEVICE_INFO);
-    packet.check_sum = myprotocol_compute_checksum((uint8 *)&packet);
-    
-    AF_DataRequest(&SmartDevice_Periodic_DstAddr,
-                   &SmartDevice_epDesc,
-                   SmartDevice_Comm_ClustersID,
-                   sizeof(MYPROTOCOL_FORMAT),
-                   (uint8 *)&packet,
-                   &SmartDevice_TransID,
-                   AF_DISCV_ROUTE,
-                   AF_DEFAULT_RADIUS);
-}
- 
-/**
- *******************************************************************************
- * @brief       SmartDevice信息处理
- * @param       [in]   pkt    信息
- * @return      [out]  void
- * @note        None
- *******************************************************************************
- */
-static void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt )
-{
-    switch( pkt->clusterId )
-    {
-        case SmartDevice_Comm_ClustersID:
-            SmartDevice_Message_Handler(pkt->cmd.Data);
-            break;
-        default:
-            break;
-    }
+    packet->user_data.cmd = MYPROTOCOL_TICK_CMD;
+    packet->user_data.len = sizeof(MYPROTOCOL_DEVICE_INFO);
 }
 
 /**
  *******************************************************************************
- * @brief       SmartDevice数据包处理
- * @param       [in]   pkt    信息
- * @return      [out]  void
+ * @brief        SmartDevice发送信息函数
+ * @param       [in/out]   ctx              上下文
+ *              [in/out]   create_packet    创建数据包功能
+ * @return      [in/out]  void
  * @note        None
  *******************************************************************************
  */
-static void SmartDevice_Message_Handler( void *data )
+void create_sdtick_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
 {
-    MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)data;
+    MYPROTOCOL_DEVICE_INFO *device_info = (MYPROTOCOL_DEVICE_INFO *)ctx;
     
-    if( packet->check_sum != myprotocol_compute_checksum(data) )
-    {
-        return;
-    }
-    
-    switch( packet->commtype )
-    {
-        case MYPROTOCOL_COMM_TICK:
-#if defined ( USE_GIZWITS_MOD )
-            // 如果为父设备
-            if( NLME_GetCoordShortAddr() == NLME_GetShortAddr() )
-            {
-                DEVICE_INFO *device_info = (DEVICE_INFO *)packet->user_data.data;
-                
-                // 添加设备
-                if( Add_Device_Forlist(device_info) == false )
-                {
-                    // 增加设备心跳计数
-                    Add_DeviceTick_ForList(device_info);
-                }
-                
-                DEVICE_LOG("Coord get one end device tick packet!\n");
-            }
-#else
-             
-#endif
-            break;
-        case MYPROTOCOL_W2D_READ_WAIT:
-            break;
-        case MYPROTOCOL_W2D_WRITE_WAIT:
-            break;
-        case MYPROTOCOL_D2W_READ_ACK:
-            break;
-        case MYPROTOCOL_D2W_REPORT_ACK:
-            break;
-        default:
-            break;
-    }   
+    packet->commtype = MYPROTOCOL_COMM_TICK;
+    packet->sn = 0;
+    packet->device.device = device_info->device;
+    memcpy(&packet->device.mac,device_info->mac,sizeof(packet->device.mac));
+    packet->user_data.cmd = MYPROTOCOL_TICK_CMD;
+    packet->user_data.len = sizeof(packet->user_data.cmd);
 }
 
 /** @}*/     /* smartlight模块 */
