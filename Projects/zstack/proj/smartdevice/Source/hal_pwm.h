@@ -31,6 +31,7 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
+extern void Timer3_Init( void );
 extern void Timer4_PWM_Init( void );
 
 #endif      /* __APP_GIZWITS_H__ */
