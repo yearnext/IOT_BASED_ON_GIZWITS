@@ -150,10 +150,10 @@ void SmartDevice_Init( byte task_id )
     MT_UartInit();
     MT_UartRegisterTaskID(SmartDevice_TaskID);
     
-    HalTimerConfig(HAL_TIMER_0,HAL_TIMER_MODE_NORMAL,HAL_TIMER_CHANNEL_SINGLE,
-                   HAL_TIMER_CH_MODE_OVERFLOW,1,(halTimerCBack_t)&TIMER0_ISR_Handler);
-    HalTimerStart(HAL_TIMER_0,1000);
-    
+//    HalTimerConfig(HAL_TIMER_0,HAL_TIMER_MODE_NORMAL,HAL_TIMER_CHANNEL_SINGLE,
+//                   HAL_TIMER_CH_MODE_OVERFLOW,1,(halTimerCBack_t)&TIMER0_ISR_Handler);
+//    HalTimerStart(HAL_TIMER_0,1000);
+    Timer3_Init();
     Timer4_PWM_Init();
     
 #if defined ( USE_GIZWITS_MOD )   
@@ -188,13 +188,46 @@ void SmartDevice_Init( byte task_id )
     HalLedSet(HAL_LED_2,HAL_LED_MODE_ON);
 }
 
-void TIMER0_ISR_Handler( uint8 timerId, uint8 channel, uint8 channelMode )
+//void TIMER0_ISR_Handler( uint8 timerId, uint8 channel, uint8 channelMode )
+//{
+//    static uint8 duty = 0;
+//    static uint8 cnt = 0;
+//    static bool status = false;
+//    
+//    if( ++cnt >= 100 )
+//    {
+//        cnt = 0;
+//        
+//        if( status == false )
+//        {
+//            if( ++duty >= 0xFF )
+//            {
+//                status = true;
+//            }
+//        }
+//        else
+//        {
+//            if( --duty == 0 )
+//            {
+//                status = false;
+//            }
+//        }
+//        
+//        T4CC0 = duty;
+//    }
+//}
+
+HAL_ISR_FUNCTION( halTimer3Isr, T3_VECTOR )
 {
     static uint8 duty = 0;
     static uint8 cnt = 0;
     static bool status = false;
     
-    if( ++cnt >= 100 )
+    T3CTL &= ~0x10;
+    T3CTL |= 0x04;
+    TIMIF &= ~0x01;
+    
+    if( ++cnt >= 10 )
     {
         cnt = 0;
         
@@ -215,6 +248,8 @@ void TIMER0_ISR_Handler( uint8 timerId, uint8 channel, uint8 channelMode )
         
         T4CC0 = duty;
     }
+    
+    T3CTL |= 0x10;
 }
 
 /**
