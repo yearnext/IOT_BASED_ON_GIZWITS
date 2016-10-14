@@ -22,8 +22,6 @@
  * @{
  */
 
-#if defined ( USE_GIZWITS_MOD )
-
 /* Includes ------------------------------------------------------------------*/
 #include "devicelist.h"
 #include "OSAL_Memory.h"
@@ -537,7 +535,6 @@ uint8 Get_DeviceNum_ForList( void )
     return num;
 }
 
-#endif
 /** @}*/     /* devicelist 模块 */
 
 /**********************************END OF FILE*********************************/

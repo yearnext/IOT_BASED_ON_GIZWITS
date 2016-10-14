@@ -32,9 +32,15 @@
 // 定时器3占空比更新
 #define TIM3_CH0_UpdateDuty( n ) ( T3CC0 = (n) )
 #define TIM3_CH1_UpdateDuty( n ) ( T3CC1 = (n) )
+
+#define Get_TIM3_CH0_Duty()      ( T3CC0 )
+#define Get_TIM3_CH1_Duty()      ( T3CC1 )
 // 定时器4占空比更新
 #define TIM4_CH0_UpdateDuty( n ) ( T4CC0 = (n) )
 #define TIM4_CH1_UpdateDuty( n ) ( T4CC1 = (n) )
+
+#define Get_TIM4_CH0_Duty()      ( T4CC0 )
+#define Get_TIM4_CH1_Duty()      ( T4CC1 )
 // Timer3_PWM_Init函数的参数
 #define TIM3_CH0_PORT_P1_3 (1)
 #define TIM3_CH0_PORT_P1_6 (2)
