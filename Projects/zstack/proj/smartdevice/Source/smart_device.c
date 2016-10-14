@@ -39,7 +39,7 @@
 //#include "hal_lcd.h"
 #include "hal_led.h"
 #include "hal_timer.h"
-#include "hal_pwm.h"
+#include "timer_config.h"
 //#include "hal_key.h"
 
 #include "MT.h"
@@ -150,11 +150,9 @@ void SmartDevice_Init( byte task_id )
     MT_UartInit();
     MT_UartRegisterTaskID(SmartDevice_TaskID);
     
-//    HalTimerConfig(HAL_TIMER_0,HAL_TIMER_MODE_NORMAL,HAL_TIMER_CHANNEL_SINGLE,
-//                   HAL_TIMER_CH_MODE_OVERFLOW,1,(halTimerCBack_t)&TIMER0_ISR_Handler);
-//    HalTimerStart(HAL_TIMER_0,1000);
     Timer3_Init();
-    Timer4_PWM_Init();
+    Timer4_PWM_Init(TIM4_CH0_PORT_P2_0);
+    
     
 #if defined ( USE_GIZWITS_MOD )   
     gizwitsInit();
@@ -246,7 +244,7 @@ HAL_ISR_FUNCTION( halTimer3Isr, T3_VECTOR )
             }
         }
         
-        T4CC0 = duty;
+        TIM4_CH0_UpdateDuty(duty);
     }
     
     T3CTL |= 0x10;
