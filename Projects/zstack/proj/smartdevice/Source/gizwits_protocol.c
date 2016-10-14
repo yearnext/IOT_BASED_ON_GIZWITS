@@ -215,7 +215,7 @@ int32 gizPutData(uint8 *buf, uint32 len)
 * @param none
 * @return none
 */
-void gizTimer10Ms(void)
+void gizTimerMs(void)
 {
     gizwitsProtocol.timerMsCount++;
 }
@@ -829,11 +829,9 @@ static void mcuRestart(void)
 
 static void gizProtocolReboot(void)
 {
-//    uint32 timeDelay = gizGetTimerCount();
-    uint32 timeDelay = 0x600000;
-    while(--timeDelay);
+    uint32 timeDelay = gizGetTimerCount();
     /*Wait 600ms*/
-//    while((gizGetTimerCount() - timeDelay) <= 12);
+    while((gizGetTimerCount() - timeDelay) <= 12);
     mcuRestart();
 }
 

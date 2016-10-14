@@ -28,6 +28,8 @@
 #include <string.h>
 #include "gizwits_protocol.h"
 #include "devicelist.h"
+#include "NLMEDE.h"
+#include "smart_device.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /**
@@ -135,6 +137,120 @@ bool myprotocol_packet_check( uint8 *data )
     }
     
     return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief        SmartDevice发送信息函数
+ * @param       [in/out]   ctx              上下文
+ *              [in/out]   create_packet    创建数据包功能
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void create_sdtick_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
+{
+    MYPROTOCOL_DEVICE_INFO device_info;
+    uint8 *mac_addr = NULL;
+    
+    packet->commtype = MYPROTOCOL_COMM_TICK;
+    packet->sn = 0;
+    
+    mac_addr = NLME_GetExtAddr();
+    memcpy(&device_info.mac,mac_addr,sizeof(device_info.mac));
+
+#if (SmartDevice_ProfileID) == (SmartLight_ProfileID)
+    device_info.device = MYPROTOCOL_DEVICE_LIGHT;
+#elif (SmartDevice_ProfileID) == (SmartSwitch_ProfileID)
+    device_info.device = MYPROTOCOL_DEVICE_SOCKET;
+#elif (SmartDevice_ProfileID) == (SmartCurtain_ProfileID)
+    device_info.device = MYPROTOCOL_DEVICE_CURTAIN;
+#elif (SmartDevice_ProfileID) == (SmartCurtain_ProfileID)
+    device_info.device = MYPROTOCOL_DEVICE_HT_SENSOR;
+#else 
+    device_info.device = MYPROTOCOL_DEVICE_COORD;
+#endif
+    
+    memcpy(&packet->user_data.data,&device_info,sizeof(MYPROTOCOL_DEVICE_INFO));
+    
+    packet->user_data.cmd = MYPROTOCOL_TICK_CMD;
+    packet->user_data.len = sizeof(MYPROTOCOL_DEVICE_INFO);
+}
+
+/**
+ *******************************************************************************
+ * @brief        SmartDevice发送信息函数
+ * @param       [in/out]   ctx              上下文
+ *              [in/out]   create_packet    创建数据包功能
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void create_sdtick_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
+{
+    MYPROTOCOL_DEVICE_INFO *device_info = (MYPROTOCOL_DEVICE_INFO *)ctx;
+    
+    packet->commtype = MYPROTOCOL_COMM_TICK;
+    packet->sn = 0;
+    packet->device.device = device_info->device;
+    memcpy(&packet->device.mac,device_info->mac,sizeof(packet->device.mac));
+    packet->user_data.cmd = MYPROTOCOL_TICK_CMD;
+    packet->user_data.len = sizeof(packet->user_data.cmd);
+}
+
+/**
+ *******************************************************************************
+ * @brief       SmartDevice信息处理
+ * @param       [in]   pkt    信息
+ * @return      [out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt )
+{
+    if( pkt->clusterId != SmartDevice_Comm_ClustersID )
+    {
+        return;
+    }
+    
+    MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)pkt->cmd.Data;
+
+    if( packet->check_sum != myprotocol_compute_checksum(pkt->cmd.Data) )
+    {
+        return;
+    }
+    
+    switch( packet->commtype )
+    {
+        case MYPROTOCOL_COMM_TICK:
+#if defined ( USE_GIZWITS_MOD )
+            // 如果为父设备
+            DEVICE_INFO *device_info = (DEVICE_INFO *)packet->user_data.data;
+
+            // 添加设备
+            if( Add_Device_Forlist(device_info) == false )
+            {
+                // 增加设备心跳计数
+                Add_DeviceTick_ForList(device_info);
+            }
+            
+            // 心跳应答
+            SmartDevice_Send_Message(pkt->srcAddr,create_sdtick_ack_packet,&device_info->device);
+            
+            DEVICE_LOG("Coord get one end device tick packet!\n");
+#endif
+            break;
+        case MYPROTOCOL_W2D_READ_WAIT:
+            break;
+        case MYPROTOCOL_W2D_WRITE_WAIT:
+            break;
+        case MYPROTOCOL_D2W_READ_ACK:
+            break;
+        case MYPROTOCOL_D2W_REPORT_ACK:
+            break;
+        default:
+            break;
+    }
 }
 
 /**

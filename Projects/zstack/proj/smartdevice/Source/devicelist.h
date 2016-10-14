@@ -58,8 +58,6 @@ typedef LIST_NODE DEVICE_LIST_HEAD;
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-#if defined ( USE_GIZWITS_MOD )
-
 extern void Del_ZombieDevice_ForList( void );
 
 extern void Del_DeviceTickCount( void );
@@ -75,7 +73,5 @@ extern uint8 Get_DeviceNum_ForList( void );
 extern DEVICE_INFO *Get_DeviceInfo_InList( uint8 device_id );
 
 #endif      /* __MY_DEVICE_LIST_H__ */
-
-#endif
 
 /**********************************END OF FILE*********************************/

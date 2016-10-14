@@ -48,7 +48,7 @@ typedef enum
 #define RB_MAX_LEN         (MAX_PACKAGE_LEN*1)///< 环形缓冲区最大长度
 #define min(a, b) (a)<(b)?(a):(b)             ///< 获取最小值
 
-#define SEND_MAX_TIME   30                   ///< 3000ms重发
+#define SEND_MAX_TIME   300                   ///< 3000ms重发
 #define SEND_MAX_NUM    2                     ///< 重发次数
 
 #define protocol_VERSION "00000004"           ///< protocol版本号
@@ -326,7 +326,7 @@ int32 gizwitsHandle(dataPoint_t *currentData);
 int32 gizwitsSetMode(uint8 mode);
 int32 gizwitsSetBind( void );
 /**@} */
-void gizTimer10Ms(void);
+void gizTimerMs(void);
 int32 gizPutData(uint8 *buf, uint32 len);
 uint32 gizGetTimerCount(void);
 

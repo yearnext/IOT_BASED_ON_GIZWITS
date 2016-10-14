@@ -23,6 +23,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
+#include "AF.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /** 通讯格式 用户数据大小 */
@@ -95,10 +96,11 @@ typedef struct
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 extern void myprotocol_init( void );
-
 extern void myprotocol_packet_handler( uint8 *report_data, uint8 *packet_data );
-
 extern uint8 myprotocol_compute_checksum( uint8 *packet );
+extern void create_sdtick_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern void create_sdtick_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt );
 
 #endif      /* __myprotocol_H__ */
 

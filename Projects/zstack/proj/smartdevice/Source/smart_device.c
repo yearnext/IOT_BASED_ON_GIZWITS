@@ -32,18 +32,14 @@
 #include <string.h>
 #include "NLMEDE.h"
 #include "smart_device.h"
-
 #include "onboard.h"
-
-/* HAL */
-//#include "hal_lcd.h"
 #include "hal_led.h"
 #include "hal_timer.h"
 #include "timer_config.h"
 #include "nv_save.h"
 #include "OSAL_Nv.h"
-//#include "hal_key.h"
-
+#include "hal_key.h"
+#include "devicelist.h"
 #include "MT.h"
 #include "MT_UART.h"
 #include "hal_uart.h"
@@ -51,7 +47,6 @@
 
 #if defined ( USE_GIZWITS_MOD )
 #include "gizwits.h"
-#include "devicelist.h"
 #endif
 
 /* Exported macro ------------------------------------------------------------*/
@@ -120,19 +115,10 @@ static devStates_t SmartDevice_NwkState;
 /** 发送ID */
 static uint8 SmartDevice_TransID;
 
-#if defined ( USE_GIZWITS_MOD ) 
-    static uint16 Device_Msg_Timer = 0;
-    static uint8 Gizwits_Msg_Timer = 0;
-    static uint8 Gizwits_Timer = 0;
-    static uint16 Device_Clear_Timer = 0;
-#endif
-
 /* Private functions ---------------------------------------------------------*/
-void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt );
-void SmartDevice_Message_Handler( void *data );
-void TIMER0_ISR_Handler( uint8 timerId, uint8 channel, uint8 channelMode );
 void SmartDevice_Send_Message( afAddrType_t *dst_addr, create_sd_packet create_packet, void *ctx );
-void create_sdtick_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+void SmartDevice_Key_Headler( uint8 keys, uint8 state );
+void ZDO_STATE_CHANGE_CB( devStates_t status );
 
 /* Exported functions --------------------------------------------------------*/
 /**
@@ -171,11 +157,9 @@ void SmartDevice_Init( byte task_id )
 
 #if defined ( USE_GIZWITS_MOD )   
     gizwitsInit();
-
-//    osal_start_timerEx( SmartDevice_TaskID, SMART_DEVICE_TIMER_EVEN, SMART_DEVICE_TIME );
-#endif
     myprotocol_init();
-    
+#endif
+
     /** 注册AF层应用对象 */
     SmartDevice_epDesc.endPoint = SmartDevice_EndPoint;
     SmartDevice_epDesc.simpleDesc = (SimpleDescriptionFormat_t *)&zclSmartDevice_SimpleDesc;
@@ -201,70 +185,6 @@ void SmartDevice_Init( byte task_id )
     HalLedSet(HAL_LED_2,HAL_LED_MODE_ON);
 }
 
-//void TIMER0_ISR_Handler( uint8 timerId, uint8 channel, uint8 channelMode )
-//{
-//    static uint8 duty = 0;
-//    static uint8 cnt = 0;
-//    static bool status = false;
-//    
-//    if( ++cnt >= 100 )
-//    {
-//        cnt = 0;
-//        
-//        if( status == false )
-//        {
-//            if( ++duty >= 0xFF )
-//            {
-//                status = true;
-//            }
-//        }
-//        else
-//        {
-//            if( --duty == 0 )
-//            {
-//                status = false;
-//            }
-//        }
-//        
-//        T4CC0 = duty;
-//    }
-//}
-
-HAL_ISR_FUNCTION( halTimer3Isr, T3_VECTOR )
-{
-    static uint8 duty = 0;
-    static uint8 cnt = 0;
-    static bool status = false;
-    
-    T3CTL &= ~0x10;
-    T3CTL |= 0x04;
-    TIMIF &= ~0x01;
-    
-    if( ++cnt >= 10 )
-    {
-        cnt = 0;
-        
-        if( status == false )
-        {
-            if( ++duty >= 0xFF )
-            {
-                status = true;
-            }
-        }
-        else
-        {
-            if( --duty == 0 )
-            {
-                status = false;
-            }
-        }
-        
-        TIM4_CH0_UpdateDuty(duty);
-    }
-    
-    T3CTL |= 0x10;
-}
-
 /**
  *******************************************************************************
  * @brief       SmartDevice事件处理
@@ -287,7 +207,8 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
         {
             switch( MSGpkt->hdr.event )
             {
-                case KEY_CHANGE:
+                case KEY_CHANGE:    
+                    SmartDevice_Key_Headler(((keyChange_t *)MSGpkt)->keys,((keyChange_t *)MSGpkt)->state);
                     break;
                 /** 接收到数据 */
                 case AF_INCOMING_MSG_CMD:
@@ -296,36 +217,7 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
                 /** 状态改变 */
                 case ZDO_STATE_CHANGE:
                     SmartDevice_NwkState = (devStates_t)(MSGpkt->hdr.status);
-
-                    switch( SmartDevice_NwkState )
-                    {
-                        case DEV_ROUTER:
-                            DEVICE_LOG("I am Router Device!\n");
-#if !defined ( USE_GIZWITS_MOD )
-                            osal_start_timerEx( SmartDevice_TaskID, 
-                                                SMART_DEVICE_TIMER_EVEN, 
-                                                SMART_DEVICE_TIME );
-#endif
-                                break;
-                        case DEV_END_DEVICE:
-                            DEVICE_LOG("I am End Device!\n");
-#if !defined ( USE_GIZWITS_MOD )
-                            
-                            osal_start_timerEx( SmartDevice_TaskID, 
-                                                SMART_DEVICE_TIMER_EVEN, 
-                                                SMART_DEVICE_TIME );
-#endif
-                                break;
-                        case DEV_ZB_COORD:
-                            DEVICE_LOG("I am Coord Device!\n");
-                                break;
-                        case DEV_NWK_DISC:
-                            DEVICE_LOG("Discovering PAN's to join!\n");
-                            break;
-                        default:
-                            break;
-                    }
-                    
+                    ZDO_STATE_CHANGE_CB(SmartDevice_NwkState);
                     break;
                 
                 default:
@@ -342,41 +234,9 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
     }
  
     if( events & SMART_DEVICE_TIMER_EVEN )
-    {
-#if defined ( USE_GIZWITS_MOD )
-        if( SmartDevice_NwkState == DEV_ROUTER \
-            || SmartDevice_NwkState == DEV_END_DEVICE )
-        {
-            if( ++Device_Msg_Timer >= DEVICE_TICK_TIME )
-            {
-                SmartDevice_Send_Message((afAddrType_t *)&SmartDevice_Periodic_DstAddr,create_sdtick_packet,NULL);
-                Device_Msg_Timer = 0;
-            }
-        }
- 
-        if( ++Gizwits_Timer >= GIZWITS_TIMER_TIME )
-        {
-            gizTimer10Ms();
-            Gizwits_Timer = 0;
-        }
-        
-        if( ++Gizwits_Msg_Timer >= GIZWITS_HANDLER_TIME )
-        {
-            gizwitsHandle(&currentDataPoint);
-            Gizwits_Msg_Timer = 0;
-        }
-        
-        if( ++Device_Clear_Timer >= CLEAR_ZOMBIE_DEVICE_TIME )
-        {
-            Del_ZombieDevice_ForList();
-            Del_DeviceTickCount();
-            Device_Clear_Timer = 0;
-        }
-        
-#else        
+    {      
         SmartDevice_Send_Message((afAddrType_t *)&SmartDevice_Periodic_DstAddr,create_sdtick_packet,NULL);
-#endif
-        
+
         osal_start_timerEx( SmartDevice_TaskID, 
                             SMART_DEVICE_TIMER_EVEN, 
                             SMART_DEVICE_TIME );
@@ -390,57 +250,50 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
  
 /**
  *******************************************************************************
- * @brief       SmartDevice信息处理
+ * @brief       ZDO状态改变回调哈数
+ * @param       [in/out]  status    设备状态
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void ZDO_STATE_CHANGE_CB( devStates_t status )
+{
+    switch( status )
+    {
+        case DEV_ROUTER:
+            DEVICE_LOG("I am Router Device!\n");
+            osal_start_timerEx( SmartDevice_TaskID, 
+                                SMART_DEVICE_TIMER_EVEN, 
+                                SMART_DEVICE_TIME );
+                break;
+        case DEV_END_DEVICE:
+            DEVICE_LOG("I am End Device!\n");
+            osal_start_timerEx( SmartDevice_TaskID, 
+                                SMART_DEVICE_TIMER_EVEN, 
+                                SMART_DEVICE_TIME );
+                break;
+        case DEV_ZB_COORD:
+            DEVICE_LOG("I am Coord Device!\n");
+                break;
+        case DEV_NWK_DISC:
+            DEVICE_LOG("Discovering PAN's to join!\n");
+            break;
+        default:
+            break;
+    }
+}
+
+/**
+ *******************************************************************************
+ * @brief       SmartDevice按键处理
  * @param       [in]   pkt    信息
  * @return      [out]  void
  * @note        None
  *******************************************************************************
  */
-void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt )
+void SmartDevice_Key_Headler( uint8 keys, uint8 state )
 {
-    if( pkt->clusterId != SmartDevice_Comm_ClustersID )
-    {
-        return;
-    }
     
-    MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)pkt->cmd.Data;
-
-    if( packet->check_sum != myprotocol_compute_checksum(pkt->cmd.Data) )
-    {
-        return;
-    }
-    
-    switch( packet->commtype )
-    {
-        case MYPROTOCOL_COMM_TICK:
-#if defined ( USE_GIZWITS_MOD )
-            // 如果为父设备
-            DEVICE_INFO *device_info = (DEVICE_INFO *)packet->user_data.data;
-
-            // 添加设备
-            if( Add_Device_Forlist(device_info) == false )
-            {
-                // 增加设备心跳计数
-                Add_DeviceTick_ForList(device_info);
-            }
-            
-            // 心跳应答
-            SmartDevice_Send_Message(pkt->srcAddr,create_sdtick_ack_packet,&device_info->device);
-            
-            DEVICE_LOG("Coord get one end device tick packet!\n");
-#endif
-            break;
-        case MYPROTOCOL_W2D_READ_WAIT:
-            break;
-        case MYPROTOCOL_W2D_WRITE_WAIT:
-            break;
-        case MYPROTOCOL_D2W_READ_ACK:
-            break;
-        case MYPROTOCOL_D2W_REPORT_ACK:
-            break;
-        default:
-            break;
-    }
 }
 
 /**
@@ -472,64 +325,43 @@ void SmartDevice_Send_Message( afAddrType_t *dst_addr, create_sd_packet create_p
                    AF_DEFAULT_RADIUS);
 }
 
-
 /**
  *******************************************************************************
- * @brief        SmartDevice发送信息函数
- * @param       [in/out]   ctx              上下文
- *              [in/out]   create_packet    创建数据包功能
+ * @brief       定时器3中断处理函数
+ * @param       [in/out]  task_id    任务ID
  * @return      [in/out]  void
  * @note        None
  *******************************************************************************
  */
-void create_sdtick_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
+#define TIM3_CLOSE() ( T3CTL &= ~0x10, T3CTL |= 0x04, TIMIF &= ~0x01 )
+#define TIM3_OPEN()  ( T3CTL |= 0x10 )
+HAL_ISR_FUNCTION( halTimer3Isr, T3_VECTOR )
 {
-    MYPROTOCOL_DEVICE_INFO device_info;
-    uint8 *mac_addr = NULL;
-    
-    packet->commtype = MYPROTOCOL_COMM_TICK;
-    packet->sn = 0;
-    
-    mac_addr = NLME_GetExtAddr();
-    memcpy(&device_info.mac,mac_addr,sizeof(device_info.mac));
-
-#if (SmartDevice_ProfileID) == (SmartLight_ProfileID)
-    device_info.device = MYPROTOCOL_DEVICE_LIGHT;
-#elif (SmartDevice_ProfileID) == (SmartSwitch_ProfileID)
-    device_info.device = MYPROTOCOL_DEVICE_SOCKET;
-#elif (SmartDevice_ProfileID) == (SmartCurtain_ProfileID)
-    device_info.device = MYPROTOCOL_DEVICE_CURTAIN;
-#elif (SmartDevice_ProfileID) == (SmartCurtain_ProfileID)
-    device_info.device = MYPROTOCOL_DEVICE_HT_SENSOR;
-#else 
-    device_info.device = MYPROTOCOL_DEVICE_COORD;
+#if defined ( USE_GIZWITS_MOD )
+    static uint8 Gizwits_Timer = 0;
 #endif
+    static uint16 Device_Clear_Timer = 0;
     
-    memcpy(&packet->user_data.data,&device_info,sizeof(MYPROTOCOL_DEVICE_INFO));
+    TIM3_CLOSE();
     
-    packet->user_data.cmd = MYPROTOCOL_TICK_CMD;
-    packet->user_data.len = sizeof(MYPROTOCOL_DEVICE_INFO);
-}
+#if defined ( USE_GIZWITS_MOD )
+    gizTimerMs();
+    
+    if( ++Gizwits_Msg_Timer >= GIZWITS_HANDLER_TIME )
+    {
+        gizwitsHandle(&currentDataPoint);
+        Gizwits_Msg_Timer = 0;
+    } 
+#endif    
+    
+    if( ++Device_Clear_Timer >= CLEAR_ZOMBIE_DEVICE_TIME )
+    {
+        Del_ZombieDevice_ForList();
+        Del_DeviceTickCount();
+        Device_Clear_Timer = 0;
+    }
 
-/**
- *******************************************************************************
- * @brief        SmartDevice发送信息函数
- * @param       [in/out]   ctx              上下文
- *              [in/out]   create_packet    创建数据包功能
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-void create_sdtick_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{
-    MYPROTOCOL_DEVICE_INFO *device_info = (MYPROTOCOL_DEVICE_INFO *)ctx;
-    
-    packet->commtype = MYPROTOCOL_COMM_TICK;
-    packet->sn = 0;
-    packet->device.device = device_info->device;
-    memcpy(&packet->device.mac,device_info->mac,sizeof(packet->device.mac));
-    packet->user_data.cmd = MYPROTOCOL_TICK_CMD;
-    packet->user_data.len = sizeof(packet->user_data.cmd);
+    TIM3_OPEN();
 }
 
 /** @}*/     /* smartlight模块 */
