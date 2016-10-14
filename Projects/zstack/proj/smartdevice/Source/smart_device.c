@@ -40,6 +40,8 @@
 #include "hal_led.h"
 #include "hal_timer.h"
 #include "timer_config.h"
+#include "nv_save.h"
+#include "OSAL_Nv.h"
 //#include "hal_key.h"
 
 #include "MT.h"
@@ -146,6 +148,7 @@ void SmartDevice_Init( byte task_id )
     SmartDevice_TaskID = task_id;
     SmartDevice_NwkState = DEV_INIT;
     SmartDevice_TransID = 0;
+    volatile uint8 key = DEVICE_FIRST_WRIYE_KEY;
     
     MT_UartInit();
     MT_UartRegisterTaskID(SmartDevice_TaskID);
@@ -153,7 +156,19 @@ void SmartDevice_Init( byte task_id )
     Timer3_Init();
     Timer4_PWM_Init(TIM4_CH0_PORT_P2_0);
     
+    osal_nv_item_init(DEVICE_COORD_SAVE_ID,DEVICE_COORD_DATA_SIZE,NULL);
+    Rst_DeviceSaveData(DEVICE_COORD_ID);
+       
+    if( osal_nv_write(DEVICE_COORD_SAVE_ID,0,1,(uint8 *)&key) == SUCCESS )
+    {
+        key = 0x00;
+    }
     
+    if( osal_nv_read(DEVICE_COORD_SAVE_ID,0,1,(uint8 *)&key) == SUCCESS )
+    {
+        key = 0x00;
+    }
+
 #if defined ( USE_GIZWITS_MOD )   
     gizwitsInit();
 

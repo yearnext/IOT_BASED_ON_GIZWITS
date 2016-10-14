@@ -999,10 +999,10 @@ HAL_ISR_FUNCTION( halTimer1Isr, T1_VECTOR )
  *
  * @return
  **************************************************************************************************/
-HAL_ISR_FUNCTION( halTimer3Isr, T3_VECTOR )
-{
-  halProcessTimer3 ();
-}
+//HAL_ISR_FUNCTION( halTimer3Isr, T3_VECTOR )
+//{
+//  halProcessTimer3 ();
+//}
 
 /**************************************************************************************************
  * @fn      halTimer4Isr
