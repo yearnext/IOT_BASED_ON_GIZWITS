@@ -26,7 +26,6 @@
 #include "ZComDef.h"
 #include "OSAL.h"
 #include "AF.h"
-#include "aps_groups.h"
 #include "ZDApp.h"
 #include "ZGlobals.h"
 #include <string.h>
@@ -74,49 +73,15 @@ dataPoint_t currentDataPoint;
 #endif
 
 /* Private typedef -----------------------------------------------------------*/
-typedef void (*create_sd_packet)(void *ctx, MYPROTOCOL_FORMAT *packet);
-
 /* Private variables ---------------------------------------------------------*/
 /** 任务ID */
 static byte SmartDevice_TaskID;
 
-/** 端点描述符 */
-static endPointDesc_t SmartDevice_epDesc;
-
-/** 簇表 */
-const cId_t zclSmartDevice_InClusterList[] =
-{
-    SmartDevice_Comm_ClustersID,
-};
-
-/** 简单描述符 */
-static const SimpleDescriptionFormat_t zclSmartDevice_SimpleDesc =
-{
-    SmartDevice_EndPoint, 
-    SmartDevice_ProfileID,
-    SmartDevice_DeviceID,
-    SmartDevice_Version,
-    SmartDevice_Flags,                  
-    SamrtDevice_ClustersNum,
-    (cId_t *)&zclSmartDevice_InClusterList,
-    SamrtDevice_ClustersNum,
-    (cId_t *)&zclSmartDevice_InClusterList,
-};
-
-/** 周期性发送数据 */
-static afAddrType_t SmartDevice_Periodic_DstAddr;
-
-/** 设备组别 */
-static aps_Group_t SmartDevice_Group;
-
 /** 设备状态 */
 static devStates_t SmartDevice_NwkState;
 
-/** 发送ID */
-static uint8 SmartDevice_TransID;
-
 /* Private functions ---------------------------------------------------------*/
-void SmartDevice_Send_Message( afAddrType_t *dst_addr, create_sd_packet create_packet, void *ctx );
+//void SmartDevice_Send_Message( afAddrType_t *dst_addr, create_sd_packet create_packet, void *ctx );
 void SmartDevice_Key_Headler( uint8 keys, uint8 state );
 void ZDO_STATE_CHANGE_CB( devStates_t status );
 
@@ -133,8 +98,6 @@ void SmartDevice_Init( byte task_id )
 {
     SmartDevice_TaskID = task_id;
     SmartDevice_NwkState = DEV_INIT;
-    SmartDevice_TransID = 0;
-    volatile uint8 key = DEVICE_FIRST_WRIYE_KEY;
     
     MT_UartInit();
     MT_UartRegisterTaskID(SmartDevice_TaskID);
@@ -143,42 +106,15 @@ void SmartDevice_Init( byte task_id )
     Timer4_PWM_Init(TIM4_CH0_PORT_P2_0);
     
     osal_nv_item_init(DEVICE_COORD_SAVE_ID,DEVICE_COORD_DATA_SIZE,NULL);
-    Rst_DeviceSaveData(DEVICE_COORD_ID);
-       
-    if( osal_nv_write(DEVICE_COORD_SAVE_ID,0,1,(uint8 *)&key) == SUCCESS )
-    {
-        key = 0x00;
-    }
-    
-    if( osal_nv_read(DEVICE_COORD_SAVE_ID,0,1,(uint8 *)&key) == SUCCESS )
-    {
-        key = 0x00;
-    }
 
 #if defined ( USE_GIZWITS_MOD )   
     gizwitsInit();
-    myprotocol_init();
 #endif
+    
+    myprotocol_init( SmartDevice_EndPoint, &SmartDevice_TaskID );
 
-    /** 注册AF层应用对象 */
-    SmartDevice_epDesc.endPoint = SmartDevice_EndPoint;
-    SmartDevice_epDesc.simpleDesc = (SimpleDescriptionFormat_t *)&zclSmartDevice_SimpleDesc;
-    SmartDevice_epDesc.task_id = &SmartDevice_TaskID;
-    SmartDevice_epDesc.latencyReq = noLatencyReqs;
-    afRegister(&SmartDevice_epDesc);
-    
-    /** 周期性的发送数据给协调器 */
-    SmartDevice_Periodic_DstAddr.addr.shortAddr= 0x0000;
-    SmartDevice_Periodic_DstAddr.addrMode = afAddr16Bit;
-    SmartDevice_Periodic_DstAddr.endPoint = SmartDevice_EndPoint;
-    
     /**  注册按键事件 */
     RegisterForKeys( SmartDevice_TaskID );
-
-    /** 创建一个组表 */
-    SmartDevice_Group.ID = 0x0001;
-    osal_memcpy( SmartDevice_Group.name, "Group 1", sizeof("Group 1") );
-    aps_AddGroup(SmartDevice_EndPoint, &SmartDevice_Group);
     
     DEVICE_LOG("Smart device init finish!\n");
     HalLedSet(HAL_LED_1,HAL_LED_MODE_ON);
@@ -235,7 +171,7 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
  
     if( events & SMART_DEVICE_TIMER_EVEN )
     {      
-        SmartDevice_Send_Message((afAddrType_t *)&SmartDevice_Periodic_DstAddr,create_sdtick_packet,NULL);
+        //SmartDevice_Send_Message((afAddrType_t *)&SmartDevice_Periodic_DstAddr,create_sdtick_packet,NULL);
 
         osal_start_timerEx( SmartDevice_TaskID, 
                             SMART_DEVICE_TIMER_EVEN, 
@@ -298,35 +234,6 @@ void SmartDevice_Key_Headler( uint8 keys, uint8 state )
 
 /**
  *******************************************************************************
- * @brief        SmartDevice发送信息函数
- * @param       [in/out]   create_packet    创建数据包功能
- *              [in/out]   ctx              上下文
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-void SmartDevice_Send_Message( afAddrType_t *dst_addr, create_sd_packet create_packet, void *ctx )
-{
-    MYPROTOCOL_FORMAT packet;
-    
-    memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
-    
-    create_packet(ctx,&packet);
-    
-    packet.check_sum = myprotocol_compute_checksum((uint8 *)&packet);
-    
-    AF_DataRequest(dst_addr,
-                   &SmartDevice_epDesc,
-                   SmartDevice_Comm_ClustersID,
-                   sizeof(MYPROTOCOL_FORMAT),
-                   (uint8 *)&packet,
-                   &SmartDevice_TransID,
-                   AF_DISCV_ROUTE,
-                   AF_DEFAULT_RADIUS);
-}
-
-/**
- *******************************************************************************
  * @brief       定时器3中断处理函数
  * @param       [in/out]  task_id    任务ID
  * @return      [in/out]  void
@@ -347,10 +254,10 @@ HAL_ISR_FUNCTION( halTimer3Isr, T3_VECTOR )
 #if defined ( USE_GIZWITS_MOD )
     gizTimerMs();
     
-    if( ++Gizwits_Msg_Timer >= GIZWITS_HANDLER_TIME )
+    if( ++Gizwits_Timer >= GIZWITS_HANDLER_TIME )
     {
         gizwitsHandle(&currentDataPoint);
-        Gizwits_Msg_Timer = 0;
+        Gizwits_Timer = 0;
     } 
 #endif    
     

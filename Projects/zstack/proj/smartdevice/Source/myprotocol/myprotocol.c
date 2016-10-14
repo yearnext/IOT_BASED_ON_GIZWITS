@@ -30,6 +30,7 @@
 #include "devicelist.h"
 #include "NLMEDE.h"
 #include "smart_device.h"
+#include "aps_groups.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /**
@@ -50,6 +51,7 @@
 
 /* Exported types ------------------------------------------------------------*/
 typedef bool (*packet_func)(void *ctx, MYPROTOCOL_FORMAT *packet);
+typedef void (*create_sd_packet)(void *ctx, MYPROTOCOL_FORMAT *packet);
 
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -60,10 +62,45 @@ typedef bool (*packet_func)(void *ctx, MYPROTOCOL_FORMAT *packet);
 #define MYPROTOCOL_PACKET_REPORT()
 #endif
 
+/** 簇的数量 */
+#define SamrtDevice_ClustersNum (sizeof(SmartDevice_InClusterList)/sizeof(SmartDevice_InClusterList[0]))
+#define SmartDevice_Comm_ClustersID  (0x0001)
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 static MYPROTOCOL_FORMAT tx_packet;
 //static myprotocol_format rx_packet;
+/** 端点描述符 */
+static endPointDesc_t SmartDevice_epDesc;
+
+/** 簇表 */
+const cId_t SmartDevice_InClusterList[] =
+{
+    SmartDevice_Comm_ClustersID,
+};
+
+/** 简单描述符 */
+static const SimpleDescriptionFormat_t SmartDevice_SimpleDesc =
+{
+    SmartDevice_EndPoint, 
+    SmartDevice_ProfileID,
+    SmartDevice_DeviceID,
+    SmartDevice_Version,
+    SmartDevice_Flags,                  
+    SamrtDevice_ClustersNum,
+    (cId_t *)&SmartDevice_InClusterList,
+    SamrtDevice_ClustersNum,
+    (cId_t *)&SmartDevice_InClusterList,
+};
+
+/** 周期性发送数据 */
+static afAddrType_t SmartDevice_Periodic_DstAddr;
+
+/** 发送ID */
+static uint8 SmartDevice_TransID;
+
+/** 设备组别 */
+static aps_Group_t SmartDevice_Group;
 
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
@@ -75,9 +112,27 @@ static MYPROTOCOL_FORMAT tx_packet;
  * @note        None
  *******************************************************************************
  */
-void myprotocol_init( void )
+void myprotocol_init( uint8 endpoint, uint8 *task_id )
 {
     memset(&tx_packet,0,sizeof(MYPROTOCOL_FORMAT));
+    
+    SmartDevice_TransID = 0;
+    /** 注册AF层应用对象 */
+    SmartDevice_epDesc.endPoint = endpoint;
+    SmartDevice_epDesc.simpleDesc = (SimpleDescriptionFormat_t *)&SmartDevice_SimpleDesc;
+    SmartDevice_epDesc.task_id = task_id;
+    SmartDevice_epDesc.latencyReq = noLatencyReqs;
+    afRegister(&SmartDevice_epDesc);
+    
+    /** 周期性的发送数据给协调器 */
+    SmartDevice_Periodic_DstAddr.addr.shortAddr= 0x0000;
+    SmartDevice_Periodic_DstAddr.addrMode = afAddr16Bit;
+    SmartDevice_Periodic_DstAddr.endPoint = endpoint;
+    
+    /** 创建一个组表 */
+    SmartDevice_Group.ID = 0x0001;
+    osal_memcpy( SmartDevice_Group.name, "Group 1", sizeof("Group 1") );
+    aps_AddGroup(endpoint, &SmartDevice_Group);
 }
 
 /**
@@ -223,6 +278,7 @@ void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt )
     switch( packet->commtype )
     {
         case MYPROTOCOL_COMM_TICK:
+        {
 #if defined ( USE_GIZWITS_MOD )
             // 如果为父设备
             DEVICE_INFO *device_info = (DEVICE_INFO *)packet->user_data.data;
@@ -233,13 +289,14 @@ void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt )
                 // 增加设备心跳计数
                 Add_DeviceTick_ForList(device_info);
             }
-            
-            // 心跳应答
-            SmartDevice_Send_Message(pkt->srcAddr,create_sdtick_ack_packet,&device_info->device);
-            
-            DEVICE_LOG("Coord get one end device tick packet!\n");
+//            
+//            // 心跳应答
+//            SmartDevice_Send_Message(pkt->srcAddr,create_sdtick_ack_packet,&device_info->device);
+//            
+            MYPROTOCOL_LOG("Coord get one end device tick packet!\n");
 #endif
             break;
+        }
         case MYPROTOCOL_W2D_READ_WAIT:
             break;
         case MYPROTOCOL_W2D_WRITE_WAIT:
@@ -251,6 +308,36 @@ void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt )
         default:
             break;
     }
+}
+
+
+/**
+ *******************************************************************************
+ * @brief        SmartDevice发送信息函数
+ * @param       [in/out]   create_packet    创建数据包功能
+ *              [in/out]   ctx              上下文
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void SmartDevice_Send_Message( create_sd_packet create_packet, void *ctx )
+{
+    MYPROTOCOL_FORMAT packet;
+    
+    memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
+    
+    create_packet(ctx,&packet);
+    
+    packet.check_sum = myprotocol_compute_checksum((uint8 *)&packet);
+    
+    AF_DataRequest(&SmartDevice_Periodic_DstAddr,
+                   &SmartDevice_epDesc,
+                   SmartDevice_Comm_ClustersID,
+                   sizeof(MYPROTOCOL_FORMAT),
+                   (uint8 *)&packet,
+                   &SmartDevice_TransID,
+                   AF_DISCV_ROUTE,
+                   AF_DEFAULT_RADIUS);
 }
 
 /**
