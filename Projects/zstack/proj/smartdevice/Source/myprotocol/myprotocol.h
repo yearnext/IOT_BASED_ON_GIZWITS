@@ -95,7 +95,7 @@ typedef struct
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern void myprotocol_init( void );
+extern void myprotocol_init( uint8 endpoint, uint8 *task_id );
 extern void myprotocol_packet_handler( uint8 *report_data, uint8 *packet_data );
 extern uint8 myprotocol_compute_checksum( uint8 *packet );
 extern void create_sdtick_packet( void *ctx, MYPROTOCOL_FORMAT *packet );

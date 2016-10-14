@@ -48,9 +48,6 @@
 /** 设备版本号 */
 #define SmartDevice_Version  (0x00)
 #define SmartDevice_Flags    (0)
-/** 簇的数量 */
-#define SamrtDevice_ClustersNum (sizeof(zclSmartDevice_InClusterList)/sizeof(zclSmartDevice_InClusterList[0]))
-#define SmartDevice_Comm_ClustersID  (0x0001)
 
 #define SMART_DEVICE_TIME       (3000)
 
