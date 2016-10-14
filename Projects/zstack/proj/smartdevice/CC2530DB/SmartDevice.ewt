@@ -6812,6 +6812,21 @@
       </file>
     </group>
     <group>
+      <name>hal</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\nv_save.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\nv_save.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\timer_config.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\timer_config.h</name>
+      </file>
+    </group>
+    <group>
       <name>MyProtocol</name>
       <file>
         <name>$PROJ_DIR$\..\Source\myprotocol.c</name>
