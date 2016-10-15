@@ -24,6 +24,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "myprotocol.h"
+#include "myprotocol_packet.h"
 #include "hal_uart.h"
 #include <string.h>
 #include "gizwits_protocol.h"
@@ -50,9 +51,6 @@
 #define MYPROTOCOL_UART_WRITE(data,len)  HalUARTWrite(GIZWITS_UART_PORT,data,len)
 
 /* Exported types ------------------------------------------------------------*/
-typedef bool (*packet_func)(void *ctx, MYPROTOCOL_FORMAT *packet);
-typedef void (*create_sd_packet)(void *ctx, MYPROTOCOL_FORMAT *packet);
-
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define MYPROTOCOL_PACKET_SIZE     (sizeof(MYPROTOCOL_FORMAT))
@@ -95,10 +93,8 @@ static const SimpleDescriptionFormat_t SmartDevice_SimpleDesc =
 
 /** 周期性发送数据 */
 static afAddrType_t SmartDevice_Periodic_DstAddr;
-
 /** 发送ID */
 static uint8 SmartDevice_TransID;
-
 /** 设备组别 */
 static aps_Group_t SmartDevice_Group;
 
@@ -143,16 +139,11 @@ void myprotocol_init( uint8 endpoint, uint8 *task_id )
  * @note        None
  *******************************************************************************
  */
-uint8 myprotocol_compute_checksum( uint8 *packet )
+static uint8 myprotocol_compute_checksum( uint8 *packet )
 {
     uint8 i;
     uint8 checksum;
-    
-//    if( packet == NULL )
-//    {
-//        return 0;
-//    }
-    
+
     for( i=0, checksum=0; i<MYPROTOCOL_PACKET_SIZE-1; i++ )
     {
         checksum += packet[i];
@@ -169,14 +160,9 @@ uint8 myprotocol_compute_checksum( uint8 *packet )
  * @note        None
  *******************************************************************************
  */
-bool myprotocol_packet_check( uint8 *data )
+static bool myprotocol_packet_check( uint8 *data )
 {
     MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)data;
-    
-//    if( data == NULL )
-//    {
-//        return 0;
-//    }
     
     if( packet->check_sum != myprotocol_compute_checksum(data) )
     {
@@ -197,60 +183,99 @@ bool myprotocol_packet_check( uint8 *data )
 /**
  *******************************************************************************
  * @brief        SmartDevice发送信息函数
- * @param       [in/out]   ctx              上下文
- *              [in/out]   create_packet    创建数据包功能
+ * @param       [in/out]   create_packet    创建数据包功能
+ *              [in/out]   ctx              上下文
  * @return      [in/out]  void
  * @note        None
  *******************************************************************************
  */
-void create_sdtick_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
+static bool MYPROTOCOL_DIR_D2D_SEND_MSG( packet_func create_packet, void *ctx )
 {
-    MYPROTOCOL_DEVICE_INFO device_info;
-    uint8 *mac_addr = NULL;
+    MYPROTOCOL_FORMAT packet;
     
-    packet->commtype = MYPROTOCOL_COMM_TICK;
-    packet->sn = 0;
+    memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
     
-    mac_addr = NLME_GetExtAddr();
-    memcpy(&device_info.mac,mac_addr,sizeof(device_info.mac));
-
-#if (SmartDevice_ProfileID) == (SmartLight_ProfileID)
-    device_info.device = MYPROTOCOL_DEVICE_LIGHT;
-#elif (SmartDevice_ProfileID) == (SmartSwitch_ProfileID)
-    device_info.device = MYPROTOCOL_DEVICE_SOCKET;
-#elif (SmartDevice_ProfileID) == (SmartCurtain_ProfileID)
-    device_info.device = MYPROTOCOL_DEVICE_CURTAIN;
-#elif (SmartDevice_ProfileID) == (SmartCurtain_ProfileID)
-    device_info.device = MYPROTOCOL_DEVICE_HT_SENSOR;
-#else 
-    device_info.device = MYPROTOCOL_DEVICE_COORD;
-#endif
+    create_packet(ctx,&packet);
     
-    memcpy(&packet->user_data.data,&device_info,sizeof(MYPROTOCOL_DEVICE_INFO));
+    packet.check_sum = myprotocol_compute_checksum((uint8 *)&packet);
     
-    packet->user_data.cmd = MYPROTOCOL_TICK_CMD;
-    packet->user_data.len = sizeof(MYPROTOCOL_DEVICE_INFO);
+    AF_DataRequest(&SmartDevice_Periodic_DstAddr,
+                   &SmartDevice_epDesc,
+                   SmartDevice_Comm_ClustersID,
+                   sizeof(MYPROTOCOL_FORMAT),
+                   (uint8 *)&packet,
+                   &SmartDevice_TransID,
+                   AF_DISCV_ROUTE,
+                   AF_DEFAULT_RADIUS);
+    
+    return true;
 }
 
 /**
  *******************************************************************************
- * @brief        SmartDevice发送信息函数
- * @param       [in/out]   ctx              上下文
- *              [in/out]   create_packet    创建数据包功能
+ * @brief       myprotocol 创建并发送一个数据包
+ * @param       [in/out]  packet        接收到的数据包
+ *              [in/out]  packet_type   创建数据包的类型
+ *              [in/out]  data          需要用到的数据   
  * @return      [in/out]  void
  * @note        None
  *******************************************************************************
  */
-void create_sdtick_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
+static bool MYPROTOCOL_DIR_D2W_SEND_MSG( MYPROTOCOL_FORMAT *packet, packet_func packet_create, void *ctx )
 {
-    MYPROTOCOL_DEVICE_INFO *device_info = (MYPROTOCOL_DEVICE_INFO *)ctx;
+    bool status = false;
     
-    packet->commtype = MYPROTOCOL_COMM_TICK;
-    packet->sn = 0;
-    packet->device.device = device_info->device;
-    memcpy(&packet->device.mac,device_info->mac,sizeof(packet->device.mac));
-    packet->user_data.cmd = MYPROTOCOL_TICK_CMD;
-    packet->user_data.len = sizeof(packet->user_data.cmd);
+    if( packet_create == NULL )
+    {
+        return false;
+    }
+    
+    memset(&tx_packet,0,MYPROTOCOL_PACKET_SIZE);
+    
+    status = packet_create(ctx, &tx_packet);
+    
+    tx_packet.sn = packet->sn;
+    tx_packet.check_sum = myprotocol_compute_checksum((uint8 *)&tx_packet);
+    
+    MYPROTOCOL_PACKET_REPORT();
+    
+    return status;
+}
+
+/**
+ *******************************************************************************
+ * @brief       MYPROTOCOL 数据发送函数
+ * @param       [in/out]   data_dir         数据方向
+ *              [in/out]   packet           相关数据包
+ *              [in/out]   packet_create    应答数据包创建函数
+ *              [in/out]   ctx              参数
+ * @return      [out]      bool
+ * @note        None
+ *******************************************************************************
+ */
+bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR data_dir, MYPROTOCOL_FORMAT *packet, packet_func packet_create, void *ctx )
+{
+    bool status = false;
+    
+    if( packet_create == NULL )
+    {
+        return false;
+    }
+    
+    if( data_dir == MYPROTOCOL_DIR_D2W )
+    {
+        status = MYPROTOCOL_DIR_D2W_SEND_MSG(packet, packet_create, ctx);
+    }
+    else if( data_dir == MYPROTOCOL_DIR_D2D )
+    {
+        status = MYPROTOCOL_DIR_D2D_SEND_MSG(packet_create, ctx);
+    }
+    else
+    {
+        return false;
+    }
+    
+    return status;
 }
 
 /**
@@ -261,7 +286,7 @@ void create_sdtick_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
  * @note        None
  *******************************************************************************
  */
-void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt )
+void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
 {
     if( pkt->clusterId != SmartDevice_Comm_ClustersID )
     {
@@ -310,247 +335,6 @@ void SmartDevice_MessageMSGCB( afIncomingMSGPacket_t *pkt )
     }
 }
 
-
-/**
- *******************************************************************************
- * @brief        SmartDevice发送信息函数
- * @param       [in/out]   create_packet    创建数据包功能
- *              [in/out]   ctx              上下文
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-void SmartDevice_Send_Message( create_sd_packet create_packet, void *ctx )
-{
-    MYPROTOCOL_FORMAT packet;
-    
-    memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
-    
-    create_packet(ctx,&packet);
-    
-    packet.check_sum = myprotocol_compute_checksum((uint8 *)&packet);
-    
-    AF_DataRequest(&SmartDevice_Periodic_DstAddr,
-                   &SmartDevice_epDesc,
-                   SmartDevice_Comm_ClustersID,
-                   sizeof(MYPROTOCOL_FORMAT),
-                   (uint8 *)&packet,
-                   &SmartDevice_TransID,
-                   AF_DISCV_ROUTE,
-                   AF_DEFAULT_RADIUS);
-}
-
-/**
- *******************************************************************************
- * @brief       myprotocol 创建并发送一个数据包
- * @param       [in/out]  packet        接收到的数据包
- *              [in/out]  packet_type   创建数据包的类型
- *              [in/out]  data          需要用到的数据   
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool myprotol_send_packet( MYPROTOCOL_FORMAT *packet, packet_func packet_create, void *ctx )
-{
-    bool status = false;
-    
-    if( packet == NULL || packet_create == NULL )
-    {
-        return false;
-    }
-    
-    memset(&tx_packet,0,MYPROTOCOL_PACKET_SIZE);
-    
-    status = packet_create(ctx, &tx_packet);
-    
-    tx_packet.sn = packet->sn;
-    tx_packet.check_sum = myprotocol_compute_checksum((uint8 *)&tx_packet);
-    
-    MYPROTOCOL_PACKET_REPORT();
-    
-    return status;
-}
-
-///**
-// *******************************************************************************
-// * @brief       创建错误代码数据包
-// * @param       [in/out]  sn    事件序号
-// * @return      [in/out]  void
-// * @note        None
-// *******************************************************************************
-// */
-//void myprotocol_creat_errcode_packet( uint8 sn )
-//{
-//    memset(&tx_packet,0,MYPROTOCOL_PACKET_SIZE);
-//    
-//    tx_packet.commtype = MYPROTOCOL_COMM_ERROR;
-//    tx_packet.sn = sn;
-//    tx_packet.check_sum = myprotocol_compute_checksum((uint8 *)&tx_packet);
-//}
-/**
- *******************************************************************************
- * @brief       创建错误代码数据包
- * @param       [in/out]  ctx     上下文
- *              [in/out]  packet  数据包  
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool create_errcode_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{
-    packet->commtype = MYPROTOCOL_COMM_ERROR;
-    return true;
-}
-
-
-///**
-// *******************************************************************************
-// * @brief       创建结束通讯数据包
-// * @param       [in/out]  sn    事件序号
-// * @return      [in/out]  void
-// * @note        None
-// *******************************************************************************
-// */
-//void myprotocol_creat_commend_packet( uint8 sn )
-//{
-//    memset(&tx_packet,0,MYPROTOCOL_PACKET_SIZE);
-//    
-//    tx_packet.commtype = MYPROTOCOL_COMM_END;
-//    tx_packet.sn = sn;
-//    tx_packet.check_sum = myprotocol_compute_checksum((uint8 *)&tx_packet);
-//}
-/**
- *******************************************************************************
- * @brief       创建结束通讯数据包
- * @param       [in/out]  ctx     上下文
- *              [in/out]  packet  数据包  
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool create_commend_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{
-    packet->commtype = MYPROTOCOL_COMM_END;
-    return true;
-}
-
-///**
-// *******************************************************************************
-// * @brief       创建写入设备信息应答数据包
-// * @param       [in/out]  sn    事件序号
-// * @return      [in/out]  void
-// * @note        None
-// *******************************************************************************
-// */
-//void myprotocol_create_writeack_packet(MYPROTOCOL_FORMAT *packet)
-//{
-//    memset(&tx_packet,0,MYPROTOCOL_PACKET_SIZE);
-//    
-//    tx_packet.commtype = MTPROTOCOL_W2D_WRITE_ACK;
-//    tx_packet.sn = packet->sn;
-//    tx_packet.check_sum = myprotocol_compute_checksum((uint8 *)&tx_packet);    
-//}
-/**
- *******************************************************************************
- * @brief       创建写入设备信息应答数据包
- * @param       [in/out]  ctx     上下文
- *              [in/out]  packet  数据包  
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool create_writeack_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{
-    packet->commtype = MTPROTOCOL_W2D_WRITE_ACK;
-    return true;
-}
-
-///**
-// *******************************************************************************
-// * @brief       创建读取设备信息应答数据包
-// * @param       [in/out]  sn    事件序号
-// * @return      [in/out]  void
-// * @note        None
-// *******************************************************************************
-// */
-//void myprotocol_create_readack_packet(MYPROTOCOL_FORMAT *packet)
-//{
-//    memset(&tx_packet,0,MYPROTOCOL_PACKET_SIZE);
-//    
-//    tx_packet.commtype = MYPROTOCOL_W2D_READ_ACK;
-//    tx_packet.sn = packet->sn;
-//    tx_packet.check_sum = myprotocol_compute_checksum((uint8 *)&tx_packet);    
-//}
-/**
- *******************************************************************************
- * @brief       创建读取设备信息应答数据包
- * @param       [in/out]  ctx     上下文
- *              [in/out]  packet  数据包  
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool create_readack_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{
-    packet->commtype = MYPROTOCOL_W2D_READ_ACK;
-    return true;
-}
-
-/**
- *******************************************************************************
- * @brief       创建读取设备数量应答数据包
- * @param       [in/out]  ctx     上下文
- *              [in/out]  packet  数据包  
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool create_devicenum_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{ 
-    uint8 *num = (uint8 *)ctx;
-    
-    if( ctx == NULL )
-    {
-        return false;
-    }
-    
-    packet->commtype = MYPROTOCOL_W2D_READ_ACK;
-    packet->user_data.cmd = W2D_GET_DEVICE_NUM_CMD;
-    packet->user_data.data[0] = *num;
-    packet->user_data.len = sizeof(uint8);
-    
-    return true;
-}
-
-/**
- *******************************************************************************
- * @brief       创建读取设备信息应答数据包
- * @param       [in/out]  ctx     上下文
- *              [in/out]  packet  数据包  
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool create_deviceinfo_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{ 
-    MYPROTOCOL_DEVCICE_ACK *device_info = (MYPROTOCOL_DEVCICE_ACK *)ctx;
-    
-    if( ctx == NULL )
-    {
-        return false;
-    }
-
-    packet->commtype = MYPROTOCOL_W2D_READ_ACK;
-    packet->user_data.cmd = W2D_GET_DEVICE_NUM_CMD;
-    packet->user_data.data[0] = device_info->id;
-    packet->user_data.data[1] = device_info->info->device;
-    memcpy(&packet->user_data.data[2],&device_info->info->mac,sizeof(device_info->info->mac));
-    
-    packet->user_data.len = sizeof(uint8);
-    
-    return true;
-}
-
 #if defined ( USE_GIZWITS_MOD )       
  
 /**
@@ -561,18 +345,13 @@ bool create_deviceinfo_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
  * @note        None
  *******************************************************************************
  */
-void myprotocol_packet_handler( uint8 *report_data, uint8 *packet_data )
+void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data )
 {
     MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)packet_data;
     
-//    if( report_data == NULL || packet_data == NULL )
-//    {
-//        return 0;
-//    }
-    
     if( myprotocol_packet_check(packet_data) == false )
     {
-        myprotol_send_packet(packet,create_errcode_packet,NULL);
+        MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,packet,create_errcode_packet,NULL);
         return;
     }
     else 
@@ -588,7 +367,7 @@ void myprotocol_packet_handler( uint8 *report_data, uint8 *packet_data )
                         case W2D_GET_DEVICE_NUM_CMD:
                         {
                             uint8 num = Get_DeviceNum_ForList();
-                            myprotol_send_packet(packet,create_devicenum_packet,(void *)&num);
+                            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,packet,create_devicenum_packet,(void *)&num);
                         }
                             break;
                         case W2D_GET_DEVICE_INFO_CMD:
@@ -596,7 +375,7 @@ void myprotocol_packet_handler( uint8 *report_data, uint8 *packet_data )
                             MYPROTOCOL_DEVCICE_ACK device;
                             device.id = packet->user_data.data[0];
                             device.info = (MYPROTOCOL_DEVICE_INFO *)Get_DeviceInfo_InList(device.id);
-                            myprotol_send_packet(packet,create_deviceinfo_packet,(void *)&device);
+                            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,packet,create_deviceinfo_packet,(void *)&device);
                         }
                             break;
                         default:
@@ -605,20 +384,20 @@ void myprotocol_packet_handler( uint8 *report_data, uint8 *packet_data )
                 }
                 else
                 {
-                    myprotol_send_packet(packet,create_readack_packet,NULL);
+                    MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,packet,create_readack_packet,NULL);
                 }
                     break;
             // WIFI模组写入设备数据等待应答
             case MYPROTOCOL_W2D_WRITE_WAIT:
-                myprotol_send_packet(packet,create_writeack_packet,NULL);
+                MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,packet,create_writeack_packet,NULL);
                     break;
             // 设备读取WIFI模组信息应答
             case MYPROTOCOL_D2W_READ_ACK:
-                myprotol_send_packet(packet,create_commend_packet,NULL);
+                MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,packet,create_commend_packet,NULL);
                     break;
             // 设备上报数据应答
             case MYPROTOCOL_D2W_REPORT_ACK:
-                myprotol_send_packet(packet,create_commend_packet,NULL);
+                MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,packet,create_commend_packet,NULL);
                     break;
             // 通讯错误
             case MYPROTOCOL_COMM_ERROR:

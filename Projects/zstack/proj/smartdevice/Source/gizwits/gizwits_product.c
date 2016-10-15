@@ -59,7 +59,7 @@ int8 gizwitsEventProcess(eventInfo_t *info, uint8 *data, uint8 len)
       case EVENT_PACKET:
         GIZWITS_LOG("Evt: EVENT_PACKET\n");
 //        memcpy((uint8 *)&currentDataPoint.valuePacket,(uint8 *)&dataPointPtr->valuePacket,sizeof(currentDataPoint.valuePacket));
-        myprotocol_packet_handler((uint8 *)&currentDataPoint.valuePacket,(uint8 *)&dataPointPtr->valuePacket);
+        Gizwits_Message_Headler((uint8 *)&currentDataPoint.valuePacket,(uint8 *)&dataPointPtr->valuePacket);
         break;
 
       case WIFI_SOFTAP:

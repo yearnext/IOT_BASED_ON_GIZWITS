@@ -148,7 +148,7 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
                     break;
                 /** 接收到数据 */
                 case AF_INCOMING_MSG_CMD:
-                    SmartDevice_MessageMSGCB(MSGpkt);
+                    SmartDevice_Message_Headler(MSGpkt);
                     break;
                 /** 状态改变 */
                 case ZDO_STATE_CHANGE:
