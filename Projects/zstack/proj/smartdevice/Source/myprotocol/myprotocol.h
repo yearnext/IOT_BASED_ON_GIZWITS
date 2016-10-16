@@ -100,6 +100,9 @@ typedef enum
 typedef bool (*packet_func)(void *ctx, MYPROTOCOL_FORMAT *packet);
 
 /* Exported variables --------------------------------------------------------*/
+// 设备类型
+#define SMART_DEVICE_TYPE MYPROTOCOL_DEVICE_LIGHT
+
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/

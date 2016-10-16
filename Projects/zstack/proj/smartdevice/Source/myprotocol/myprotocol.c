@@ -50,6 +50,8 @@
 #define MYPROTOCOL_UART_PORT 0
 #define MYPROTOCOL_UART_WRITE(data,len)  HalUARTWrite(GIZWITS_UART_PORT,data,len)
 
+#define SmartDevice_ProfileID (uint16)SMART_DEVICE_TYPE
+
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -314,10 +316,9 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
                 // 增加设备心跳计数
                 Add_DeviceTick_ForList(device_info);
             }
-//            
-//            // 心跳应答
-//            SmartDevice_Send_Message(pkt->srcAddr,create_sdtick_ack_packet,&device_info->device);
-//            
+            
+            // 心跳应答
+            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2D,pkt->srcAddr,create_acktick_packet,&device_info->device);
             MYPROTOCOL_LOG("Coord get one end device tick packet!\n");
 #endif
             break;

@@ -84,7 +84,7 @@ int8 gizwitsEventProcess(eventInfo_t *info, uint8 *data, uint8 len)
 //        GIZWITS_LOG("RSSI %d\n", wifiData->rssi);
         break;
 //      case TRANSPARENT_DATA:
-        break;
+//        break;
       default:
         break;
     }

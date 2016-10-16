@@ -18,7 +18,7 @@
  */
 
 /**
- * @defgroup OSAL_Light模块
+ * @defgroup OSAL初始化模块
  * @{
  */
 
@@ -107,6 +107,6 @@ void osalInitTasks( void )
 
 }
 
-/** @}*/     /* OSAL_Light模块 */
+/** @}*/     /* OSAL初始化模块 */
 
 /**********************************END OF FILE*********************************/
