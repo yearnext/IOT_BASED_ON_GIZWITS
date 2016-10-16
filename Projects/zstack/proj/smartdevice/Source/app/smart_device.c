@@ -204,7 +204,7 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
  
     if( events & SMART_DEVICE_TIMER_EVEN )
     {      
-        //SmartDevice_Send_Message((afAddrType_t *)&SmartDevice_Periodic_DstAddr,create_sdtick_packet,NULL);
+        MYPROTOCOL_SEND_TICK_PACKET();
 
         osal_start_timerEx( SmartDevice_TaskID, 
                             SMART_DEVICE_TIMER_EVEN, 

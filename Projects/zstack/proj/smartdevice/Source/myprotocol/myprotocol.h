@@ -110,7 +110,8 @@ typedef bool (*packet_func)(void *ctx, MYPROTOCOL_FORMAT *packet);
 extern void myprotocol_init( uint8 endpoint, uint8 *task_id );
 extern void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt );
 extern void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data );
-extern bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR, MYPROTOCOL_FORMAT *, packet_func, void * );
+extern bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR, void*, packet_func, void* );
+extern void MYPROTOCOL_SEND_TICK_PACKET( void );
 
 #endif      /* __myprotocol_H__ */
 

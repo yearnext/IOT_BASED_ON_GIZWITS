@@ -191,7 +191,7 @@ static bool myprotocol_packet_check( uint8 *data )
  * @note        None
  *******************************************************************************
  */
-static bool MYPROTOCOL_DIR_D2D_SEND_MSG( packet_func create_packet, void *ctx )
+static bool MYPROTOCOL_DIR_D2D_SEND_MSG( afAddrType_t *dst_addr, packet_func create_packet, void *ctx )
 {
     MYPROTOCOL_FORMAT packet;
     
@@ -201,7 +201,7 @@ static bool MYPROTOCOL_DIR_D2D_SEND_MSG( packet_func create_packet, void *ctx )
     
     packet.check_sum = myprotocol_compute_checksum((uint8 *)&packet);
     
-    AF_DataRequest(&SmartDevice_Periodic_DstAddr,
+    AF_DataRequest(dst_addr,
                    &SmartDevice_epDesc,
                    SmartDevice_Comm_ClustersID,
                    sizeof(MYPROTOCOL_FORMAT),
@@ -255,7 +255,7 @@ static bool MYPROTOCOL_DIR_D2W_SEND_MSG( MYPROTOCOL_FORMAT *packet, packet_func 
  * @note        None
  *******************************************************************************
  */
-bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR data_dir, MYPROTOCOL_FORMAT *packet, packet_func packet_create, void *ctx )
+bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR data_dir, void *ctx, packet_func packet_create, void *param )
 {
     bool status = false;
     
@@ -266,11 +266,13 @@ bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR data_dir, MYPROTOCOL_FORMAT *packe
     
     if( data_dir == MYPROTOCOL_DIR_D2W )
     {
-        status = MYPROTOCOL_DIR_D2W_SEND_MSG(packet, packet_create, ctx);
+        MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)(ctx);
+        status = MYPROTOCOL_DIR_D2W_SEND_MSG(packet, packet_create, param);
     }
     else if( data_dir == MYPROTOCOL_DIR_D2D )
     {
-        status = MYPROTOCOL_DIR_D2D_SEND_MSG(packet_create, ctx);
+        afAddrType_t *dst = (afAddrType_t *)ctx;
+        status = MYPROTOCOL_DIR_D2D_SEND_MSG(dst, packet_create, param);
     }
     else
     {
@@ -318,7 +320,7 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
             }
             
             // 心跳应答
-            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2D,pkt->srcAddr,create_acktick_packet,&device_info->device);
+            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2D,(void *)&pkt->srcAddr,create_acktick_packet,&device_info->device);
             MYPROTOCOL_LOG("Coord get one end device tick packet!\n");
 #endif
             break;
@@ -413,6 +415,19 @@ void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data )
 }
 
 #endif
+
+/**
+ *******************************************************************************
+ * @brief       发送心跳数据包
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void MYPROTOCOL_SEND_TICK_PACKET( void )
+{
+    MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2D,(void *)&SmartDevice_Periodic_DstAddr,create_tick_packet,NULL);
+}
 
 /** @}*/     /* myprotocol模块 */
 
