@@ -34,7 +34,6 @@
 #include "onboard.h"
 #include "hal_led.h"
 #include "hal_timer.h"
-#include "timer_config.h"
 #include "nv_save.h"
 #include "OSAL_Nv.h"
 #include "hal_key.h"
@@ -43,23 +42,36 @@
 #include "MT_UART.h"
 #include "hal_uart.h"
 #include "myprotocol.h"
+#include "timer_config.h"
 
-#if defined ( USE_GIZWITS_MOD )
-#include "gizwits.h"
+#if SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_COORD
+
+#elif SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_LIGHT
+#include "bsp_light.h"
+#elif SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_SOCKET
+
+#elif SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_CURTAIN
+
+#elif SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_HT_SENSOR
+
+#else
+
+#endif
+     
+#if defined(USE_GIZWITS_MOD)
+#include "gizwits_protocol.h"
 #endif
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
+// 机智云数据点
 #if defined ( USE_GIZWITS_MOD )
 dataPoint_t currentDataPoint;
 #endif
 
 /* Private define ------------------------------------------------------------*/
-/**
-* @name 日志打印宏定义
-* @{
-*/
+// 输出调试信息配置
 #define USE_SMARTDEVICE_DEBUG 1
 
 #if USE_SMARTDEVICE_DEBUG
@@ -71,19 +83,32 @@ dataPoint_t currentDataPoint;
 #else
     #define DEVICE_LOG(n)
 #endif
+     
+/** 设备定时时间 */
+#define SMART_DEVICE_TIME       (3000)
+/** 设备定时事件 */
+#define SMART_DEVICE_TIMER_EVEN (0x0002)
+
+/** 机智云事件处理时间 */
+#define GIZWITS_HANDLER_TIME (50)
+/** 清除僵尸设备时间 */
+#define CLEAR_ZOMBIE_DEVICE_TIME (30000)
+
+/** Smart Device 通讯状态指示灯 */
+#define SMARTDEVICE_LED_DISCONNED_STATE (0x00)
+#define SMARTDEVICE_LED_CONNED_STATE    (0x01)
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /** 任务ID */
 static byte SmartDevice_TaskID;
-
 /** 设备状态 */
 static devStates_t SmartDevice_NwkState;
 
 /* Private functions ---------------------------------------------------------*/
-//void SmartDevice_Send_Message( afAddrType_t *dst_addr, create_sd_packet create_packet, void *ctx );
 void SmartDevice_Key_Headler( uint8 keys, uint8 state );
 void ZDO_STATE_CHANGE_CB( devStates_t status );
+void SmartDevice_CommLED_Control( uint8 state );
 
 /* Exported functions --------------------------------------------------------*/
 /**
@@ -103,22 +128,30 @@ void SmartDevice_Init( byte task_id )
     MT_UartRegisterTaskID(SmartDevice_TaskID);
     
     Timer3_Init();
-    Timer4_PWM_Init(TIM4_CH0_PORT_P2_0);
+#if SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_COORD
+    
+#elif SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_LIGHT
+    bsp_light_init();
+#elif SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_SOCKET
+
+#elif SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_CURTAIN
+
+#elif SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_HT_SENSOR
+
+#else
+
+#endif
     
     osal_nv_item_init(DEVICE_COORD_SAVE_ID,DEVICE_COORD_DATA_SIZE,NULL);
 
-#if defined ( USE_GIZWITS_MOD )   
-    gizwitsInit();
-#endif
-    
     myprotocol_init( SmartDevice_EndPoint, &SmartDevice_TaskID );
 
     /**  注册按键事件 */
     RegisterForKeys( SmartDevice_TaskID );
     
+    SmartDevice_CommLED_Control(SMARTDEVICE_LED_DISCONNED_STATE);
+    
     DEVICE_LOG("Smart device init finish!\n");
-    HalLedSet(HAL_LED_1,HAL_LED_MODE_ON);
-    HalLedSet(HAL_LED_2,HAL_LED_MODE_ON);
 }
 
 /**
@@ -201,21 +234,51 @@ void ZDO_STATE_CHANGE_CB( devStates_t status )
             osal_start_timerEx( SmartDevice_TaskID, 
                                 SMART_DEVICE_TIMER_EVEN, 
                                 SMART_DEVICE_TIME );
+            SmartDevice_CommLED_Control(SMARTDEVICE_LED_CONNED_STATE);
                 break;
         case DEV_END_DEVICE:
             DEVICE_LOG("I am End Device!\n");
             osal_start_timerEx( SmartDevice_TaskID, 
                                 SMART_DEVICE_TIMER_EVEN, 
                                 SMART_DEVICE_TIME );
+            SmartDevice_CommLED_Control(SMARTDEVICE_LED_CONNED_STATE);
                 break;
         case DEV_ZB_COORD:
             DEVICE_LOG("I am Coord Device!\n");
+            SmartDevice_CommLED_Control(SMARTDEVICE_LED_CONNED_STATE);
                 break;
         case DEV_NWK_DISC:
             DEVICE_LOG("Discovering PAN's to join!\n");
             break;
         default:
             break;
+    }
+}
+
+/**
+ *******************************************************************************
+ * @brief       Smart Device 通讯状态指示灯控制
+ * @param       [in/out]  state    通讯状态
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void SmartDevice_CommLED_Control( uint8 state )
+{
+    if( state == SMARTDEVICE_LED_DISCONNED_STATE )
+    {
+        HalLedSet(HAL_LED_1,HAL_LED_MODE_ON);
+        HalLedSet(HAL_LED_2,HAL_LED_MODE_OFF);
+    }
+    else if( state == SMARTDEVICE_LED_CONNED_STATE )
+    {
+        HalLedSet(HAL_LED_1,HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_2,HAL_LED_MODE_ON);
+    }
+    else
+    {
+        HalLedSet(HAL_LED_1,HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_2,HAL_LED_MODE_OFF);
     }
 }
 

@@ -1,10 +1,10 @@
 /**
  ******************************************************************************
-  * @file       gizwits.h
+  * @file       bsp_light.h
   * @author     yearnext
   * @version    1.0.0
   * @date       2016年9月17日
-  * @brief      gizwits 头文件
+  * @brief      智能电灯配置头文件
   * @par        工作平台                                  
   *                  CC2530
   * @par        工作频率                                  
@@ -17,28 +17,28 @@
  ******************************************************************************
  */
 
-#if defined ( USE_GIZWITS_MOD )
-
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __APP_GIZWITS_H__
-#define __APP_GIZWITS_H__
+#ifndef __SMART_DEVICE_LIGHT_H__
+#define __SMART_DEVICE_LIGHT_H__
 
 /* Includes ------------------------------------------------------------------*/
-#include "ZComDef.h"
-#include "gizwits_product.h"
+#include "comdef.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
+// 灯的开启关闭亮度
+#define Light_ON_Brightness            ( 255 )
+#define Light_OFF_Brightness           ( 0 )
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern void app_gizwits_init( void );
+extern void bsp_light_init( void );
+extern void light_brightness_set( uint8 brightness );
+extern uint8 light_brightness_get( void );
 
-extern uint16 Gizwits_ProcessEven( uint8 task_id, uint16 events );
-#endif      /* __APP_GIZWITS_H__ */
-
-#endif
+#endif      /* __CC2530_TIMER_CONFIG_H__ */
 
 /**********************************END OF FILE*********************************/

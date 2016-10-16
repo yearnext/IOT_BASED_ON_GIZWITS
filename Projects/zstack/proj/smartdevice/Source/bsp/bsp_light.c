@@ -1,10 +1,10 @@
  /**
  ******************************************************************************
-  * @file       gizwits.c
+  * @file       bsp_light.c
   * @author     yearnext
   * @version    1.0.0
   * @date       2016年9月17日
-  * @brief      gizwits 源文件
+  * @brief      智能电灯配置源文件
   * @par        工作平台                                  
   *                  CC2530
   * @par        工作频率                                  
@@ -18,51 +18,65 @@
  */
 
 /**
- * @defgroup gizwits模块
+ * @defgroup 智能电灯配置模块
  * @{
  */
 
-#if defined ( USE_GIZWITS_MOD )
-
 /* Includes ------------------------------------------------------------------*/
-#include "OSAL.h"
-#include "AF.h"
-#include "aps_groups.h"
-#include "ZDApp.h"
-#include "ZGlobals.h"
-
-#include "gizwits.h"
-#include "myprotocol.h"
-
-#include "onboard.h"
-
-#include "MT.h"
-#include "MT_UART.h"
+#include "bsp_light.h"
+#include "timer_config.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
+// 灯的亮度与PWM占空比之间转换
+#define Light_Brightness_Conversion(n) ( 0xFF - (n) )
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 /**
  *******************************************************************************
- * @brief       OSAL任务初始化函数
- * @param       [in/out]  task_id    任务ID
+ * @brief       电灯初始化函数
+ * @param       [in/out]  void
  * @return      [in/out]  void
  * @note        None
  *******************************************************************************
  */
-void app_gizwits_init( void )
+void bsp_light_init( void )
 {
-
-    
-    GIZWITS_LOG("Gizwits Init Finish!\n");
+    Timer4_PWM_Init( TIM4_CH0_PORT_P2_0 );
+    light_brightness_set(Light_ON_Brightness);
 }
 
-#endif
-/** @}*/     /* gizwits模块 */
+/**
+ *******************************************************************************
+ * @brief       电灯亮度设置函数
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void light_brightness_set( uint8 brightness )
+{
+    TIM4_CH0_UpdateDuty( Light_Brightness_Conversion(brightness) );
+}
+
+/**
+ *******************************************************************************
+ * @brief       读取电灯亮度函数
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+uint8 light_brightness_get( void )
+{
+    return Light_Brightness_Conversion( Get_TIM4_CH0_Duty() );
+}
+
+/** @}*/     /* 智能电灯配置模块 */
 
 /**********************************END OF FILE*********************************/

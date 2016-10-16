@@ -56,19 +56,7 @@ bool create_tick_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
     
     mac_addr = NLME_GetExtAddr();
     memcpy(&device_info.mac,mac_addr,sizeof(device_info.mac));
-
-#if (SmartDevice_ProfileID) == (SmartLight_ProfileID)
-    device_info.device = MYPROTOCOL_DEVICE_LIGHT;
-#elif (SmartDevice_ProfileID) == (SmartSwitch_ProfileID)
-    device_info.device = MYPROTOCOL_DEVICE_SOCKET;
-#elif (SmartDevice_ProfileID) == (SmartCurtain_ProfileID)
-    device_info.device = MYPROTOCOL_DEVICE_CURTAIN;
-#elif (SmartDevice_ProfileID) == (SmartCurtain_ProfileID)
-    device_info.device = MYPROTOCOL_DEVICE_HT_SENSOR;
-#else 
-    device_info.device = MYPROTOCOL_DEVICE_COORD;
-#endif
-    
+    device_info.device = SMART_DEVICE_TYPE;
     memcpy(&packet->user_data.data,&device_info,sizeof(MYPROTOCOL_DEVICE_INFO));
     
     packet->user_data.cmd = MYPROTOCOL_TICK_CMD;
