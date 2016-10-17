@@ -24,6 +24,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
 #include "OSAL_Nv.h"
+#include "app_timer.h" 
 
 /* Exported macro ------------------------------------------------------------*/
 // 设备存储地址
@@ -49,40 +50,12 @@
 #define DEVICE_FIRST_WRIYE_KEY (0x5A)
 
 /* Exported types ------------------------------------------------------------*/
-/* Exported variables --------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private typedef -----------------------------------------------------------*/
 // COORD 设备存储数据
 typedef struct
 {
     uint8 firstwritekey;
 }DEVICE_BASE_SAVE_DATA;
 
-// 设备定时器工作模式
-typedef struct
-{
-    uint16 TIMER_Working_Once      : 1;
-    uint16 TIMER_Working_EveryDay  : 1;
-    uint16 TIMER_Working_Custom    : 1;
-    uint16 TIMER_Working_Monday    : 1;
-    uint16 TIMER_Working_Tuesday   : 1;
-    uint16 TIMER_Working_Wednesday : 1;
-    uint16 TIMER_Working_Thursday  : 1;
-    uint16 TIMER_Working_Friday    : 1;
-    uint16 TIMER_Working_Saturday  : 1;
-    uint16 TIMER_Working_Sunday    : 1;
-}DEVICE_TIMER_MODE;
-// 设备定时器类型
-typedef struct
-{
-    uint8 timer_type;
-    DEVICE_TIMER_MODE mode;
-    uint8 device_status;
-    uint8 statr_hour;
-    uint8 start_minute;
-    uint8 stop_hour;
-    uint8 stop_minute;
-}DEVICE_TIMER;
 // 简单设备存储数据
 typedef struct
 {
@@ -121,6 +94,9 @@ typedef DEVICE_BASE_SAVE_DATA   DEVICE_TEMP_HUM_SENSOR_SAVE_DATA;
 typedef SIMPLE_DEVICE_SAVE_DATA DEVICE_LIGHT_SAVE_DATA;
 typedef SIMPLE_DEVICE_SAVE_DATA DEVICE_SOCKET_SAVE_DATA;
 
+/* Exported variables --------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
+/* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 extern void Rst_DeviceSaveData( uint8 );
