@@ -135,7 +135,8 @@ void InitBoard( uint8 level )
   else  // !OB_COLD
   {
     /* Initialize Key stuff */
-    HalKeyConfig(HAL_KEY_INTERRUPT_DISABLE, OnBoard_KeyCallback);
+//    HalKeyConfig(HAL_KEY_INTERRUPT_DISABLE, OnBoard_KeyCallback);
+      HalKeyConfig(HAL_KEY_INTERRUPT_ENABLE, OnBoard_KeyCallback);
   }
 }
 
@@ -244,7 +245,7 @@ void OnBoard_KeyCallback ( uint8 keys, uint8 state )
   uint8 shift;
   (void)state;
 
-  shift = (keys & HAL_KEY_SW_6) ? true : false;
+  shift = (keys & HAL_KEY_SW_1) ? true : false;
 
   if ( OnBoard_SendKeys( keys, shift ) != ZSuccess )
   {
@@ -254,22 +255,6 @@ void OnBoard_KeyCallback ( uint8 keys, uint8 state )
     }
     // Process SW2 here
     if ( keys & HAL_KEY_SW_2 )  // Switch 2
-    {
-    }
-    // Process SW3 here
-    if ( keys & HAL_KEY_SW_3 )  // Switch 3
-    {
-    }
-    // Process SW4 here
-    if ( keys & HAL_KEY_SW_4 )  // Switch 4
-    {
-    }
-    // Process SW5 here
-    if ( keys & HAL_KEY_SW_5 )  // Switch 5
-    {
-    }
-    // Process SW6 here
-    if ( keys & HAL_KEY_SW_6 )  // Switch 6
     {
     }
   }

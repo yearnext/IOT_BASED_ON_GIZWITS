@@ -47,7 +47,10 @@
 #include "MT_UART.h"
 #include "OSAL_Memory.h"
 #include <string.h>
-#include "gizwits.h"
+
+#if defined(USE_GIZWITS_MOD)
+#include "gizwits_protocol.h"
+#endif
 
 /***************************************************************************************************
  * MACROS

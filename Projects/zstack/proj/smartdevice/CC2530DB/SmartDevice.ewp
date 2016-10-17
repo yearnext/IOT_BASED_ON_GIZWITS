@@ -4969,6 +4969,12 @@
           <state>$PROJ_DIR$\..\..\..\..\..\Components\stack\zdo</state>
           <state>$PROJ_DIR$\..\..\..\..\..\Components\zmac</state>
           <state>$PROJ_DIR$\..\..\..\..\..\Components\zmac\f8w</state>
+          <state>$PROJ_DIR$\..\Source\app</state>
+          <state>$PROJ_DIR$\..\Source\bsp</state>
+          <state>$PROJ_DIR$\..\Source\devicelist</state>
+          <state>$PROJ_DIR$\..\Source\gizwits</state>
+          <state>$PROJ_DIR$\..\Source\hal</state>
+          <state>$PROJ_DIR$\..\Source\myprotocol</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -6102,6 +6108,12 @@
           <state>$PROJ_DIR$\..\..\..\..\..\Components\stack\zdo</state>
           <state>$PROJ_DIR$\..\..\..\..\..\Components\zmac</state>
           <state>$PROJ_DIR$\..\..\..\..\..\Components\zmac\f8w</state>
+          <state>$PROJ_DIR$\..\Source\app</state>
+          <state>$PROJ_DIR$\..\Source\bsp</state>
+          <state>$PROJ_DIR$\..\Source\devicelist</state>
+          <state>$PROJ_DIR$\..\Source\gizwits</state>
+          <state>$PROJ_DIR$\..\Source\hal</state>
+          <state>$PROJ_DIR$\..\Source\myprotocol</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -7235,6 +7247,12 @@
           <state>$PROJ_DIR$\..\..\..\..\..\Components\stack\zdo</state>
           <state>$PROJ_DIR$\..\..\..\..\..\Components\zmac</state>
           <state>$PROJ_DIR$\..\..\..\..\..\Components\zmac\f8w</state>
+          <state>$PROJ_DIR$\..\Source\app</state>
+          <state>$PROJ_DIR$\..\Source\bsp</state>
+          <state>$PROJ_DIR$\..\Source\devicelist</state>
+          <state>$PROJ_DIR$\..\Source\gizwits</state>
+          <state>$PROJ_DIR$\..\Source\hal</state>
+          <state>$PROJ_DIR$\..\Source\myprotocol</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -7880,73 +7898,88 @@
   <group>
     <name>App</name>
     <group>
-      <name>DeviceList</name>
+      <name>bsp</name>
       <file>
-        <name>$PROJ_DIR$\..\Source\devicelist.c</name>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_light.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\devicelist.h</name>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_light.h</name>
+      </file>
+    </group>
+    <group>
+      <name>DeviceList</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\devicelist\devicelist.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\devicelist\devicelist.h</name>
       </file>
     </group>
     <group>
       <name>Gizwits</name>
       <file>
-        <name>$PROJ_DIR$\..\Source\gizwits_product.c</name>
-        <excluded>
-          <configuration>CoordinatorEB</configuration>
-        </excluded>
+        <name>$PROJ_DIR$\..\Source\gizwits\gizwits_product.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\gizwits_product.h</name>
-        <excluded>
-          <configuration>CoordinatorEB</configuration>
-        </excluded>
+        <name>$PROJ_DIR$\..\Source\gizwits\gizwits_product.h</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\gizwits_protocol.c</name>
-        <excluded>
-          <configuration>CoordinatorEB</configuration>
-        </excluded>
+        <name>$PROJ_DIR$\..\Source\gizwits\gizwits_protocol.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\gizwits_protocol.h</name>
-        <excluded>
-          <configuration>CoordinatorEB</configuration>
-        </excluded>
+        <name>$PROJ_DIR$\..\Source\gizwits\gizwits_protocol.h</name>
       </file>
     </group>
     <group>
       <name>hal</name>
       <file>
-        <name>$PROJ_DIR$\..\Source\nv_save.c</name>
+        <name>$PROJ_DIR$\..\Source\hal\hal_dht11.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\nv_save.h</name>
+        <name>$PROJ_DIR$\..\Source\hal\hal_dht11.h</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\timer_config.c</name>
+        <name>$PROJ_DIR$\..\Source\hal\hal_ds1302.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\timer_config.h</name>
+        <name>$PROJ_DIR$\..\Source\hal\hal_ds1302.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\hal\nv_save.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\hal\nv_save.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\hal\timer_config.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\hal\timer_config.h</name>
       </file>
     </group>
     <group>
       <name>MyProtocol</name>
       <file>
-        <name>$PROJ_DIR$\..\Source\myprotocol.c</name>
+        <name>$PROJ_DIR$\..\Source\myprotocol\myprotocol.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\myprotocol.h</name>
+        <name>$PROJ_DIR$\..\Source\myprotocol\myprotocol.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\myprotocol\myprotocol_packet.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\myprotocol\myprotocol_packet.h</name>
       </file>
     </group>
     <file>
-      <name>$PROJ_DIR$\..\Source\OSAL_Init.c</name>
+      <name>$PROJ_DIR$\..\Source\app\OSAL_Init.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\Source\smart_device.c</name>
+      <name>$PROJ_DIR$\..\Source\app\smart_device.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\Source\smart_device.h</name>
+      <name>$PROJ_DIR$\..\Source\app\smart_device.h</name>
     </file>
   </group>
   <group>
