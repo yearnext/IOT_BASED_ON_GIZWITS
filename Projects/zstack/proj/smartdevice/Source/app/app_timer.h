@@ -37,12 +37,6 @@ typedef struct
     uint8 friday    : 1;
     uint8 saturday  : 1;
     uint8 sunday    : 1;
-}Timer_Custom_Mode;
-
-typedef union
-{
-    Timer_Custom_Mode mode;
-    uint8 data;
 }TIMER_CUSTOM_MODE;
 
 // 设备定时器工作模式
@@ -79,6 +73,7 @@ typedef enum
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
+extern DEVICE_STATUS_SIGNAL device_timer_check( DEVICE_TIMER timer );
 
 #endif      /* __APP_USER_TIMER_H__ */
 
