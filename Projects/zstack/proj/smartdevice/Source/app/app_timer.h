@@ -4,7 +4,7 @@
   * @author     yearnext
   * @version    1.0.0
   * @date       2016年9月17日
-  * @brief      ds1302 驱动头文件
+  * @brief      定时器应用头文件
   * @par        工作平台                                  
   *                  CC2530
   * @par        工作频率                                  
@@ -26,19 +26,31 @@
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
+// 定时器自定义工作类型
+typedef struct
+{
+    uint8 status    : 1;
+    uint8 monday    : 1;
+    uint8 tuesday   : 1;
+    uint8 wednesday : 1;
+    uint8 thursday  : 1;
+    uint8 friday    : 1;
+    uint8 saturday  : 1;
+    uint8 sunday    : 1;
+}Timer_Custom_Mode;
+
+typedef union
+{
+    Timer_Custom_Mode mode;
+    uint8 data;
+}TIMER_CUSTOM_MODE;
+
 // 设备定时器工作模式
 typedef struct
 {
-    uint16 TIMER_Working_Once      : 1;
-    uint16 TIMER_Working_EveryDay  : 1;
-    uint16 TIMER_Working_Custom    : 1;
-    uint16 TIMER_Working_Monday    : 1;
-    uint16 TIMER_Working_Tuesday   : 1;
-    uint16 TIMER_Working_Wednesday : 1;
-    uint16 TIMER_Working_Thursday  : 1;
-    uint16 TIMER_Working_Friday    : 1;
-    uint16 TIMER_Working_Saturday  : 1;
-    uint16 TIMER_Working_Sunday    : 1;
+    uint8 status;
+    uint8 single_mode;
+    TIMER_CUSTOM_MODE custom_mode;
 }DEVICE_TIMER_MODE;
 // 设备定时器类型
 typedef struct
@@ -48,7 +60,7 @@ typedef struct
     // use
     DEVICE_TIMER_MODE mode;
     uint8 device_status;
-    uint8 statr_hour;
+    uint8 start_hour;
     uint8 start_minute;
     uint8 stop_hour;
     uint8 stop_minute;

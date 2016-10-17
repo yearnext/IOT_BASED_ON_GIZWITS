@@ -30,10 +30,44 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
+#define ONE_DAY_MINUTES ( 24*60 )
+#define Time_Hour2Minute(hour) ((hour)*60)
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
+DEVICE_STATUS_SIGNAL device_timer_check( DEVICE_TIMER timer )
+{
+    user_time time = app_get_time();
+    uint16 start_time = Time_Hour2Minute(timer.start_hour)+timer.start_minute;
+    uint16 stop_time  = Time_Hour2Minute(timer.stop_hour)+timer.stop_minute;
+    uint16 now_time = Time_Hour2Minute(time.hour) + time.minute;
+    DEVICE_STATUS_SIGNAL status = DEVICE_KEEP_SIGNAL;
+    
+    if( start_time < stop_time )
+    {
+        if( now_time >= stop_time )
+        {
+            status = DEVICE_STOP_SIGNAL;
+        }
+        else if( now_time >= start_time )
+        {
+            status = DEVICE_START_SIGNAL;
+        }
+        else
+        {
+            /** do nothing */
+        }
+    }
+    else
+    {
+        
+    }
+    
+    
+    
+    return status;
+}
 
 /** @}*/     /* 定时器应用模块 */
 
