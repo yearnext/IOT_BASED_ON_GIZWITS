@@ -1,10 +1,10 @@
 /**
  ******************************************************************************
-  * @file       app_time.h
+  * @file       app_timer.h
   * @author     yearnext
   * @version    1.0.0
   * @date       2016年9月17日
-  * @brief      时间应用头文件
+  * @brief      ds1302 驱动头文件
   * @par        工作平台                                  
   *                  CC2530
   * @par        工作频率                                  
@@ -18,41 +18,56 @@
  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __APP_USER_TIME_H__
-#define __APP_USER_TIME_H__
+#ifndef __APP_USER_TIMER_H__
+#define __APP_USER_TIMER_H__
 
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
-#include "app_save.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
-/**
- *******************************************************************************
- * @brief       用户时间结构体
- * @note        可以根据硬件的数据传输顺序而更改
- *******************************************************************************
- */
+// 设备定时器工作模式
 typedef struct
 {
-    uint8 second;
-    uint8 minute;
-    uint8 hour;
-    uint8 day;
-    uint8 month;
-    uint8 week;
-    uint8 year;
-}user_time;
+    uint16 TIMER_Working_Once      : 1;
+    uint16 TIMER_Working_EveryDay  : 1;
+    uint16 TIMER_Working_Custom    : 1;
+    uint16 TIMER_Working_Monday    : 1;
+    uint16 TIMER_Working_Tuesday   : 1;
+    uint16 TIMER_Working_Wednesday : 1;
+    uint16 TIMER_Working_Thursday  : 1;
+    uint16 TIMER_Working_Friday    : 1;
+    uint16 TIMER_Working_Saturday  : 1;
+    uint16 TIMER_Working_Sunday    : 1;
+}DEVICE_TIMER_MODE;
+// 设备定时器类型
+typedef struct
+{
+    // res
+    uint8 timer_type;
+    // use
+    DEVICE_TIMER_MODE mode;
+    uint8 device_status;
+    uint8 statr_hour;
+    uint8 start_minute;
+    uint8 stop_hour;
+    uint8 stop_minute;
+}DEVICE_TIMER;
+
+// 设备状态信号
+typedef enum
+{
+    DEVICE_START_SIGNAL,
+    DEVICE_STOP_SIGNAL,
+    DEVICE_KEEP_SIGNAL,
+}DEVICE_STATUS_SIGNAL;
 
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern void app_time_init( void );
-extern void app_time_update( void );
-extern user_time app_get_time( void );
 
-#endif      /* __APP_USER_TIME_H__ */
+#endif      /* __APP_USER_TIMER_H__ */
 
 /**********************************END OF FILE*********************************/
