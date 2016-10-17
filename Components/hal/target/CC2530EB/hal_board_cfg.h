@@ -142,9 +142,12 @@
 #define ACTIVE_LOW        !
 #define ACTIVE_HIGH       !!    /* double negation forces result to be '1' */
 
-/* S1 */
-#define PUSH1_BV          BV(1)
-#define PUSH1_SBIT        P0_1
+/** S1 */
+#define PUSH1_BV          BV(5)
+#define PUSH1_SBIT        P0_5
+/** S2 */   
+#define PUSH2_BV          BV(7)
+#define PUSH2_SBIT        P0_7
 
 #if defined (HAL_BOARD_CC2530EB_REV17)
   #define PUSH1_POLARITY    ACTIVE_HIGH
@@ -293,12 +296,8 @@ extern void MAC_RfFrontendSetup(void);
 #define HAL_DEBOUNCE(expr)    { int i; for (i=0; i<500; i++) { if (!(expr)) i = 0; } }
 
 /* ----------- Push Buttons ---------- */
-#define HAL_PUSH_BUTTON1()        (PUSH1_POLARITY (PUSH1_SBIT))
-#define HAL_PUSH_BUTTON2()        (PUSH2_POLARITY (PUSH2_SBIT))
-#define HAL_PUSH_BUTTON3()        (0)
-#define HAL_PUSH_BUTTON4()        (0)
-#define HAL_PUSH_BUTTON5()        (0)
-#define HAL_PUSH_BUTTON6()        (0)
+#define HAL_PUSH_BUTTON1()        (PUSH1_SBIT == 0)
+#define HAL_PUSH_BUTTON2()        (PUSH2_SBIT == 0)
 
 /* ----------- LED's ---------- */
 #if defined (HAL_BOARD_CC2530EB_REV17) && !defined (HAL_PA_LNA) && !defined (HAL_PA_LNA_CC2590)
@@ -446,7 +445,7 @@ st( \
 
 /* Set to TRUE enable KEY usage, FALSE disable it */
 #ifndef HAL_KEY
-#define HAL_KEY FALSE
+#define HAL_KEY TRUE
 #endif
 
 /* Set to TRUE enable UART usage, FALSE disable it */
