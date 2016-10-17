@@ -2,7 +2,7 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>2563632891</fileChecksum>
+  <fileChecksum>2079228295</fileChecksum>
   <configuration>
     <name>Coord_Gizwits</name>
     <outputs>
@@ -445,6 +445,18 @@
       <file>$PROJ_DIR$\Coord_Gizwits\Obj\hal_dht11.pbi</file>
       <file>$PROJ_DIR$\Coord_Gizwits\Obj\hal_ds1302.pbi</file>
       <file>$PROJ_DIR$\Coord_Gizwits\Obj\hal_ds1302.r51</file>
+      <file>$PROJ_DIR$\..\Source\app\app_save.h</file>
+      <file>$PROJ_DIR$\..\Source\app\app_time.c</file>
+      <file>$PROJ_DIR$\Coord_Gizwits\Obj\app_time.r51</file>
+      <file>$PROJ_DIR$\..\Source\app\app_save.c</file>
+      <file>$PROJ_DIR$\Coord_Gizwits\Obj\app_time.pbi</file>
+      <file>$PROJ_DIR$\Coord_Gizwits\Obj\app_save.r51</file>
+      <file>$PROJ_DIR$\Coord_Gizwits\Obj\app_save.pbi</file>
+      <file>$PROJ_DIR$\..\Source\app\app_time.h</file>
+      <file>$PROJ_DIR$\..\Source\app\app_timer.c</file>
+      <file>$PROJ_DIR$\..\Source\app\app_timer.h</file>
+      <file>$PROJ_DIR$\Coord_Gizwits\Obj\app_timer.pbi</file>
+      <file>$PROJ_DIR$\Coord_Gizwits\Obj\app_timer.r51</file>
     </outputs>
     <file>
       <name>$PROJ_DIR$\..\Source\devicelist\devicelist.c</name>
@@ -519,11 +531,11 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 295 326 336 237 309 399 305 331 322 335 306 296 348 292 312 157 223 224 227 5 16 419 329 332 337 344 240 318 353 187 7 222 11 219 281 14 221 334 350 414 250 74 328 304 349 52 229 230 273</file>
+          <file> 295 326 229 336 237 309 399 305 331 322 335 306 296 348 292 312 157 223 224 227 5 16 419 329 332 337 344 240 448 318 353 187 7 222 439 219 281 14 221 334 350 414 250 74 328 304 349 52 230 273</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 361 360 336 329 237 221 348 318 332 334 331 295 350 414 250 74 296 312 305 337 306 328 292 322 353 304 326 349 344 187 157 7 399 240 52 224 230 229 223 222 227 11 335 219 5 16 281 273 309 14 419</file>
+          <file> 361 360 336 329 237 221 348 318 332 334 331 295 350 414 250 74 296 312 305 337 306 328 292 322 353 304 326 349 344 187 157 7 399 240 52 224 230 229 223 222 227 439 335 448 219 5 16 281 273 309 14 419</file>
         </tool>
       </inputs>
     </file>
@@ -542,11 +554,11 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 221 335 157 329 187 14 11 237 52 10</file>
+          <file> 237 446 187 329 52 335 14 439 221 157 10 448</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 361 360 10 329 237 221 14 52 187 157 11 335</file>
+          <file> 361 360 10 329 237 221 14 52 187 157 439 335 448 446</file>
         </tool>
       </inputs>
     </file>
@@ -753,7 +765,7 @@
       <inputs>
         <tool>
           <name>XLINK</name>
-          <file> 363 64 176 139 408 165 0 127 162 188 112 70 189 93 435 54 84 438 137 114 63 133 147 66 409 42 197 35 90 173 175 27 128 367 21 191 413 385 109 177 89 78 368 375 61 135 68 156 148 122 192 28 386 3 421 196 150 160 172 376 83 53 395 390 132 111 389 98 425 80 55 40 65 123 142 77 130 69 100 124</file>
+          <file> 363 64 176 139 408 444 441 450 165 0 127 162 188 112 70 189 93 435 54 84 438 137 114 63 133 147 66 409 42 197 35 90 173 175 27 128 367 21 191 413 385 109 177 89 78 368 375 61 135 68 156 148 122 192 28 386 3 196 150 160 172 376 83 53 395 390 132 111 389 98 425 80 55 40 65 123 142 77 130 69 100 124</file>
         </tool>
       </inputs>
     </file>
@@ -2639,11 +2651,76 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 329 229 237 318 52 399 221 224 334 431 240 223 230 332</file>
+          <file> 329 229 221 318 52 399 237 224 334 431 240 223 230 332</file>
         </tool>
         <tool>
           <name>ICC8051</name>
           <file> 361 360 431 329 237 221 52 229 240 399 224 230 223 318 332 334</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\app\app_time.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 443</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 441</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 439 329 237 448 187 221 335 157 446 431</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 361 360 446 329 237 221 439 335 448 187 157 431</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\app\app_save.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 445</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 444</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 329 237 335 157 187 448 221 439</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 361 360 439 329 237 221 335 448 187 157</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\app\app_timer.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 449</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 450</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICC8051</name>
+          <file> 361 360 446 329 237 221 439 335 448</file>
         </tool>
       </inputs>
     </file>

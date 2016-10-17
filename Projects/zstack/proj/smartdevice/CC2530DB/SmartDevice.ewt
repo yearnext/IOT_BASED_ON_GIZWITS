@@ -6788,6 +6788,27 @@
   <group>
     <name>App</name>
     <group>
+      <name>app</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\app\app_save.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\app\app_save.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\app\app_time.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\app\app_time.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\app\app_timer.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\app\app_timer.h</name>
+      </file>
+    </group>
+    <group>
       <name>bsp</name>
       <file>
         <name>$PROJ_DIR$\..\Source\bsp\bsp_light.c</name>
@@ -6833,12 +6854,6 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\Source\hal\hal_ds1302.h</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\hal\nv_save.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\hal\nv_save.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\Source\hal\timer_config.c</name>
