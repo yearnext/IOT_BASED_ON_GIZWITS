@@ -1,10 +1,10 @@
  /**
  ******************************************************************************
-  * @file       bsp_light.c
+  * @file       app_time.c
   * @author     yearnext
   * @version    1.0.0
   * @date       2016年9月17日
-  * @brief      智能电灯配置源文件
+  * @brief      时间 应用源文件
   * @par        工作平台                                  
   *                  CC2530
   * @par        工作频率                                  
@@ -18,102 +18,70 @@
  */
 
 /**
- * @defgroup 智能电灯配置模块
+ * @defgroup 时间应用模块
  * @{
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "bsp_light.h"
-#include "timer_config.h"
-#include <string.h>
-#include "app_save.h"
 #include "app_time.h"
+#include <string.h>
+#include "hal_ds1302.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-// 灯的亮度与PWM占空比之间转换
-#define Light_Brightness_Conversion(n) ( 0xFF - (n) )
-
+#define hal_timechip_init() hal_ds1302_init()  
+#define hal_time_set(time)  ds1302_wr_time(time)
+#define hal_time_read(time) ds1302_rd_time(time)
+     
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-static DEVICE_LIGHT_SAVE_DATA device_light;
+static user_time now_time;
 
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 /**
  *******************************************************************************
- * @brief       电灯初始化函数
+ * @brief       时间初始化程函数
  * @param       [in/out]  void
  * @return      [in/out]  void
  * @note        None
  *******************************************************************************
  */
-void bsp_light_init( void )
+void app_time_init( void )
 {
-    Timer4_PWM_Init( TIM4_CH0_PORT_P2_0 );
-    light_brightness_set(Light_OFF_Brightness);
+    hal_timechip_init();
     
-    // FLASH 数据初始化
-    if( osal_nv_read(DEVICE_LIGHT_SAVE_ID,0,DEVICE_LIGHT_DATA_SIZE,(void *)&device_light) != SUCCESS )
-    {
-        device_light.key.firstwritekey = 0;
-        osal_nv_item_init(DEVICE_LIGHT_SAVE_ID,DEVICE_LIGHT_DATA_SIZE,NULL);
-    }
-    
-    if( device_light.key.firstwritekey != DEVICE_FIRST_WRIYE_KEY )
-    {
-        memset(&device_light,0,sizeof(device_light));
-        
-        device_light.key.firstwritekey = DEVICE_FIRST_WRIYE_KEY;
-        device_light.data.status = Light_OFF_Brightness;
-    }
-    else
-    {
-        light_brightness_set(device_light.data.status);
-    }
+    app_time_update();
 }
 
 /**
  *******************************************************************************
- * @brief       电灯亮度设置函数
+ * @brief       时间刷新函数
  * @param       [in/out]  void
  * @return      [in/out]  void
  * @note        None
  *******************************************************************************
  */
-void light_brightness_set( uint8 brightness )
+void app_time_update( void )
 {
-    TIM4_CH0_UpdateDuty( Light_Brightness_Conversion(brightness) );
+    hal_time_read(&now_time);
 }
 
 /**
  *******************************************************************************
- * @brief       读取电灯亮度函数
+ * @brief       读取时间
  * @param       [in/out]  void
- * @return      [in/out]  void
+ * @return      [in/out]  time   读取到的时间数据
  * @note        None
  *******************************************************************************
  */
-uint8 light_brightness_get( void )
+user_time app_get_time( void )
 {
-    return Light_Brightness_Conversion( Get_TIM4_CH0_Duty() );
+    return now_time;
 }
 
-/**
- *******************************************************************************
- * @brief       电灯工作处理函数
- * @param       [in/out]  void
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-void light_working_headler( void )
-{
-    user_time time = app_get_time();
-}
-
-/** @}*/     /* 智能电灯配置模块 */
+/** @}*/     /* 时间应用模块 */
 
 /**********************************END OF FILE*********************************/

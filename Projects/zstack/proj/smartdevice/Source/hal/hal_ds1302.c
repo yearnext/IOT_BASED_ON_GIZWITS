@@ -109,42 +109,6 @@ void hal_ds1302_init( void )
     DS1302_TRICK_CONFIG();
 }
 
-///**
-// *******************************************************************************
-// * @brief       BCD码转16进制
-// * @param       [in/out]  bcd    bcd码
-// * @return      [in/out]  hex    转换好的数据
-// * @note        None
-// *******************************************************************************
-// */
-//static uint8 ds1302_bcd2hex( uint8 bcd )
-//{
-//    uint8 hex = 0;
-//    
-//    hex += (bcd >> 4)*10;
-//    hex += bcd & 0x0F;
-//    
-//    return hex;
-//}
-//
-///**
-// *******************************************************************************
-// * @brief       16进制转BCD码
-// * @param       [in/out]  hex    hex数据
-// * @return      [in/out]  bcd    转换好的数据
-// * @note        None
-// *******************************************************************************
-// */
-//static uint8 ds1302_hex2bcd( uint8 hex )
-//{
-//    uint8 bcd = 0;
-//    
-//    bcd |= (hex/10) << 4;
-//    bcd |= hex % 10;
-//    
-//    return bcd;
-//}
-
 /**
  *******************************************************************************
  * @brief       DS1302读取一字节
@@ -255,18 +219,15 @@ uint8 ds1302_rd_data( uint8 rd_addr )
  * @note        None
  *******************************************************************************
  */
-DS1302_TIME ds1302_rd_time( void )
+void ds1302_rd_time( void *time )
 {
-    DS1302_TIME get_time;
-    uint8 *data = (uint8 *)&get_time;
+    uint8 *data = (uint8 *)time;
     uint8 i = 0;
     
     for( i=0; i<7; i++ )
     {
         data[i] = DS1302_BCD2HEX(ds1302_rd_data(DS1302_RD_TIME_ADDR+i));
     }
-    
-    return get_time;
 }
 
 /**
@@ -277,9 +238,9 @@ DS1302_TIME ds1302_rd_time( void )
  * @note        None
  *******************************************************************************
  */
-void ds1302_wr_time( DS1302_TIME newtime )
+void ds1302_wr_time( void *time )
 {
-    uint8 *data = (uint8 *)&newtime;
+    uint8 *data = (uint8 *)time;
     uint8 i = 0;
     
     for( i=0; i<7; i++ )
@@ -287,6 +248,42 @@ void ds1302_wr_time( DS1302_TIME newtime )
         ds1302_wr_data(DS1302_RD_TIME_ADDR+i,DS1302_HEX2BCD(data[i]));
     }
 }
+
+///**
+// *******************************************************************************
+// * @brief       BCD码转16进制
+// * @param       [in/out]  bcd    bcd码
+// * @return      [in/out]  hex    转换好的数据
+// * @note        None
+// *******************************************************************************
+// */
+//uint8 ds1302_bcd2hex( uint8 bcd )
+//{
+//    uint8 hex = 0;
+//    
+//    hex += (bcd >> 4)*10;
+//    hex += bcd & 0x0F;
+//    
+//    return hex;
+//}
+//
+///**
+// *******************************************************************************
+// * @brief       16进制转BCD码
+// * @param       [in/out]  hex    hex数据
+// * @return      [in/out]  bcd    转换好的数据
+// * @note        None
+// *******************************************************************************
+// */
+//uint8 ds1302_hex2bcd( uint8 hex )
+//{
+//    uint8 bcd = 0;
+//    
+//    bcd |= (hex/10) << 4;
+//    bcd |= hex % 10;
+//    
+//    return bcd;
+//}
 
 /** @}*/     /* ds1302驱动模块 */
 
