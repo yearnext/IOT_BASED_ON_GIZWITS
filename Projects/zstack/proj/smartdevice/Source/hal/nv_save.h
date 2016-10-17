@@ -23,6 +23,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
+#include "OSAL_Nv.h"
 
 /* Exported macro ------------------------------------------------------------*/
 // 设备存储地址
@@ -54,7 +55,7 @@
 // COORD 设备存储数据
 typedef struct
 {
-    uint8 FirstWriteKey;
+    uint8 firstwritekey;
 }DEVICE_BASE_SAVE_DATA;
 
 // 设备定时器工作模式
@@ -85,7 +86,7 @@ typedef struct
 // 简单设备存储数据
 typedef struct
 {
-    DEVICE_BASE_SAVE_DATA Key;
+    DEVICE_BASE_SAVE_DATA key;
     
     struct
     {
