@@ -25,6 +25,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "bsp_light.h"
 #include "timer_config.h"
+#include <string.h>
+#include "nv_save.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -35,6 +37,8 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+static DEVICE_LIGHT_SAVE_DATA device_light;
+
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 /**
@@ -48,7 +52,26 @@
 void bsp_light_init( void )
 {
     Timer4_PWM_Init( TIM4_CH0_PORT_P2_0 );
-    light_brightness_set(Light_ON_Brightness);
+    light_brightness_set(Light_OFF_Brightness);
+    
+    // FLASH 数据初始化
+    if( osal_nv_read(DEVICE_LIGHT_SAVE_ID,0,DEVICE_LIGHT_DATA_SIZE,(void *)&device_light) != SUCCESS )
+    {
+        device_light.key.firstwritekey = 0;
+        osal_nv_item_init(DEVICE_LIGHT_SAVE_ID,DEVICE_LIGHT_DATA_SIZE,NULL);
+    }
+    
+    if( device_light.key.firstwritekey != DEVICE_FIRST_WRIYE_KEY )
+    {
+        memset(&device_light,0,sizeof(device_light));
+        
+        device_light.key.firstwritekey = DEVICE_FIRST_WRIYE_KEY;
+        device_light.data.status = Light_OFF_Brightness;
+    }
+    else
+    {
+        light_brightness_set(device_light.data.status);
+    }
 }
 
 /**
@@ -75,6 +98,19 @@ void light_brightness_set( uint8 brightness )
 uint8 light_brightness_get( void )
 {
     return Light_Brightness_Conversion( Get_TIM4_CH0_Duty() );
+}
+
+/**
+ *******************************************************************************
+ * @brief       电灯工作处理函数
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void light_working_headler( void )
+{
+    
 }
 
 /** @}*/     /* 智能电灯配置模块 */
