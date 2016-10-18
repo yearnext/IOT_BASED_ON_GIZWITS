@@ -49,14 +49,16 @@
 DEVICE_STATUS_SIGNAL device_timer_check( DEVICE_TIMER timer )
 {
     user_time time = app_get_time();
-    uint16 start_time = Time_Hour2Minute(timer.start_hour)+timer.start_minute;
-    uint16 stop_time  = Time_Hour2Minute(timer.stop_hour)+timer.stop_minute;
+    
+    uint16 start_time = Time_Hour2Minute(timer.time.start_hour)+timer.time.start_minute;
+    uint16 stop_time  = Time_Hour2Minute(timer.time.stop_hour)+timer.time.stop_minute;
     uint16 now_time = Time_Hour2Minute(time.hour) + time.minute;
-    uint8 mode = *((uint8 *)&timer.mode.custom_mode);
+    
+    uint8 mode = *((uint8 *)&timer.custom);
     DEVICE_STATUS_SIGNAL status = DEVICE_KEEP_SIGNAL;
     
     
-    if( timer.mode.status )
+    if( timer.mode != TIMER_SLEEP_MODE )
     {
         if( start_time < stop_time )
         {
@@ -66,8 +68,10 @@ DEVICE_STATUS_SIGNAL device_timer_check( DEVICE_TIMER timer )
             }
             else if( now_time >= start_time )
             {
-                if( timer.mode.single_mode \
-                    || (timer.mode.custom_mode.status && (mode & TIMER_CUSTOM_BV(time.week))) )
+                if( (timer.mode == TIMER_SIGNAL_MODE) \
+                    || ((timer.mode == TIMER_CUSTOM_MODE) \
+                        && (mode & TIMER_CUSTOM_BV(time.week)) \
+                        && (timer.custom.status)) )
                 {
                     status = DEVICE_START_SIGNAL;
                 }
@@ -81,8 +85,10 @@ DEVICE_STATUS_SIGNAL device_timer_check( DEVICE_TIMER timer )
         {
             if( now_time >= start_time )
             {
-                if( timer.mode.single_mode \
-                    || (timer.mode.custom_mode.status && (mode & TIMER_CUSTOM_BV(time.week))) )
+                if( (timer.mode == TIMER_SIGNAL_MODE) \
+                    || ((timer.mode == TIMER_CUSTOM_MODE) \
+                        && (mode & TIMER_CUSTOM_BV(time.week)) \
+                        && (timer.custom.status)) )
                 {
                     status = DEVICE_START_SIGNAL;
                 }

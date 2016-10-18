@@ -111,7 +111,7 @@ uint8 light_brightness_get( void )
  */
 void light_working_headler( void )
 {
-    user_time time = app_get_time();
+    
 }
 
 /** @}*/     /* 智能电灯配置模块 */
