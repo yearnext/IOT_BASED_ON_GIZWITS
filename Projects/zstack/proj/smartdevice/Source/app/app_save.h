@@ -28,11 +28,12 @@
 
 /* Exported macro ------------------------------------------------------------*/
 // 设备存储地址
-#define DEVICE_COORD_SAVE_ID                    (0x0201)
-#define DEVICE_LIGHT_SAVE_ID                    (0x0201)
-#define DEVICE_SOCKET_SAVE_ID                   (0x0201)
-#define DEVICE_CURTAIN_SAVE_ID                  (0x0201)
-#define DEVICE_DEVICE_TEMP_HUM_SENSOR_SAVE_ID   (0x0201)
+#define DEVICE_FIRSTWRITEKEY_ID                 (0x0202)
+#define DEVICE_COORD_SAVE_ID                    (0x0210)
+#define DEVICE_LIGHT_SAVE_ID                    (0x0210)
+#define DEVICE_SOCKET_SAVE_ID                   (0x0210)
+#define DEVICE_CURTAIN_SAVE_ID                  (0x0210)
+#define DEVICE_DEVICE_TEMP_HUM_SENSOR_SAVE_ID   (0x0210)
 //设备占用存储空间大小
 #define Cal_DataSize(data)                      ( sizeof(data) / sizeof(unsigned char) )
 #define DEVICE_COORD_DATA_SIZE                  (Cal_DataSize(DEVICE_COORD_SAVE_DATA))
@@ -48,7 +49,8 @@
 #define DEVICE_DEVICE_TEMP_HUM_SENSOR_ID        (0x04)
 // 初次写入数据密钥
 #define DEVICE_FIRST_WRIYE_KEY (0x5A)
-
+// 配置智能设备的定时器数量
+#define SIMPLE_DEVICE_TIMER_NUM (2)
 /* Exported types ------------------------------------------------------------*/
 // COORD 设备存储数据
 typedef struct
@@ -59,34 +61,23 @@ typedef struct
 // 简单设备存储数据
 typedef struct
 {
-    DEVICE_BASE_SAVE_DATA key;
-    
-    struct
-    {
-        uint8 status;
-        DEVICE_TIMER normal_timer;
-        DEVICE_TIMER cntdown_timer;
-    }data;  
+    uint8 device_status;
+    DEVICE_TIMER timer[SIMPLE_DEVICE_TIMER_NUM]; 
 }SIMPLE_DEVICE_SAVE_DATA;
 
 // 简单设备存储数据
 typedef struct
 {
-    DEVICE_BASE_SAVE_DATA Key;
+    uint8 device_status;
     
     struct
     {
-        uint8 status;
-        
-        struct
-        {
-            uint8 mode;
-            uint8 active_data;
-        }smart;
-        
-        DEVICE_TIMER normal_timer;
-        DEVICE_TIMER cntdown_timer;
-    }data;  
+        uint8 mode;
+        uint8 active_data;
+    }smart;
+    
+    DEVICE_TIMER normal_timer;
+    DEVICE_TIMER cntdown_timer;  
 }DEVICE_CURTAIN_SAVE_DATA;
 
 typedef DEVICE_BASE_SAVE_DATA   DEVICE_COORD_SAVE_DATA;
@@ -100,6 +91,8 @@ typedef SIMPLE_DEVICE_SAVE_DATA DEVICE_SOCKET_SAVE_DATA;
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 extern void Rst_DeviceSaveData( uint8 );
+extern void Device_FirstWriteKey_Init( void );
+extern bool Device_FirstWrite_Check( void );
 
 #endif      /* __CC2530_FLASH_SAVE_H__ */
 
