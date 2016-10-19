@@ -38,7 +38,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-static DEVICE_LIGHT_SAVE_DATA device_light;
+static DEVICE_LIGHT_SAVE_DATA light;
 
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
@@ -56,23 +56,18 @@ void bsp_light_init( void )
     light_brightness_set(Light_OFF_Brightness);
     
     // FLASH 数据初始化
-    if( osal_nv_read(DEVICE_LIGHT_SAVE_ID,0,DEVICE_LIGHT_DATA_SIZE,(void *)&device_light) != SUCCESS )
+    Device_FirstWrite_Check();
+    
+    if( osal_nv_read(DEVICE_LIGHT_SAVE_ID,0,DEVICE_LIGHT_DATA_SIZE,(void *)&light) != SUCCESS )
     {
-        device_light.key.firstwritekey = 0;
+        memset(&light,0,sizeof(light));
+        light.device_status = Light_OFF_Brightness;
+        
         osal_nv_item_init(DEVICE_LIGHT_SAVE_ID,DEVICE_LIGHT_DATA_SIZE,NULL);
+        osal_nv_write(DEVICE_LIGHT_SAVE_ID,0,DEVICE_LIGHT_DATA_SIZE,(void *)&light);
     }
     
-    if( device_light.key.firstwritekey != DEVICE_FIRST_WRIYE_KEY )
-    {
-        memset(&device_light,0,sizeof(device_light));
-        
-        device_light.key.firstwritekey = DEVICE_FIRST_WRIYE_KEY;
-        device_light.data.status = Light_OFF_Brightness;
-    }
-    else
-    {
-        light_brightness_set(device_light.data.status);
-    }
+    light_brightness_set(light.device_status);
 }
 
 /**
@@ -85,7 +80,17 @@ void bsp_light_init( void )
  */
 void light_brightness_set( uint8 brightness )
 {
-    TIM4_CH0_UpdateDuty( Light_Brightness_Conversion(brightness) );
+    if( brightness != light_brightness_get() )
+    {
+        light.device_status = brightness;
+        
+        TIM4_CH0_UpdateDuty( Light_Brightness_Conversion(light.device_status) );
+        
+        osal_nv_write(DEVICE_LIGHT_SAVE_ID,\
+                      (uint16)(&((DEVICE_LIGHT_SAVE_DATA *)0)->device_status),\
+                      sizeof(light.device_status),\
+                      (void *)&light.device_status);
+    }
 }
 
 /**
@@ -111,7 +116,29 @@ uint8 light_brightness_get( void )
  */
 void light_working_headler( void )
 {
+//    DEVICE_STATUS_SIGNAL status;
+    uint8 i;
     
+    for( i=0; i<SIMPLE_DEVICE_TIMER_NUM; i++ )
+    {
+//        if( light.data. )
+    }
+    
+//    
+//    if( light.data.timer1.type == TIMER_COUNTDOWN_TYPE )
+//    {
+//        status = device_timer_check( light.data.timer1 );
+//        
+//        if( status == DEVICE_STOP_SIGNAL )
+//        {
+//            light_brightness_set(light.data.timer1.device_status);
+//            light.data.timer1.mode = TIMER_SLEEP_MODE;
+//        }
+//    }
+//    else
+//    {
+//        
+//    }
 }
 
 /** @}*/     /* 智能电灯配置模块 */

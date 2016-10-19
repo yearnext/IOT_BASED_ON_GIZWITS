@@ -39,7 +39,7 @@
  * @brief       恢复设备数据至出厂数据
  * @param       [in/out]  device_id    设备ID
  * @return      [in/out]  void
- * @note        定时周期大约为1ms
+ * @note        None
  *******************************************************************************
  */
 void Rst_DeviceSaveData( uint8 device_id )
@@ -96,6 +96,56 @@ void Rst_DeviceSaveData( uint8 device_id )
         }
         default:
             break;
+    }
+}
+
+/**
+ *******************************************************************************
+ * @brief       初始化出厂密钥
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void Device_FirstWriteKey_Init( void )
+{
+    uint8 key = 0;
+    
+    key = DEVICE_FIRST_WRIYE_KEY;
+    osal_nv_write(DEVICE_LIGHT_SAVE_ID,0,1,(void *)&key);
+}
+
+/**
+ *******************************************************************************
+ * @brief       检测出厂密钥
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+bool Device_FirstWrite_Check( void )
+{
+    uint8 key = 0;
+    
+    if( osal_nv_read(DEVICE_FIRSTWRITEKEY_ID,0,1,(void *)&key) != SUCCESS )
+    {
+        osal_nv_item_init(DEVICE_LIGHT_SAVE_ID,DEVICE_LIGHT_DATA_SIZE,NULL);
+        
+        Device_FirstWriteKey_Init();
+        
+        return false;
+    }
+    else
+    {
+        if( key != DEVICE_FIRST_WRIYE_KEY )
+        {
+            Device_FirstWriteKey_Init();
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
 }
 
