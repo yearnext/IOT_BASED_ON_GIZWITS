@@ -116,29 +116,12 @@ uint8 light_brightness_get( void )
  */
 void light_working_headler( void )
 {
-//    DEVICE_STATUS_SIGNAL status;
     uint8 i;
     
     for( i=0; i<SIMPLE_DEVICE_TIMER_NUM; i++ )
     {
-//        if( light.data. )
+        device_timer_headler(&light.timer[i],&light_brightness_set);
     }
-    
-//    
-//    if( light.data.timer1.type == TIMER_COUNTDOWN_TYPE )
-//    {
-//        status = device_timer_check( light.data.timer1 );
-//        
-//        if( status == DEVICE_STOP_SIGNAL )
-//        {
-//            light_brightness_set(light.data.timer1.device_status);
-//            light.data.timer1.mode = TIMER_SLEEP_MODE;
-//        }
-//    }
-//    else
-//    {
-//        
-//    }
 }
 
 /** @}*/     /* 智能电灯配置模块 */
