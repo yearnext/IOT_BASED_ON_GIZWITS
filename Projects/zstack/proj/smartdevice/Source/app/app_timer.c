@@ -25,6 +25,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "app_time.h"
 #include "app_timer.h"
+#include <string.h>
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -68,8 +69,8 @@ DEVICE_STATUS_SIGNAL device_timer_check( DEVICE_TIMER timer )
             }
             else if( now_time >= start_time )
             {
-                if( (timer.mode == TIMER_SIGNAL_MODE) \
-                    || ((timer.mode == TIMER_CUSTOM_MODE) \
+                if( (timer.mode == TIMER_SIGNAL_WAIT_MODE) \
+                    || ((timer.mode == TIMER_CUSTOM_WAIT_MODE) \
                         && (mode & TIMER_CUSTOM_BV(time.week)) \
                         && (timer.custom.status)) )
                 {
@@ -85,8 +86,8 @@ DEVICE_STATUS_SIGNAL device_timer_check( DEVICE_TIMER timer )
         {
             if( now_time >= start_time )
             {
-                if( (timer.mode == TIMER_SIGNAL_MODE) \
-                    || ((timer.mode == TIMER_CUSTOM_MODE) \
+                if( (timer.mode == TIMER_SIGNAL_WAIT_MODE) \
+                    || ((timer.mode == TIMER_CUSTOM_WAIT_MODE) \
                         && (mode & TIMER_CUSTOM_BV(time.week)) \
                         && (timer.custom.status)) )
                 {
@@ -105,6 +106,58 @@ DEVICE_STATUS_SIGNAL device_timer_check( DEVICE_TIMER timer )
     }
     
     return status;
+}
+         
+/**
+ *******************************************************************************
+ * @brief       定时器处理函数
+ * @param       [in/out]  *timer    当前定时器的配置
+ *              [in/out]  func      定时器功能回调函数
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void device_timer_headler( DEVICE_TIMER *timer, device_timer_func func )
+{
+    DEVICE_TIMER timer_bkp;
+    DEVICE_STATUS_SIGNAL status;
+    
+    memcpy(&timer_bkp,timer,sizeof(DEVICE_TIMER));
+    status = device_timer_check(timer_bkp);
+    
+    switch( timer->mode )
+    {
+        case TIMER_SIGNAL_WAIT_MODE:
+            if( status == DEVICE_START_SIGNAL )
+            {
+                timer->mode = TIMER_SIGNAL_MODE;
+                func(timer->device_start_status);
+            }
+            break;
+        case TIMER_CUSTOM_WAIT_MODE:
+            if( status == DEVICE_START_SIGNAL )
+            {
+                timer->mode = TIMER_CUSTOM_MODE;
+                func(timer->device_start_status);
+            }
+            break;
+        case TIMER_SIGNAL_MODE:
+            if( status == DEVICE_STOP_SIGNAL )
+            {
+                timer->mode = TIMER_SLEEP_MODE;
+                func(timer->device_end_status);
+            }
+            break;
+        case TIMER_CUSTOM_MODE:
+            if( status == DEVICE_STOP_SIGNAL )
+            {
+                timer->mode = TIMER_CUSTOM_WAIT_MODE;
+                func(timer->device_end_status);
+            }
+            break;
+        default:
+            break;
+    }
 }
 
 /** @}*/     /* 定时器应用模块 */

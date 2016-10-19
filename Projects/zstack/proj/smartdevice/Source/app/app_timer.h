@@ -44,8 +44,10 @@
 typedef enum
 {
     TIMER_SLEEP_MODE  = 0xB0,
-    TIMER_SIGNAL_MODE = 0xB1,
-    TIMER_CUSTOM_MODE = 0xB2,
+    TIMER_SIGNAL_WAIT_MODE = 0xB1,
+    TIMER_CUSTOM_WAIT_MODE = 0xB2,
+    TIMER_SIGNAL_MODE = 0xB3,
+    TIMER_CUSTOM_MODE = 0xB4,
 }TIMER_MODE;
 
 // 定时器自定义工作类型
@@ -76,7 +78,8 @@ typedef struct
     TIMER_MODE mode;
     TIMER_CUSTOM_PARAM custom;
     TIMER_WOKRING_TIME time;
-    uint8 device_status;
+    uint8 device_start_status;
+    uint8 device_end_status;
 }DEVICE_TIMER;
 
 // 设备状态信号
@@ -87,12 +90,16 @@ typedef enum
     DEVICE_KEEP_SIGNAL,
 }DEVICE_STATUS_SIGNAL;
 
+// 设备控制函数
+typedef void (*device_timer_func)(uint8);
+
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 extern DEVICE_STATUS_SIGNAL device_timer_check( DEVICE_TIMER timer );
+extern void device_timer_headler( DEVICE_TIMER *timer, device_timer_func func );
 
 #endif      /* __APP_USER_TIMER_H__ */
 
