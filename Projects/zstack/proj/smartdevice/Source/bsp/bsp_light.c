@@ -37,11 +37,39 @@
 #define Light_Brightness_Conversion(n) ( 0xFF - (n) )
 
 /* Private typedef -----------------------------------------------------------*/
+// 电灯控制命令
+typedef enum
+{
+    LIGHT_TICK_CMD       = 0x00,
+    LIGHT_BRIGHTNESS_CMD = 0x01,
+    LIGHT_COUNTDOWN_CMD  = 0x02,
+    LIGHT_GENTIMER_CMD   = 0x03,
+}LIGHT_CONTROL_CMD; 
+
 /* Private variables ---------------------------------------------------------*/
 static DEVICE_LIGHT_SAVE_DATA light;
 
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
+/**
+ *******************************************************************************
+ * @brief       创建电灯状态数据包
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+static bool create_light_status_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
+{
+    packet->commtype = MYPROTOCOL_D2W_REPORT_WAIT;
+    
+    packet->user_data.cmd = LIGHT_BRIGHTNESS_CMD;
+    packet->user_data.data[0] = (uint8)(*(uint8 *)(ctx));
+    packet->user_data.len = sizeof(uint8);
+    
+    return true;
+}
+
 /**
  *******************************************************************************
  * @brief       电灯初始化函数
@@ -56,18 +84,18 @@ void bsp_light_init( void )
     light_brightness_set(Light_OFF_Brightness);
     
     // FLASH 数据初始化
-    Device_FirstWrite_Check();
-    
-    if( osal_nv_read(DEVICE_LIGHT_SAVE_ID,0,DEVICE_LIGHT_DATA_SIZE,(void *)&light) != SUCCESS )
+    if( Device_FirstWrite_Check() == false \
+        || osal_nv_read(DEVICE_LIGHT_SAVE_ID,0,DEVICE_LIGHT_DATA_SIZE,(void *)&light) != SUCCESS )
     {
         memset(&light,0,sizeof(light));
-        light.device_status = Light_OFF_Brightness;
+        light.status.now = Light_OFF_Brightness;
+        light.status.last = Light_ON_Brightness;
         
         osal_nv_item_init(DEVICE_LIGHT_SAVE_ID,DEVICE_LIGHT_DATA_SIZE,NULL);
         osal_nv_write(DEVICE_LIGHT_SAVE_ID,0,DEVICE_LIGHT_DATA_SIZE,(void *)&light);
     }
     
-    light_brightness_set(light.device_status);
+    light_brightness_set(light.status.now);
 }
 
 /**
@@ -82,16 +110,64 @@ void light_brightness_set( uint8 brightness )
 {
     if( brightness != light_brightness_get() )
     {
-        light.device_status = brightness;
+        light.status.last = light.status.now;
+        light.status.now = brightness;
         
-        TIM4_CH0_UpdateDuty( Light_Brightness_Conversion(light.device_status) );
+        TIM4_CH0_UpdateDuty( Light_Brightness_Conversion(light.status.now) );
         
         osal_nv_write(DEVICE_LIGHT_SAVE_ID,\
-                      (uint16)(&((DEVICE_LIGHT_SAVE_DATA *)0)->device_status),\
-                      sizeof(light.device_status),\
-                      (void *)&light.device_status);
+                      (uint16)(&((DEVICE_LIGHT_SAVE_DATA *)0)->status),\
+                      sizeof(light.status),\
+                      (void *)&light.status);
+        
+        // 发送设备信息改变命令
+        MYPROTOCO_D2D_MSG_SEND(create_light_status_packet,&light.status.now);
     }
 }
+
+/**
+ *******************************************************************************
+ * @brief       电灯按键处理
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void light_switch_headler( void )
+{
+    uint8 temp = 0;
+    
+    if( light.status.now == Light_OFF_Brightness )
+    {
+        if( light.status.last != light.status.now )
+        {
+            temp = light.status.now;
+            light.status.now = light.status.last;
+            light.status.last = temp;
+        }
+        else
+        {
+            light.status.last = light.status.now;
+            light.status.now = Light_ON_Brightness;
+        }
+    }
+    else
+    {
+        light.status.last = light.status.now;
+        light.status.now = Light_OFF_Brightness;
+    }
+    
+    TIM4_CH0_UpdateDuty( Light_Brightness_Conversion(light.status.now) );
+    
+    osal_nv_write(DEVICE_LIGHT_SAVE_ID,\
+                  (uint16)(&((DEVICE_LIGHT_SAVE_DATA *)0)->status),\
+                  sizeof(light.status),\
+                  (void *)&light.status);
+    
+    // 发送设备信息改变命令
+    MYPROTOCO_D2D_MSG_SEND(create_light_status_packet,&light.status.now);
+}
+
 
 /**
  *******************************************************************************

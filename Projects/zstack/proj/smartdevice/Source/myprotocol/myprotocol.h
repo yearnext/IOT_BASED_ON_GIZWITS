@@ -52,22 +52,25 @@ typedef enum
     MYPROTOCOL_COMM_ERROR,
     MYPROTOCOL_COMM_TICK,
 }myprotocol_commtype;
+
 //设备类型
 typedef enum
 {
     MYPROTOCOL_DEVICE_COORD = 0x00,
-    MYPROTOCOL_DEVICE_LIGHT,
+    MYPROTOCOL_DEVICE_LIGHT = 0x01,
     MYPROTOCOL_DEVICE_SOCKET,
     MYPROTOCOL_DEVICE_CURTAIN,
     MYPROTOCOL_DEVICE_HT_SENSOR,
     MYPROTOCOL_DEVICE_END,
 }MYPROTOCOL_DEVICE;
+
 // 设备信息
 typedef struct
 {
     MYPROTOCOL_DEVICE device;
     uint8 mac[MYPROTOCOL_MAC_ADDR_SIZE];
 }MYPROTOCOL_DEVICE_INFO;
+
 // 用户数据
 typedef struct
 {
@@ -75,12 +78,14 @@ typedef struct
     uint8 len;
     uint8 data[MYPROTOCOL_USER_DATA_SIZE];
 }MYPROTOCOL_USER_DATA;
+    
 // 设备应答
 typedef struct
 {
     uint8 id;
     MYPROTOCOL_DEVICE_INFO *info;
 }MYPROTOCOL_DEVCICE_ACK;
+
 // MYPROTOCOL 格式
 typedef struct
 {
@@ -90,13 +95,15 @@ typedef struct
     MYPROTOCOL_USER_DATA   user_data;
     uint8                  check_sum;
 }MYPROTOCOL_FORMAT;
+
 // 数据发送方向
 typedef enum
 {
     MYPROTOCOL_DIR_D2W,
     MYPROTOCOL_DIR_D2D,
 }MYPROTOCOL_DATA_DIR;
-// 数据包功能
+
+// 创建数据包函数
 typedef bool (*packet_func)(void *ctx, MYPROTOCOL_FORMAT *packet);
 
 /* Exported variables --------------------------------------------------------*/
@@ -110,6 +117,8 @@ typedef bool (*packet_func)(void *ctx, MYPROTOCOL_FORMAT *packet);
 extern void myprotocol_init( uint8 endpoint, uint8 *task_id );
 extern void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt );
 extern void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data );
+extern bool MYPROTOCO_D2D_MSG_SEND( packet_func create_packet, void *ctx );
+extern void MYPROTOCOL_D2W_MSG_SEND( uint8 *packet );
 extern bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR, void*, packet_func, void* );
 extern void MYPROTOCOL_SEND_TICK_PACKET( void );
 

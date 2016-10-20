@@ -141,7 +141,7 @@ void myprotocol_init( uint8 endpoint, uint8 *task_id )
  * @note        None
  *******************************************************************************
  */
-static uint8 myprotocol_compute_checksum( uint8 *packet )
+static uint8 myprotocol_cal_checksum( uint8 *packet )
 {
     uint8 i;
     uint8 checksum;
@@ -166,7 +166,7 @@ static bool myprotocol_packet_check( uint8 *data )
 {
     MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)data;
     
-    if( packet->check_sum != myprotocol_compute_checksum(data) )
+    if( packet->check_sum != myprotocol_cal_checksum(data) )
     {
         return false;
     }
@@ -191,15 +191,69 @@ static bool myprotocol_packet_check( uint8 *data )
  * @note        None
  *******************************************************************************
  */
-static bool MYPROTOCOL_DIR_D2D_SEND_MSG( afAddrType_t *dst_addr, packet_func create_packet, void *ctx )
+bool MYPROTOCO_D2D_MSG_SEND( packet_func create_packet, void *ctx )
 {
     MYPROTOCOL_FORMAT packet;
+    uint8 *mac_addr = NULL;
     
     memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
     
     create_packet(ctx,&packet);
     
-    packet.check_sum = myprotocol_compute_checksum((uint8 *)&packet);
+    packet.device.device = SMART_DEVICE_TYPE;
+    mac_addr = NLME_GetExtAddr();
+    memcpy(&packet.device.mac,mac_addr,sizeof(packet.device.mac));
+    
+    packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
+    
+    return AF_DataRequest(&SmartDevice_Periodic_DstAddr,
+                           &SmartDevice_epDesc,
+                           SmartDevice_Comm_ClustersID,
+                           sizeof(MYPROTOCOL_FORMAT),
+                           (uint8 *)&packet,
+                           &SmartDevice_TransID,
+                           AF_DISCV_ROUTE,
+                           AF_DEFAULT_RADIUS);
+}
+
+/**
+ *******************************************************************************
+ * @brief        Coord转发节点信息至WIFI模块函数
+ * @param       [in/out]   create_packet    创建数据包功能
+ *              [in/out]   ctx              上下文
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void MYPROTOCOL_D2W_MSG_SEND( uint8 *packet )
+{
+    memcpy(&tx_packet,packet,MYPROTOCOL_PACKET_SIZE);
+    MYPROTOCOL_PACKET_REPORT();
+}
+
+/**
+ *******************************************************************************
+ * @brief        SmartDevice发送信息函数
+ * @param       [in/out]   dst_addr         目标地址 
+                [in/out]   create_packet    创建数据包功能
+ *              [in/out]   ctx              上下文
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+static bool MYPROTOCOL_DIR_D2D_SEND_MSG( afAddrType_t *dst_addr, packet_func create_packet, void *ctx )
+{
+    MYPROTOCOL_FORMAT packet;
+    uint8 *mac_addr = NULL;
+    
+    memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
+    
+    create_packet(ctx,&packet);
+    
+    packet.device.device = SMART_DEVICE_TYPE;
+    mac_addr = NLME_GetExtAddr();
+    memcpy(&packet.device.mac,mac_addr,sizeof(packet.device.mac));
+    packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
     
     AF_DataRequest(dst_addr,
                    &SmartDevice_epDesc,
@@ -237,7 +291,7 @@ static bool MYPROTOCOL_DIR_D2W_SEND_MSG( MYPROTOCOL_FORMAT *packet, packet_func 
     status = packet_create(ctx, &tx_packet);
     
     tx_packet.sn = packet->sn;
-    tx_packet.check_sum = myprotocol_compute_checksum((uint8 *)&tx_packet);
+    tx_packet.check_sum = myprotocol_cal_checksum((uint8 *)&tx_packet);
     
     MYPROTOCOL_PACKET_REPORT();
     
@@ -299,7 +353,7 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
     
     MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)pkt->cmd.Data;
 
-    if( packet->check_sum != myprotocol_compute_checksum(pkt->cmd.Data) )
+    if( packet->check_sum != myprotocol_cal_checksum(pkt->cmd.Data) )
     {
         return;
     }

@@ -61,7 +61,12 @@ typedef struct
 // 简单设备存储数据
 typedef struct
 {
-    uint8 device_status;
+    struct
+    {
+        uint8 now;
+        uint8 last;
+    }status;
+    
     DEVICE_TIMER timer[SIMPLE_DEVICE_TIMER_NUM]; 
 }SIMPLE_DEVICE_SAVE_DATA;
 

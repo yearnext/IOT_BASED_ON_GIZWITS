@@ -12,7 +12,7 @@
           
           
           
-        <Column0>270</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
+        <Column0>260</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
       </Workspace>
       <Build>
         
@@ -32,7 +32,7 @@
             <Factory>Workspace</Factory>
             <Session>
               
-            <NodeDict><ExpandedNode>SmartDevice</ExpandedNode><ExpandedNode>SmartDevice/App</ExpandedNode><ExpandedNode>SmartDevice/App/MyProtocol</ExpandedNode><ExpandedNode>SmartDevice/App/app</ExpandedNode></NodeDict></Session>
+            <NodeDict><ExpandedNode>SmartDevice</ExpandedNode><ExpandedNode>SmartDevice/App</ExpandedNode><ExpandedNode>SmartDevice/App/MyProtocol</ExpandedNode><ExpandedNode>SmartDevice/App/app</ExpandedNode><ExpandedNode>SmartDevice/App/bsp</ExpandedNode><ExpandedNode>SmartDevice/ZMain</ExpandedNode></NodeDict></Session>
           </Tab>
         <Tab><Identity>TabID-19515-17390</Identity><TabName>Source Browser</TabName><Factory>SourceBrowser</Factory><Session><TypeFilter>2147483647</TypeFilter><FileFilter>1</FileFilter></Session></Tab></Tabs>
         
@@ -47,14 +47,14 @@
       
       
       
-    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\Source\bsp\bsp_light.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>98</YPos2><SelStart2>4408</SelStart2><SelEnd2>4408</SelEnd2></Tab><ActiveTab>0</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\Source\app\app_save.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>27</YPos2><SelStart2>2453</SelStart2><SelEnd2>2476</SelEnd2></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\Source\bsp\bsp_light.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>138</YPos2><SelStart2>4873</SelStart2><SelEnd2>4873</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\Source\bsp\bsp_light.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>15</YPos2><SelStart2>1831</SelStart2><SelEnd2>1872</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\Source\app\smart_device.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>34</YPos2><SelStart2>1375</SelStart2><SelEnd2>1375</SelEnd2></Tab><ActiveTab>2</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\..\..\ZMain\TI2530DB\ZMain.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>67</YPos2><SelStart2>3346</SelStart2><SelEnd2>3346</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\Source\hal\timer_config.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>31</YPos2><SelStart2>1978</SelStart2><SelEnd2>1978</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\Source\myprotocol\myprotocol.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>39</YPos2><SelStart2>1933</SelStart2><SelEnd2>1933</SelEnd2></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
     <Positions>
       
       
       
       
       
-    <Top><Row0><Sizes><Toolbar-050DCA38><key>iaridepm.enu1</key></Toolbar-050DCA38></Sizes></Row0><Row1><Sizes/></Row1><Row2><Sizes/></Row2></Top><Left><Row0><Sizes><Wnd1><Rect><Top>-2</Top><Left>-2</Left><Bottom>465</Bottom><Right>361</Right><x>-2</x><y>-2</y><xscreen>143</xscreen><yscreen>137</yscreen><sizeHorzCX>104685</sizeHorzCX><sizeHorzCY>200000</sizeHorzCY><sizeVertCX>265739</sizeVertCX><sizeVertCY>681752</sizeVertCY></Rect></Wnd1></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd3><Rect><Top>-2</Top><Left>-2</Left><Bottom>175</Bottom><Right>1368</Right><x>-2</x><y>-2</y><xscreen>1370</xscreen><yscreen>177</yscreen><sizeHorzCX>1002928</sizeHorzCX><sizeHorzCY>258394</sizeHorzCY><sizeVertCX>104685</sizeVertCX><sizeVertCY>200000</sizeVertCY></Rect></Wnd3></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+    <Top><Row0><Sizes><Toolbar-050DCA38><key>iaridepm.enu1</key></Toolbar-050DCA38></Sizes></Row0><Row1><Sizes/></Row1><Row2><Sizes/></Row2></Top><Left><Row0><Sizes><Wnd1><Rect><Top>-2</Top><Left>-2</Left><Bottom>465</Bottom><Right>351</Right><x>-2</x><y>-2</y><xscreen>143</xscreen><yscreen>137</yscreen><sizeHorzCX>104685</sizeHorzCX><sizeHorzCY>200000</sizeHorzCY><sizeVertCX>258419</sizeVertCX><sizeVertCY>681752</sizeVertCY></Rect></Wnd1></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd3><Rect><Top>-2</Top><Left>-2</Left><Bottom>175</Bottom><Right>1368</Right><x>-2</x><y>-2</y><xscreen>1370</xscreen><yscreen>177</yscreen><sizeHorzCX>1002928</sizeHorzCX><sizeHorzCY>258394</sizeHorzCY><sizeVertCX>104685</sizeVertCX><sizeVertCY>200000</sizeVertCY></Rect></Wnd3></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
   </Desktop>
 </Workspace>
 

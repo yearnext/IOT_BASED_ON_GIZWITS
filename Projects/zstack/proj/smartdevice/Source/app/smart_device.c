@@ -44,15 +44,15 @@
 #include "myprotocol.h"
 #include "timer_config.h"
 
-#if SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_COORD
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
 
-#elif SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_LIGHT
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
 #include "bsp_light.h"
-#elif SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_SOCKET
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
 
-#elif SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_CURTAIN
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
 
-#elif SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_HT_SENSOR
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
 
 #else
 
@@ -85,12 +85,12 @@ dataPoint_t currentDataPoint;
 #endif
      
 /** 设备定时时间 */
-#define SMART_DEVICE_TIME       (3000)
+#define SMART_DEVICE_TIME        (3000)
 /** 设备定时事件 */
-#define SMART_DEVICE_TIMER_EVEN (0x0002)
+#define SMART_DEVICE_TIMER_EVEN  (0x0002)
 
 /** 机智云事件处理时间 */
-#define GIZWITS_HANDLER_TIME (50)
+#define GIZWITS_HANDLER_TIME     (50)
 /** 清除僵尸设备时间 */
 #define CLEAR_ZOMBIE_DEVICE_TIME (30000)
 
@@ -292,7 +292,10 @@ void SmartDevice_CommLED_Control( uint8 state )
  */
 void SmartDevice_Key_Headler( uint8 keys, uint8 state )
 {
-    
+    if( keys == HAL_KEY_SW_1 )
+    {
+        light_switch_headler();
+    }
 }
 
 /**
