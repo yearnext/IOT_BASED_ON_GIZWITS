@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=1755591104
+Checksum=-1552695879
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -69,8 +69,8 @@ Fmt4={W}1:gizwits_uart_status	4	0
 Fmt5={W}1:size	3	0
 [Breakpoints]
 Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\ZMain\TI2530DB\OnBoard.c}.250.3" 1 0 0 0 "" 0 ""
-Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\Source\app\smart_device.c}.145.5" 1 0 0 0 "" 0 ""
-Bp2=_ "STD_CODE" "{$PROJ_DIR$\..\Source\app\smart_device.c}.130.5" 1 0 0 0 "" 0 ""
+Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\Source\app\smart_device.c}.149.5" 1 0 0 0 "" 0 ""
+Bp2=_ "STD_CODE" "{$PROJ_DIR$\..\Source\app\smart_device.c}.137.5" 1 0 0 0 "" 0 ""
 Count=3
 [ChipconEmu]
 Stop timers on halt=0
