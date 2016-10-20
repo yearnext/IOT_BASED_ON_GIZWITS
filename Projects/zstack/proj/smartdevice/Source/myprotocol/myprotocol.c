@@ -32,6 +32,9 @@
 #include "NLMEDE.h"
 #include "smart_device.h"
 #include "aps_groups.h"
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+#include "bsp_light.h"
+#endif
 
 /* Exported macro ------------------------------------------------------------*/
 /**
@@ -380,6 +383,16 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
             break;
         }
         case MYPROTOCOL_W2D_READ_WAIT:
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+        if( light_cmd_res(&packet->user_data) == true )
+        {
+            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2D,(void *)&SmartDevice_Periodic_DstAddr,create_report_packet,&packet->user_data);
+        }
+        else
+        {
+            // 设备命令错误
+        }
+#endif
             break;
         case MYPROTOCOL_W2D_WRITE_WAIT:
             break;

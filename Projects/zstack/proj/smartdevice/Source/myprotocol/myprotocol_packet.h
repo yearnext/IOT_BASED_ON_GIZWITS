@@ -40,6 +40,7 @@ extern bool create_writeack_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 extern bool create_readack_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 extern bool create_devicenum_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 extern bool create_deviceinfo_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_report_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 
 #endif      /* __myprotocol_packet_H__ */
 

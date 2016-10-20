@@ -46,6 +46,11 @@ typedef enum
     LIGHT_GENTIMER_CMD   = 0x03,
 }LIGHT_CONTROL_CMD; 
 
+typedef struct
+{
+    uint8 brightness;
+}LIGHT_BRIGHTNESS_CMD_DATA;
+
 /* Private variables ---------------------------------------------------------*/
 static DEVICE_LIGHT_SAVE_DATA light;
 
@@ -198,6 +203,43 @@ void light_working_headler( void )
     {
         device_timer_headler(&light.timer[i],&light_brightness_set);
     }
+}
+
+/**
+ *******************************************************************************
+ * @brief       解析电灯命令数据
+ * @param       [in/out]  *data    控制命令数据
+ * @return      [in/out]  bool     解析状态
+ * @note        None
+ *******************************************************************************
+ */
+bool light_cmd_res( MYPROTOCOL_USER_DATA *data )
+{
+    switch( data->cmd )
+    {
+        case LIGHT_TICK_CMD:
+            break;
+        case LIGHT_BRIGHTNESS_CMD:
+        {
+            light.status.last = light.status.now;
+            light.status.now = data->data[0];
+        }
+            break;
+        case LIGHT_COUNTDOWN_CMD:
+        {
+            memcpy(&light.timer[0],&data->data,sizeof(DEVICE_TIMER));
+        }
+            break;
+        case LIGHT_GENTIMER_CMD:
+        {
+            memcpy(&light.timer[1],&data->data,sizeof(DEVICE_TIMER));
+        }
+            break;
+        default:
+            return false;
+            break;
+    }
+    return true;
 }
 
 /** @}*/     /* 智能电灯配置模块 */

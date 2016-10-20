@@ -203,6 +203,25 @@ bool create_deviceinfo_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
     return true;
 }
 
+/**
+ *******************************************************************************
+ * @brief       创建数据上报数据包
+ * @param       [in/out]  ctx     上下文
+ *              [in/out]  packet  数据包  
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+bool create_report_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
+{
+    MYPROTOCOL_USER_DATA *data = (MYPROTOCOL_USER_DATA *)ctx;
+    
+    packet->commtype = MYPROTOCOL_D2W_REPORT_WAIT;
+    memcpy(&packet->user_data, data, sizeof(MYPROTOCOL_USER_DATA));
+    
+    return true;
+}
+
 /** @}*/     /* myprotocol packet模块 */
 
 /**********************************END OF FILE*********************************/
