@@ -28,6 +28,7 @@
 #include <string.h>
 #include "app_save.h"
 #include "app_time.h"
+#include "myprotocol_packet.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -38,13 +39,13 @@
 
 /* Private typedef -----------------------------------------------------------*/
 // 电灯控制命令
-typedef enum
-{
-    LIGHT_TICK_CMD       = 0x00,
-    LIGHT_BRIGHTNESS_CMD = 0x01,
-    LIGHT_COUNTDOWN_CMD  = 0x02,
-    LIGHT_GENTIMER_CMD   = 0x03,
-}LIGHT_CONTROL_CMD; 
+#define LIGHT_TICK_CMD         (0x00)
+#define LIGHT_R_BRIGHTNESS_CMD (0x01)
+#define LIGHT_W_BRIGHTNESS_CMD (0x02)
+#define LIGHT_R_COUNTDOWN_CMD  (0x03)
+#define LIGHT_W_COUNTDOWN_CMD  (0x04)
+#define LIGHT_R_GENTIMER_CMD   (0x05)
+#define LIGHT_W_GENTIMER_CMD   (0x06)
 
 typedef struct
 {
@@ -58,21 +59,53 @@ static DEVICE_LIGHT_SAVE_DATA light;
 /* Exported functions --------------------------------------------------------*/
 /**
  *******************************************************************************
- * @brief       创建电灯状态数据包
+ * @brief       上报电灯当前的亮度信息
  * @param       [in/out]  void
  * @return      [in/out]  void
  * @note        None
  *******************************************************************************
  */
-static bool create_light_status_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
+static void report_brightness_data( void )
 {
-    packet->commtype = MYPROTOCOL_D2W_REPORT_WAIT;
+    MYPROTOCOL_USER_DATA user_data;
+    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
     
-    packet->user_data.cmd = LIGHT_BRIGHTNESS_CMD;
-    packet->user_data.data[0] = (uint8)(*(uint8 *)(ctx));
-    packet->user_data.len = sizeof(uint8);
+    user_data.cmd = LIGHT_R_BRIGHTNESS_CMD;
+    user_data.data[0] = light.status.now;
+    user_data.len = 1;
+    MYPROTOCO_D2D_MSG_SEND(create_d2w_wait_packet,&user_data);
+}
+
+/**
+ *******************************************************************************
+ * @brief       上报电灯定时器的数据
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+static void report_timer_data( uint8 timer )
+{
+    MYPROTOCOL_USER_DATA user_data;
+    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
     
-    return true;
+    if( timer == 0 )
+    {
+        user_data.cmd = LIGHT_R_COUNTDOWN_CMD;
+    }
+    else if( timer == 1 )
+    {
+        user_data.cmd = LIGHT_R_GENTIMER_CMD;
+    }
+    else
+    {
+        return;
+    }
+    
+    memcpy(&user_data.data,&light.timer[timer],sizeof(DEVICE_TIMER));
+    user_data.len = sizeof(DEVICE_TIMER);
+    
+    MYPROTOCO_D2D_MSG_SEND(create_d2w_wait_packet,&user_data);
 }
 
 /**
@@ -124,9 +157,6 @@ void light_brightness_set( uint8 brightness )
                       (uint16)(&((DEVICE_LIGHT_SAVE_DATA *)0)->status),\
                       sizeof(light.status),\
                       (void *)&light.status);
-        
-        // 发送设备信息改变命令
-        MYPROTOCO_D2D_MSG_SEND(create_light_status_packet,&light.status.now);
     }
 }
 
@@ -165,12 +195,11 @@ void light_switch_headler( void )
     TIM4_CH0_UpdateDuty( Light_Brightness_Conversion(light.status.now) );
     
     osal_nv_write(DEVICE_LIGHT_SAVE_ID,\
-                  (uint16)(&((DEVICE_LIGHT_SAVE_DATA *)0)->status),\
-                  sizeof(light.status),\
-                  (void *)&light.status);
+              ((uint16)&light.status - (uint16)&light),\
+              sizeof(light.status),\
+              (void *)&light.status); 
     
-    // 发送设备信息改变命令
-    MYPROTOCO_D2D_MSG_SEND(create_light_status_packet,&light.status.now);
+    report_brightness_data();
 }
 
 
@@ -213,28 +242,45 @@ void light_working_headler( void )
  * @note        None
  *******************************************************************************
  */
-bool light_cmd_res( MYPROTOCOL_USER_DATA *data )
-{
+bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data )
+{    
     switch( data->cmd )
     {
         case LIGHT_TICK_CMD:
             break;
-        case LIGHT_BRIGHTNESS_CMD:
+        case LIGHT_R_BRIGHTNESS_CMD:
         {
-            light.status.last = light.status.now;
-            light.status.now = data->data[0];
-        }
+            report_brightness_data();
             break;
-        case LIGHT_COUNTDOWN_CMD:
+        }
+        case LIGHT_W_BRIGHTNESS_CMD:
         {
-            memcpy(&light.timer[0],&data->data,sizeof(DEVICE_TIMER));
-        }
+            light_brightness_set(data->data[0]);
+            report_brightness_data();
             break;
-        case LIGHT_GENTIMER_CMD:
+        }
+        case LIGHT_R_COUNTDOWN_CMD:
         {
-            memcpy(&light.timer[1],&data->data,sizeof(DEVICE_TIMER));
-        }
+            report_timer_data(0);
             break;
+        }
+        case LIGHT_W_COUNTDOWN_CMD:
+        {
+            memcpy(&light.timer[0],data->data,sizeof(light.timer[0]));
+            report_timer_data(0);
+            break;
+        }
+        case LIGHT_R_GENTIMER_CMD:
+        {
+            report_timer_data(1);
+            break;
+        }
+        case LIGHT_W_GENTIMER_CMD:
+        {
+            memcpy(&light.timer[1],data->data,sizeof(light.timer[1]));
+            report_timer_data(1);
+            break;
+        }
         default:
             return false;
             break;

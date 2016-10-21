@@ -42,22 +42,15 @@
 #include "MT_UART.h"
 #include "hal_uart.h"
 #include "myprotocol.h"
+#include "myprotocol_packet.h"
 #include "timer_config.h"
 
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-#endif
-
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
 #include "bsp_light.h"
-#endif
-
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
-#endif
-
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
-#endif
-
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
 #endif
      
 #if defined(USE_GIZWITS_MOD)
@@ -130,20 +123,13 @@ void SmartDevice_Init( byte task_id )
     MT_UartRegisterTaskID(SmartDevice_TaskID);
     
     Timer3_Init();
-#if SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_COORD
-#endif
-    
-#if SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_LIGHT
+
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
     bsp_light_init();
-#endif
-    
-#if SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_SOCKET
-#endif
-
-#if SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_CURTAIN
-#endif
-
-#if SMART_DEVICE_TYPE == MYPROTOCOL_DEVICE_HT_SENSOR
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
 #endif
     
     osal_nv_item_init(DEVICE_COORD_SAVE_ID,DEVICE_COORD_DATA_SIZE,NULL);
@@ -208,7 +194,7 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
  
     if( events & SMART_DEVICE_TIMER_EVEN )
     {      
-        MYPROTOCOL_SEND_TICK_PACKET();
+        MYPROTOCO_D2D_MSG_SEND(create_tick_packet,NULL);
 
         osal_start_timerEx( SmartDevice_TaskID, 
                             SMART_DEVICE_TIMER_EVEN, 

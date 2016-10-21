@@ -23,6 +23,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
+#include "myprotocol.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -36,8 +37,10 @@ extern bool create_acktick_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 
 extern bool create_errcode_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 extern bool create_commend_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
-extern bool create_writeack_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
-extern bool create_readack_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_w2d_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_w2d_wait_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_d2w_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_d2w_wait_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 extern bool create_devicenum_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 extern bool create_deviceinfo_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 extern bool create_report_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
