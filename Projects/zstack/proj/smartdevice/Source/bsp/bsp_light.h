@@ -40,7 +40,7 @@ extern void bsp_light_init( void );
 extern void light_brightness_set( uint8 brightness );
 extern uint8 light_brightness_get( void );
 extern void light_switch_headler( void );
-extern bool light_cmd_res( MYPROTOCOL_USER_DATA *data );
+extern bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data );
 
 #endif      /* __CC2530_TIMER_CONFIG_H__ */
 

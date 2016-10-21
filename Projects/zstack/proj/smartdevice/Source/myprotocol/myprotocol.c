@@ -71,6 +71,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+// 数据缓冲区
 static MYPROTOCOL_FORMAT tx_packet;
 //static myprotocol_format rx_packet;
 /** 端点描述符 */
@@ -174,13 +175,13 @@ static bool myprotocol_packet_check( uint8 *data )
         return false;
     }
     
-    if( packet->commtype == MYPROTOCOL_W2D_READ_ACK \
-        && packet->commtype == MTPROTOCOL_W2D_WRITE_ACK \
-        && packet->commtype == MYPROTOCOL_D2W_READ_WAIT \
-        && packet->commtype == MYPROTOCOL_D2W_REPORT_WAIT )
-    {
-        return false;
-    }
+//    if( packet->commtype == MYPROTOCOL_W2D_READ_ACK \
+//        && packet->commtype == MTPROTOCOL_W2D_WRITE_ACK \
+//        && packet->commtype == MYPROTOCOL_D2W_READ_WAIT \
+//        && packet->commtype == MYPROTOCOL_D2W_REPORT_WAIT )
+//    {
+//        return false;
+//    }
     
     return true;
 }
@@ -256,6 +257,7 @@ static bool MYPROTOCOL_DIR_D2D_SEND_MSG( afAddrType_t *dst_addr, packet_func cre
     packet.device.device = SMART_DEVICE_TYPE;
     mac_addr = NLME_GetExtAddr();
     memcpy(&packet.device.mac,mac_addr,sizeof(packet.device.mac));
+    
     packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
     
     AF_DataRequest(dst_addr,
@@ -283,6 +285,7 @@ static bool MYPROTOCOL_DIR_D2D_SEND_MSG( afAddrType_t *dst_addr, packet_func cre
 static bool MYPROTOCOL_DIR_D2W_SEND_MSG( MYPROTOCOL_FORMAT *packet, packet_func packet_create, void *ctx )
 {
     bool status = false;
+    uint8 *mac_addr = NULL;
     
     if( packet_create == NULL )
     {
@@ -294,6 +297,11 @@ static bool MYPROTOCOL_DIR_D2W_SEND_MSG( MYPROTOCOL_FORMAT *packet, packet_func 
     status = packet_create(ctx, &tx_packet);
     
     tx_packet.sn = packet->sn;
+    
+    packet->device.device = SMART_DEVICE_TYPE;
+    mac_addr = NLME_GetExtAddr();
+    memcpy(&packet->device.mac,mac_addr,sizeof(packet->device.mac));
+    
     tx_packet.check_sum = myprotocol_cal_checksum((uint8 *)&tx_packet);
     
     MYPROTOCOL_PACKET_REPORT();
@@ -341,6 +349,25 @@ bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR data_dir, void *ctx, packet_func p
 
 /**
  *******************************************************************************
+ * @brief       转发数据包函数
+ * @param       [in/out]   *user_data       用户数据
+ * @return      [in/out]      void
+ * @note        None
+ *******************************************************************************
+ */
+static void COORD_FORWARD_PACKET( MYPROTOCOL_FORMAT *packet )
+{
+    afAddrType_t dst_addr;
+    memcpy(&dst_addr,&SmartDevice_Periodic_DstAddr,sizeof(afAddrType_t));
+
+    dst_addr.addr.shortAddr = 0x0000;
+    memcpy(&dst_addr.addr.extAddr,&packet->device.mac,sizeof(dst_addr.addr.extAddr));
+
+    MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2D,&dst_addr,create_w2d_wait_packet,&packet->user_data);
+}
+
+/**
+ *******************************************************************************
  * @brief       SmartDevice信息处理
  * @param       [in]   pkt    信息
  * @return      [out]  void
@@ -363,7 +390,22 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
     
     switch( packet->commtype )
     {
-        case MYPROTOCOL_COMM_TICK:
+        case MYPROTOCOL_W2D_WAIT:
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+        light_cmd_resolve(&packet->user_data);
+#endif
+            break;
+        case MYPROTOCOL_W2D_ACK:
+            break;
+        case MYPROTOCOL_D2W_WAIT:
+            break;
+        case MYPROTOCOL_D2W_ACK:
+            break;
+        case MYPROTOCOL_H2S_WAIT:
+            break;
+        case MYPROTOCOL_H2S_ACK:
+            break;
+        case MYPROTOCOL_S2H_WAIT:
         {
 #if defined ( USE_GIZWITS_MOD )
             // 如果为父设备
@@ -382,23 +424,9 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
 #endif
             break;
         }
-        case MYPROTOCOL_W2D_READ_WAIT:
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
-        if( light_cmd_res(&packet->user_data) == true )
-        {
-            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2D,(void *)&SmartDevice_Periodic_DstAddr,create_report_packet,&packet->user_data);
-        }
-        else
-        {
-            // 设备命令错误
-        }
-#endif
+        case MYPROTOCOL_S2H_ACK:
             break;
-        case MYPROTOCOL_W2D_WRITE_WAIT:
-            break;
-        case MYPROTOCOL_D2W_READ_ACK:
-            break;
-        case MYPROTOCOL_D2W_REPORT_ACK:
+        case MYPROTOCOL_COMM_ERROR:
             break;
         default:
             break;
@@ -406,7 +434,6 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
 }
 
 #if defined ( USE_GIZWITS_MOD )       
- 
 /**
  *******************************************************************************
  * @brief       数据包处理函数
@@ -428,8 +455,8 @@ void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data )
     {
         switch( packet->commtype )
         {
-            // WIFI模组读取设备数据等待应答
-            case MYPROTOCOL_W2D_READ_WAIT:
+            case MYPROTOCOL_W2D_WAIT:
+            {
                 if( packet->device.device == MYPROTOCOL_DEVICE_COORD )
                 {
                     switch( packet->user_data.cmd )
@@ -454,26 +481,17 @@ void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data )
                 }
                 else
                 {
-                    MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,packet,create_readack_packet,NULL);
+                    COORD_FORWARD_PACKET(packet);
                 }
                     break;
-            // WIFI模组写入设备数据等待应答
-            case MYPROTOCOL_W2D_WRITE_WAIT:
-                MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,packet,create_writeack_packet,NULL);
-                    break;
-            // 设备读取WIFI模组信息应答
-            case MYPROTOCOL_D2W_READ_ACK:
-                MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,packet,create_commend_packet,NULL);
-                    break;
-            // 设备上报数据应答
-            case MYPROTOCOL_D2W_REPORT_ACK:
-                MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,packet,create_commend_packet,NULL);
-                    break;
-            // 通讯错误
+            }
+            case MYPROTOCOL_W2D_ACK:
+                break;
+            case MYPROTOCOL_D2W_WAIT:
+                break;
+            case MYPROTOCOL_D2W_ACK:
+                break;
             case MYPROTOCOL_COMM_ERROR:
-                MYPROTOCOL_PACKET_REPORT();
-                    break;
-            case MYPROTOCOL_COMM_END:
                 break;
             default:
                 break;
@@ -482,19 +500,6 @@ void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data )
 }
 
 #endif
-
-/**
- *******************************************************************************
- * @brief       发送心跳数据包
- * @param       [in/out]  void
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-void MYPROTOCOL_SEND_TICK_PACKET( void )
-{
-    MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2D,(void *)&SmartDevice_Periodic_DstAddr,create_tick_packet,NULL);
-}
 
 /** @}*/     /* myprotocol模块 */
 

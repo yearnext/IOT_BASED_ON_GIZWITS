@@ -47,20 +47,12 @@
  *******************************************************************************
  */
 bool create_tick_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{
-    MYPROTOCOL_DEVICE_INFO device_info;
-    uint8 *mac_addr = NULL;
-    
-    packet->commtype = MYPROTOCOL_COMM_TICK;
+{    
+    packet->commtype = MYPROTOCOL_S2H_WAIT;
     packet->sn = 0;
-    
-    mac_addr = NLME_GetExtAddr();
-    memcpy(&device_info.mac,mac_addr,sizeof(device_info.mac));
-    device_info.device = SMART_DEVICE_TYPE;
-    memcpy(&packet->user_data.data,&device_info,sizeof(MYPROTOCOL_DEVICE_INFO));
-    
+        
     packet->user_data.cmd = MYPROTOCOL_TICK_CMD;
-    packet->user_data.len = sizeof(MYPROTOCOL_DEVICE_INFO);
+    packet->user_data.len = 0;
     
     return true;
 }
@@ -76,14 +68,11 @@ bool create_tick_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
  */
 bool create_acktick_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
 {
-    MYPROTOCOL_DEVICE_INFO *device_info = (MYPROTOCOL_DEVICE_INFO *)ctx;
-    
-    packet->commtype = MYPROTOCOL_COMM_TICK;
+    packet->commtype = MYPROTOCOL_S2H_ACK;
     packet->sn = 0;
-    packet->device.device = device_info->device;
-    memcpy(&packet->device.mac,device_info->mac,sizeof(packet->device.mac));
+        
     packet->user_data.cmd = MYPROTOCOL_TICK_CMD;
-    packet->user_data.len = sizeof(packet->user_data.cmd);
+    packet->user_data.len = 0;
     
     return true;
 }
@@ -127,24 +116,78 @@ bool create_commend_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
  * @note        None
  *******************************************************************************
  */
-bool create_writeack_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
+bool create_w2d_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
 {
-    packet->commtype = MTPROTOCOL_W2D_WRITE_ACK;
+    if( ctx != NULL )
+    {
+        memcpy(&packet->user_data,ctx,sizeof(MYPROTOCOL_USER_DATA));
+    }
+
+    packet->commtype = MYPROTOCOL_W2D_ACK;
+    
     return true;
 }
 
 /**
  *******************************************************************************
- * @brief       创建读取设备信息应答数据包
+ * @brief       创建写入设备信息应等待答数据包
  * @param       [in/out]  ctx     上下文
  *              [in/out]  packet  数据包  
  * @return      [in/out]  void
  * @note        None
  *******************************************************************************
  */
-bool create_readack_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
+bool create_w2d_wait_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
 {
-    packet->commtype = MYPROTOCOL_W2D_READ_ACK;
+    if( ctx != NULL )
+    {
+        memcpy(&packet->user_data,ctx,sizeof(MYPROTOCOL_USER_DATA));
+    }
+
+    packet->commtype = MYPROTOCOL_W2D_WAIT;
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       创建写入设备信息应答数据包
+ * @param       [in/out]  ctx     上下文
+ *              [in/out]  packet  数据包  
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+bool create_d2w_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
+{
+    if( ctx != NULL )
+    {
+        memcpy(&packet->user_data,ctx,sizeof(MYPROTOCOL_USER_DATA));
+    }
+
+    packet->commtype = MYPROTOCOL_D2W_ACK;
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       创建写入设备信息应等待答数据包
+ * @param       [in/out]  ctx     上下文
+ *              [in/out]  packet  数据包  
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+bool create_d2w_wait_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
+{
+    if( ctx != NULL )
+    {
+        memcpy(&packet->user_data,ctx,sizeof(MYPROTOCOL_USER_DATA));
+    }
+
+    packet->commtype = MYPROTOCOL_D2W_WAIT;
+    
     return true;
 }
 
@@ -166,7 +209,7 @@ bool create_devicenum_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
         return false;
     }
     
-    packet->commtype = MYPROTOCOL_W2D_READ_ACK;
+    packet->commtype = MYPROTOCOL_W2D_ACK;
     packet->user_data.cmd = W2D_GET_DEVICE_NUM_CMD;
     packet->user_data.data[0] = *num;
     packet->user_data.len = sizeof(uint8);
@@ -192,7 +235,7 @@ bool create_deviceinfo_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
         return false;
     }
 
-    packet->commtype = MYPROTOCOL_W2D_READ_ACK;
+    packet->commtype = MYPROTOCOL_W2D_ACK;
     packet->user_data.cmd = W2D_GET_DEVICE_NUM_CMD;
     packet->user_data.data[0] = device_info->id;
     packet->user_data.data[1] = device_info->info->device;
@@ -216,7 +259,7 @@ bool create_report_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
 {
     MYPROTOCOL_USER_DATA *data = (MYPROTOCOL_USER_DATA *)ctx;
     
-    packet->commtype = MYPROTOCOL_D2W_REPORT_WAIT;
+    packet->commtype = MYPROTOCOL_D2W_WAIT;
     memcpy(&packet->user_data, data, sizeof(MYPROTOCOL_USER_DATA));
     
     return true;
