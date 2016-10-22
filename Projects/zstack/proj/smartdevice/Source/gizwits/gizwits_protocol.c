@@ -27,7 +27,7 @@ gizwitsProtocol_t gizwitsProtocol;
 /**@name 串口接收环形缓冲区实现
 * @{
 */
-rb_t pRb;                                               ///< 环形缓冲区结构体变量
+static rb_t pRb;                                               ///< 环形缓冲区结构体变量
 static uint8 rbBuf[RB_MAX_LEN];                       ///< 环形缓冲区数据缓存区
 
 static void rbCreate(rb_t* rb)
