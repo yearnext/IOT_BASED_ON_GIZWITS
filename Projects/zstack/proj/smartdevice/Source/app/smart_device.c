@@ -80,14 +80,19 @@ dataPoint_t currentDataPoint;
 #endif
      
 /** 设备定时时间 */
-#define SMART_DEVICE_TIME        (3000)
+#if defined (USE_GIZWITS_MOD)
+    #define DEVICE_LIST_TIME            (30000)
+#else
+    #define DEVICE_LIST_TIME            (3000)
+#endif
+
 /** 设备定时事件 */
-#define SMART_DEVICE_TIMER_EVEN  (0x0002)
+#define DEVICE_LIST_TIMER_EVEN          (0x0002)
 
 /** 机智云事件处理时间 */
-#define GIZWITS_HANDLER_TIME     (50)
-/** 清除僵尸设备时间 */
-#define CLEAR_ZOMBIE_DEVICE_TIME (30000)
+#define GIZWITS_TIMER_TIME              (75)
+/** 机智云处理事件 */
+#define GIZWITS_TIMER_EVEN              (0x0004)  
 
 /** Smart Device 通讯状态指示灯 */
 #define SMARTDEVICE_LED_DISCONNED_STATE (0x00)
@@ -121,9 +126,20 @@ void SmartDevice_Init( byte task_id )
     
     MT_UartInit();
     MT_UartRegisterTaskID(SmartDevice_TaskID);
+ 
+    /**  注册按键事件 */
+    RegisterForKeys( SmartDevice_TaskID );
     
-    Timer3_Init();
-
+    myprotocol_init( SmartDevice_EndPoint, &SmartDevice_TaskID );
+    
+#if defined (USE_GIZWITS_MOD)
+    gizwitsInit();
+    
+    osal_start_timerEx( SmartDevice_TaskID, 
+                        GIZWITS_TIMER_EVEN, 
+                        GIZWITS_TIMER_TIME );
+#endif    
+    
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
     bsp_light_init();
@@ -131,14 +147,7 @@ void SmartDevice_Init( byte task_id )
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
 #endif
-    
-    osal_nv_item_init(DEVICE_COORD_SAVE_ID,DEVICE_COORD_DATA_SIZE,NULL);
 
-    myprotocol_init( SmartDevice_EndPoint, &SmartDevice_TaskID );
-
-    /**  注册按键事件 */
-    RegisterForKeys( SmartDevice_TaskID );
-    
     SmartDevice_CommLED_Control(SMARTDEVICE_LED_DISCONNED_STATE);
     
     DEVICE_LOG("Smart device init finish!\n");
@@ -192,15 +201,35 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
         return (events ^ SYS_EVENT_MSG);
     }
  
-    if( events & SMART_DEVICE_TIMER_EVEN )
-    {      
+    if( events & GIZWITS_TIMER_EVEN )
+    {
+        gizwitsHandle(&currentDataPoint);
+        
+        osal_start_timerEx( SmartDevice_TaskID, 
+                            GIZWITS_TIMER_EVEN, 
+                            GIZWITS_TIMER_TIME );
+        
+        return (events ^ GIZWITS_TIMER_EVEN);
+    }
+    
+    if( events & DEVICE_LIST_TIMER_EVEN )
+    {   
+#if defined (USE_GIZWITS_MOD)
+        if( Del_ZombieDevice_ForList() == true )
+        {
+            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_devicelist_update_packet,NULL);
+        }
+        
+        Del_DeviceTickCount();
+#else
         MYPROTOCO_D2D_MSG_SEND(create_tick_packet,NULL);
+#endif
 
         osal_start_timerEx( SmartDevice_TaskID, 
-                            SMART_DEVICE_TIMER_EVEN, 
-                            SMART_DEVICE_TIME );
+                            DEVICE_LIST_TIMER_EVEN, 
+                            DEVICE_LIST_TIME );
         
-        return (events ^ SMART_DEVICE_TIMER_EVEN);
+        return (events ^ DEVICE_LIST_TIMER_EVEN);
     }
     
     // Discard unknown events
@@ -221,16 +250,10 @@ void ZDO_STATE_CHANGE_CB( devStates_t status )
     {
         case DEV_ROUTER:
             DEVICE_LOG("I am Router Device!\n");
-            osal_start_timerEx( SmartDevice_TaskID, 
-                                SMART_DEVICE_TIMER_EVEN, 
-                                SMART_DEVICE_TIME );
             SmartDevice_CommLED_Control(SMARTDEVICE_LED_CONNED_STATE);
                 break;
         case DEV_END_DEVICE:
             DEVICE_LOG("I am End Device!\n");
-            osal_start_timerEx( SmartDevice_TaskID, 
-                                SMART_DEVICE_TIMER_EVEN, 
-                                SMART_DEVICE_TIME );
             SmartDevice_CommLED_Control(SMARTDEVICE_LED_CONNED_STATE);
                 break;
         case DEV_ZB_COORD:
@@ -243,6 +266,10 @@ void ZDO_STATE_CHANGE_CB( devStates_t status )
         default:
             break;
     }
+    
+    osal_start_timerEx( SmartDevice_TaskID, 
+                    DEVICE_LIST_TIMER_EVEN, 
+                    DEVICE_LIST_TIME );
 }
 
 /**
@@ -288,49 +315,6 @@ void SmartDevice_Key_Headler( uint8 keys, uint8 state )
         light_switch_headler();
 #endif
     }
-}
-
-/**
- *******************************************************************************
- * @brief       定时器3中断处理函数
- * @param       [in/out]  task_id    任务ID
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-#define TIM3_CLOSE() ( T3CTL &= ~0x10, T3CTL |= 0x04, TIMIF &= ~0x01 )
-#define TIM3_OPEN()  ( T3CTL |= 0x10 )
-HAL_ISR_FUNCTION( halTimer3Isr, T3_VECTOR )
-{
-#if defined ( USE_GIZWITS_MOD )
-    static uint8 Gizwits_Timer = 0;
-#endif
-    static uint16 Device_Clear_Timer = 0;
-    
-    TIM3_CLOSE();
-    
-#if defined ( USE_GIZWITS_MOD )
-    gizTimerMs();
-    
-    if( ++Gizwits_Timer >= GIZWITS_HANDLER_TIME )
-    {
-        gizwitsHandle(&currentDataPoint);
-        Gizwits_Timer = 0;
-    } 
-#endif    
-    
-    if( ++Device_Clear_Timer >= CLEAR_ZOMBIE_DEVICE_TIME )
-    {
-        if( Del_ZombieDevice_ForList() == true )
-        {
-            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_devicelist_update_packet,NULL);
-        }
-        
-        Del_DeviceTickCount();
-        Device_Clear_Timer = 0;
-    }
-
-    TIM3_OPEN();
 }
 
 /** @}*/     /* smartlight模块 */
