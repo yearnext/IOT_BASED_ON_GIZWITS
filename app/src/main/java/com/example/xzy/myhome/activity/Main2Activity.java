@@ -77,10 +77,13 @@ public class Main2Activity extends BaseActivity {
     ImageButton buttonSocketSwitch;
     @BindView(R.id.button_socket_set)
     ImageButton buttonSocketSet;
-    byte eventNumber=0;
+    @BindView(R.id.text_view_logcat)
+    TextView textViewLogcat;
+    byte eventNumber = 0;
     ParsePacket parsePacket;
-
-
+    String logcat;
+    int i = 0;
+    static ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
 
 
     @Override
@@ -98,7 +101,6 @@ public class Main2Activity extends BaseActivity {
     private void initView() {
 
         //toolbarList
-
         tbDeviceList.setTitle(R.string.toolbar1);
         tbDeviceList.setTitleTextColor(Color.WHITE);
         tbDeviceList.inflateMenu(R.menu.devicelist_toolbar_menu);
@@ -113,6 +115,7 @@ public class Main2Activity extends BaseActivity {
 
                     case R.id.refresh_item:
                         if (mDevice != null) {
+                            //// TODO: 2016/10/22 发送请求
 
                         }
 
@@ -140,16 +143,23 @@ public class Main2Activity extends BaseActivity {
                 Log.i(TAG, "MdidReceiveData:有data");
                 ConcurrentHashMap<String, Object> map = (ConcurrentHashMap<String, Object>) dataMap.get("data");
                 byte[] bytes = (byte[]) map.get("Packet");
-                if (bytes == null) Log.e(TAG, "MdidReceiveData: " + "bytes为空");
-                else {
+                if (bytes == null) {
+                    Log.e(TAG, "MdidReceiveData: " + "bytes为空");
+                    logcat = logcat + "第" + i++ + "次:" + "数据点 Packet 收到数据点数据为空" + "\n";
+                } else {
+                    StringBuilder stringBuilder = new StringBuilder();
                     for (byte a : bytes) {
                         Log.e(TAG, "MdidReceiveData: " + a);
+                        stringBuilder.append(a);
                     }
+                    logcat = logcat + "第" + i++ + "次:" + stringBuilder + "\n";
                     processingData(bytes);
                 }
             } else {
+                logcat = logcat + "第" + i++ + "次:数据型数据点为空" + "\n";
                 Log.i(TAG, "MdidReceiveData:data为空");
             }
+            textViewLogcat.setText(logcat);
             //无定义数据
             if (dataMap.get("binary") != null) {
                 byte[] binary = (byte[]) dataMap.get("binary");
@@ -157,46 +167,46 @@ public class Main2Activity extends BaseActivity {
                         + bytesToHex(binary));
             }
         }
-            if (result == GizWifiErrorCode.GIZ_SDK_DEVICE_NOT_READY) {
-                ToastUtil.showToast(Main2Activity.this, "设备处于未就绪状态");
-            } else {
-                Log.e(TAG, "MdidReceiveData: 数据点回调失败 result=" + result);
-            }
-
+        if (result == GizWifiErrorCode.GIZ_SDK_DEVICE_NOT_READY) {
+            ToastUtil.showToast(Main2Activity.this, "设备处于未就绪状态");
+        } else {
+            Log.e(TAG, "MdidReceiveData: 数据点回调失败 result=" + result);
+        }
 
 
     }
 
 
-
-    @OnClick({R.id.button_lamp_switch, R.id.button_lamp_set, R.id.button_curtain_switch, R.id.button_curtain_set, R.id.button_socket_switch, R.id.button_socket_set})
+    @OnClick({R.id.button_lamp_switch, R.id.button_lamp_set, R.id.button_curtain_switch,
+            R.id.button_curtain_set, R.id.button_socket_switch, R.id.button_socket_set
+            ,R.id.tv_error})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.button_lamp_switch:
                 ParsePacket lamp = new ParsePacket();
                 if (tvLampSwitch.getText().equals("开"))
-                lamp.sendPacket(mDevice, TYPE.APP_WRITE,eventNumber, MAC.LAMP, DATALENGTH.SWITCH
-                        , COMMAND.SWITCH, DATA.OFF);
+                    lamp.sendPacket(mDevice, TYPE.APP_WRITE, eventNumber, MAC.LAMP, DATALENGTH.SWITCH
+                            , COMMAND.SWITCH, DATA.OFF);
                 else
-                    lamp.sendPacket(mDevice, TYPE.APP_WRITE,eventNumber, MAC.LAMP, DATALENGTH.SWITCH
+                    lamp.sendPacket(mDevice, TYPE.APP_WRITE, eventNumber, MAC.LAMP, DATALENGTH.SWITCH
                             , COMMAND.SWITCH, DATA.ON);
                 break;
             case R.id.button_curtain_switch:
                 ParsePacket curtain = new ParsePacket();
                 if (tvLampSwitch.getText().equals("开"))
-                    curtain.sendPacket(mDevice, TYPE.APP_WRITE,eventNumber, MAC.CURTAIN, DATALENGTH.SWITCH
+                    curtain.sendPacket(mDevice, TYPE.APP_WRITE, eventNumber, MAC.CURTAIN, DATALENGTH.SWITCH
                             , COMMAND.SWITCH, DATA.OFF);
                 else
-                    curtain.sendPacket(mDevice, TYPE.APP_WRITE,eventNumber, MAC.CURTAIN, DATALENGTH.SWITCH
+                    curtain.sendPacket(mDevice, TYPE.APP_WRITE, eventNumber, MAC.CURTAIN, DATALENGTH.SWITCH
                             , COMMAND.SWITCH, DATA.ON);
                 break;
             case R.id.button_socket_switch:
                 ParsePacket socket = new ParsePacket();
                 if (tvLampSwitch.getText().equals("开"))
-                    socket.sendPacket(mDevice, TYPE.APP_WRITE,eventNumber, MAC.SOCKET, DATALENGTH.SWITCH
+                    socket.sendPacket(mDevice, TYPE.APP_WRITE, eventNumber, MAC.SOCKET, DATALENGTH.SWITCH
                             , COMMAND.SWITCH, DATA.OFF);
                 else
-                    socket.sendPacket(mDevice, TYPE.APP_WRITE,eventNumber, MAC.SOCKET, DATALENGTH.SWITCH
+                    socket.sendPacket(mDevice, TYPE.APP_WRITE, eventNumber, MAC.SOCKET, DATALENGTH.SWITCH
                             , COMMAND.SWITCH, DATA.ON);
                 break;
             case R.id.button_socket_set:
@@ -218,7 +228,12 @@ public class Main2Activity extends BaseActivity {
                         .setEventNumber(eventNumber)
                         .setMac(MAC.LAMP);
                 showSetMemu(buttonLampSet);
+                break;
 
+            case R.id.tv_error:
+                byte[] a = {11, 12, 12, 13, 13};
+                dataMap.put("Packet",a );
+                mDevice.write(dataMap, 0);
                 break;
 
 
@@ -226,7 +241,7 @@ public class Main2Activity extends BaseActivity {
     }
 
 
-    private void  showSetMemu(ImageButton buttonSet) {
+    private void showSetMemu(ImageButton buttonSet) {
         final PopupMenu popupMenu = new PopupMenu(Main2Activity.this, buttonSet, Gravity.END);
         popupMenu.getMenuInflater().inflate(R.menu.device_set_menu, popupMenu.getMenu());
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -240,7 +255,7 @@ public class Main2Activity extends BaseActivity {
 
                         Bundle bundle = new Bundle();
                         bundle.putSerializable("parsePacket", parsePacket);
-                        bundle.putParcelable("mDevice",mDevice);
+                        bundle.putParcelable("mDevice", mDevice);
                         Intent i = new Intent(Main2Activity.this, AlarmActivity.class);
                         i.putExtras(bundle);
                         startActivity(i);
@@ -265,23 +280,23 @@ public class Main2Activity extends BaseActivity {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case 0:
-                        parsePacket.setData(new byte[]{00,10});
+                        parsePacket.setData(new byte[]{00, 10});
                         parsePacket.sendPacket(mDevice);
                         break;
                     case 1:
-                        parsePacket.setData(new byte[]{00,20});
+                        parsePacket.setData(new byte[]{00, 20});
                         parsePacket.sendPacket(mDevice);
                         break;
                     case 2:
-                        parsePacket.setData(new byte[]{00,30});
+                        parsePacket.setData(new byte[]{00, 30});
                         parsePacket.sendPacket(mDevice);
                         break;
                     case 3:
-                        parsePacket.setData(new byte[]{00,60});
+                        parsePacket.setData(new byte[]{00, 60});
                         parsePacket.sendPacket(mDevice);
                         break;
                     case 4:
-                        parsePacket.setData(new byte[]{00,90});
+                        parsePacket.setData(new byte[]{00, 90});
                         parsePacket.sendPacket(mDevice);
                         break;
                     case 5:
@@ -294,7 +309,7 @@ public class Main2Activity extends BaseActivity {
                                     public void onClick(DialogInterface dialog, int which) {
                                         TimePicker timePicker = (TimePicker) view.findViewById(R.id.timePicker);
                                         byte[] bytes = new byte[2];
-                                        int i=  timePicker.getCurrentHour();
+                                        int i = timePicker.getCurrentHour();
                                         int i1 = timePicker.getCurrentMinute();
                                         bytes[0] = (byte) i;
                                         bytes[1] = (byte) i1;
@@ -336,23 +351,23 @@ public class Main2Activity extends BaseActivity {
 
                 }
             case TYPE.DEVICE_RESPONSE_APP_READ:
-                if (recevedData.getCommand()==COMMAND.SWITCH) {
+                if (recevedData.getCommand() == COMMAND.SWITCH) {
                     recevedData.setType(TYPE.END);
-                    uopdateSwitchUI(recevedData.getMac(),recevedData);
+                    uopdateSwitchUI(recevedData.getMac(), recevedData);
                 }
 
                 break;
             case TYPE.DEVICE_WRITE:
-                if (recevedData.getCommand()==COMMAND.SWITCH) {
+                if (recevedData.getCommand() == COMMAND.SWITCH) {
                     recevedData.setType(TYPE.APP_RESPONSE_DEVICE_WRITE);
-                    uopdateSwitchUI(recevedData.getMac(),recevedData);
+                    uopdateSwitchUI(recevedData.getMac(), recevedData);
                 }
 
 
                 break;
 
         }
-        }
+    }
 
     private void uopdateSwitchUI(byte[] mac, ParsePacket recevedData) {
         byte[] b = recevedData.getData();
@@ -360,14 +375,14 @@ public class Main2Activity extends BaseActivity {
 
             if (b[0] == 1) {
                 tvLampSwitch.setText("开");
-            }else{
+            } else {
                 tvLampSwitch.setText("关");
             }
         } else if (mac.equals(MAC.CURTAIN)) {
 
             if (b[0] == 1) {
                 tvCurtainSwitch.setText("开");
-            }else{
+            } else {
                 tvCurtainSwitch.setText("关");
             }
 
@@ -376,7 +391,7 @@ public class Main2Activity extends BaseActivity {
 
             if (b[0] == 1) {
                 tvSocketSwitch.setText("开");
-            }else{
+            } else {
                 tvSocketSwitch.setText("关");
             }
 
@@ -393,20 +408,18 @@ public class Main2Activity extends BaseActivity {
         if (mac.equals(MAC.LAMP)) {
 
 
-
-            tvLampTime.setText(startHour+":"+startMin+"-"+endHour+":"+endMin);
+            tvLampTime.setText(startHour + ":" + startMin + "-" + endHour + ":" + endMin);
 
         } else if (mac.equals(MAC.CURTAIN)) {
 
 
-                tvCurtainTime.setText(startHour+":"+startMin+"-"+endHour+":"+endMin);
-
+            tvCurtainTime.setText(startHour + ":" + startMin + "-" + endHour + ":" + endMin);
 
 
         } else if (mac.equals(MAC.SOCKET)) {
 
 
-                tvSocketTime.setText(startHour+":"+startMin+"-"+endHour+":"+endMin);
+            tvSocketTime.setText(startHour + ":" + startMin + "-" + endHour + ":" + endMin);
 
 
         }
@@ -419,47 +432,45 @@ public class Main2Activity extends BaseActivity {
         byte min = b[1];
         if (mac.equals(MAC.LAMP)) {
 
-                tvLampCountdown.setText(hour+":"+min);
+            tvLampCountdown.setText(hour + ":" + min);
         } else if (mac.equals(MAC.CURTAIN)) {
 
-                tvCurtainCountdown.setText(hour+":"+min);
-
+            tvCurtainCountdown.setText(hour + ":" + min);
 
 
         } else if (mac.equals(MAC.SOCKET)) {
 
 
-                tvSocketCountdown.setText(hour+":"+min);
+            tvSocketCountdown.setText(hour + ":" + min);
 
 
         }
 
     }
+
     //设备状态回调
     @Override
     protected void mDidUpdateNetStatus(GizWifiDevice device, GizWifiDeviceNetStatus netStatus) {
-        ToastUtil.showToast(Main2Activity.this, "设备状态变为:"+netStatus);
+        ToastUtil.showToast(Main2Activity.this, "设备状态变为:" + netStatus);
         switch (netStatus) {
             case GizDeviceOnline:
-                ToastUtil.showToast(Main2Activity.this, device.getProductName() +"设备状态变为:在线");
+                ToastUtil.showToast(Main2Activity.this, device.getProductName() + "设备状态变为:在线");
                 break;
             case GizDeviceOffline:
-                ToastUtil.showToast(Main2Activity.this, device.getProductName() +"设备状态变为:离线" );
+                ToastUtil.showToast(Main2Activity.this, device.getProductName() + "设备状态变为:离线");
                 break;
             case GizDeviceControlled:
-                ToastUtil.showToast(Main2Activity.this, device.getProductName() +"设备状态变为:可控");
+                ToastUtil.showToast(Main2Activity.this, device.getProductName() + "设备状态变为:可控");
                 break;
             case GizDeviceUnavailable:
-                ToastUtil.showToast(Main2Activity.this, device.getProductName() +"设备状态变为:难以获得的");
+                ToastUtil.showToast(Main2Activity.this, device.getProductName() + "设备状态变为:难以获得的");
                 break;
 
         }
 
 
-        Log.e(TAG, "mDidUpdateNetStatus: "+device.getProductName() + "   " + netStatus);
+        Log.e(TAG, "mDidUpdateNetStatus: " + device.getProductName() + "   " + netStatus);
     }
-
-
 
 
 

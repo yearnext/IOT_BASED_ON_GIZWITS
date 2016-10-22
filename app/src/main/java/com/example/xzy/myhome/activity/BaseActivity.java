@@ -66,7 +66,6 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         @Override   //绑定结果回调
         public void didDiscovered(GizWifiErrorCode result, List<GizWifiDevice> deviceList) {
-           ToastUtil.showToast(BaseActivity.this,"设备列表发生变化"+"\n设备数:"+deviceList.size());
             Log.i(TAG, "设备列表 " + deviceList);
             mDidDiscovered(result, deviceList);
         }
@@ -130,16 +129,21 @@ public abstract class BaseActivity extends AppCompatActivity {
         public void didReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn) {
             mDidReceiveData(result, device, dataMap, sn);
         }
-        //设备状态回调
+
         @Override
         public void didUpdateNetStatus(GizWifiDevice device, GizWifiDeviceNetStatus netStatus){
             mDidUpdateNetStatus(device,netStatus);
+            Toast.makeText(BaseActivity.this, "设备状态变为:" + netStatus, Toast.LENGTH_SHORT).show();
         }
     };
 
-    //设备状态回调
+    /**
+     * 该回调主动上报设备状态回调备的网络状态变化，当设备重上电、断电或可控时会触发该回调
+     * @param device 回调的GizWifiDevice对象
+     * @param netStatus 设备的状态
+     * */
     protected void mDidUpdateNetStatus(GizWifiDevice device, GizWifiDeviceNetStatus netStatus) {
-        ToastUtil.showToast(BaseActivity.this, "设备状态变为:" + netStatus);
+        Toast.makeText(this, "设备状态变为:" + netStatus, Toast.LENGTH_SHORT).show();
         switch (netStatus) {
             case GizDeviceOnline:
                 ToastUtil.showToast(BaseActivity.this, device.getProductName() +"设备状态变为:在线");
@@ -153,11 +157,8 @@ public abstract class BaseActivity extends AppCompatActivity {
             case GizDeviceUnavailable:
                 ToastUtil.showToast(BaseActivity.this, device.getProductName() +"设备状态变为:难以获得的");
                 break;
-
         }
-
-
-        Log.i(TAG, "mDidUpdateNetStatus: b   "+device.getProductName() + "   " + netStatus);
+        Log.i(TAG, "设备状态回调:"+device.getProductName() + "   " + netStatus);
     }
 
     //数据点更新

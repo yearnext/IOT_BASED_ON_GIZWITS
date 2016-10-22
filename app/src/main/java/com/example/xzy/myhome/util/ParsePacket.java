@@ -16,27 +16,38 @@ public class ParsePacket implements Serializable {
     private byte[] parket = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 
-
     public interface TYPE {
         byte END = 0;//结束此次通信流程
         byte APP_READ = 1;  //APP读取数据等待应答
         byte DEVICE_RESPONSE_APP_READ = 2;  //设备回应APP读取数据
-        byte APP_WRITE = 3;  //App写入数据等待设备应答
-        byte DEVICE_RESPONSE_APP_WRITE = 4;  //
+        byte APP_WRITE = 3;  //设备请求与app通信
+        byte DEVICE_RESPONSE_APP_WRITE = 4;  //app应答设备
         byte DEVICE_WRITE = 7;  //
         byte APP_RESPONSE_DEVICE_WRITE = 8;  //
-        byte CHECK_ERROR =9 ;
+        byte CHECK_ERROR = 9;
     }
+
+    public interface DEVICE_TYPE {
+        byte GATEWAY = 0;
+        byte LAMP = 1;
+        byte SOCKET = 2;
+        byte CURTAIN= 3;
+        byte SENSOR_TEMPERATURE= 4;
+
+    }
+
     public interface MAC {
-        byte[] LAMP = {20,01};
-        byte[] SOCKET = {20,02,};
-        byte[] CURTAIN = {20,03};
+        byte[] LAMP = {0x20, 0x01};
+        byte[] SOCKET = {0x20, 0x02,};
+        byte[] CURTAIN = {0x20, 0x03};
     }
+
     public interface COMMAND {
         byte SWITCH = 1;
         byte TIMING = 2;
         byte COUNTDOWN = 3;
     }
+
     public interface DATALENGTH {
         byte SWITCH = 2;
         byte TIMING = 9;
@@ -47,8 +58,6 @@ public class ParsePacket implements Serializable {
         byte[] OFF = {0};
         byte[] ON = {1};
     }
-
-
 
 
     public ParsePacket() {
@@ -72,10 +81,10 @@ public class ParsePacket implements Serializable {
 
     byte type;
     byte eventNumber;
-    byte[] mac={0,0,0,0,0,0};
+    byte[] mac = {0, 0, 0, 0, 0, 0};
     byte dataLength;
     byte command;
-    byte[] data={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    byte[] data = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     byte checkSum;
 
     public byte getType() {
@@ -162,15 +171,15 @@ public class ParsePacket implements Serializable {
 
         int sum = 0;
         for (int i = 0; i < 31; i++) {
-            sum +=(int) parket[i];
+            sum += (int) parket[i];
         }
 
-        parket[31] = (byte)(sum%256);
+        parket[31] = (byte) (sum % 256);
         dataMap.put("Packet", parket);
         mDevice.write(dataMap, 0);
     }
 
-    public void sendPacket(GizWifiDevice mDevice,byte type,byte eventNumber,byte[] mac,byte dataLength,byte command,byte[] data) {
+    public void sendPacket(GizWifiDevice mDevice, byte type, byte eventNumber, byte[] mac, byte dataLength, byte command, byte[] data) {
         parket[0] = type;
         parket[1] = eventNumber;
         for (int i = 0; i < mac.length; i++) {
@@ -183,10 +192,10 @@ public class ParsePacket implements Serializable {
         }
         int sum = 0;
         for (int i = 0; i < 31; i++) {
-            sum +=(int) parket[i];
+            sum += (int) parket[i];
         }
 
-        parket[31] = (byte)(sum%256);
+        parket[31] = (byte) (sum % 256);
         dataMap.put("Packet", parket);
         mDevice.write(dataMap, 0);
     }

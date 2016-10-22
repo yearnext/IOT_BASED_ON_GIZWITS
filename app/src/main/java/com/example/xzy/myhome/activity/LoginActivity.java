@@ -67,6 +67,7 @@ public class LoginActivity extends BaseActivity {
                 editor = preferences.edit();
                 editor.putString("account",loginEmail);
                 editor.putString("password",loginPassword);
+                editor.putBoolean("loginState", true);
                 editor.commit();
                 break;
 

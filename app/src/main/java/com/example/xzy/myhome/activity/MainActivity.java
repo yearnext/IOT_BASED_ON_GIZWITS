@@ -3,7 +3,6 @@ package com.example.xzy.myhome.activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -42,8 +41,6 @@ public class MainActivity extends BaseActivity {
     List<IotDevice> iotDeviceList;
     IotRecyckerViewAdapter iotAdapter;
 
-
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,18 +49,15 @@ public class MainActivity extends BaseActivity {
         Intent intent = getIntent();
         mUid = intent.getStringExtra("mUid");
         mToken = intent.getStringExtra("mToken");
-        initView();
-        // 主动刷新绑定设备列表、指定筛选的设备productKey
         List<String> pks = new ArrayList<String>();
         pks.add(Config.PRODUCT_KEY);
         GizWifiSDK.sharedInstance().getBoundDevices(mUid, mToken, pks);
-
+        iotDeviceList = new ArrayList<IotDevice>();
+        initView();
     }
 
     private void initView() {
-
         //toolbarList
-        //tbDeviceList.setLogo(R.drawable.ic_storage_black_24dp);
         tbDeviceList.setTitle(R.string.toolbar);
         tbDeviceList.setTitleTextColor(Color.WHITE);
         tbDeviceList.inflateMenu(R.menu.devicelist_toolbar_menu);
@@ -78,16 +72,13 @@ public class MainActivity extends BaseActivity {
                         break;
 
                     case R.id.refresh_item:
-
                         refresh();
-
                         break;
 
                     case R.id.delete_item:
                         if (devices.size()!= 0) {
                             GizWifiSDK.sharedInstance().unbindDevice(mUid, mToken, devices.get(0).getDid());
                         }
-
                         break;
                 }
                 return true;
@@ -95,55 +86,6 @@ public class MainActivity extends BaseActivity {
             }
         });
 
-    }
-
-    private void initData() {
-        if (devices.size() != 0) {
-            emptyList.setVisibility(View.GONE);
-            rvDeviceList.setVisibility(View.VISIBLE);
-            iotDeviceList = new ArrayList<IotDevice>();
-
-            for (GizWifiDevice device : devices) {
-                IotDevice iotDevice = new IotDevice();
-                iotDevice
-                        .setBind(BooleanTranslateUtil.translateString(device.isBind()))
-                        .setDid(device.getDid())
-                        .setDisable(BooleanTranslateUtil.translateString(device.isDisabled()))
-                        .setLan(BooleanTranslateUtil.translateString(device.isLAN()))
-                        .setMac(device.getMacAddress())
-                        .setNetStatus(device.getNetStatus().toString())
-                        .setSubscribed(BooleanTranslateUtil.translateString(device.isSubscribed()));
-                iotDeviceList.add(iotDevice);
-            }
-
-        } else {
-            emptyList.setVisibility(View.VISIBLE);
-            rvDeviceList.setVisibility(View.GONE);
-        }
-
-
-    }
-    protected void refresh() {
-        if (devices.size() != 0)
-            iotDeviceList = new ArrayList<IotDevice>();
-            for (GizWifiDevice device : devices) {
-                IotDevice iotDevice = new IotDevice();
-                iotDevice
-                        .setBind(BooleanTranslateUtil.translateString(device.isBind()))
-                        .setDid(device.getDid())
-                        .setDisable(BooleanTranslateUtil.translateString(device.isDisabled()))
-                        .setLan(BooleanTranslateUtil.translateString(device.isLAN()))
-                        .setMac(device.getMacAddress())
-                        .setNetStatus(device.getNetStatus().toString())
-                        .setSubscribed(BooleanTranslateUtil.translateString(device.isSubscribed()));
-                iotDeviceList.add(iotDevice);
-    }
-        iotAdapter.notifyDataSetChanged();
-    }
-
-
-
-    private void initRecyclerView() {
         //recyclerView
         iotAdapter = new IotRecyckerViewAdapter(iotDeviceList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -163,21 +105,39 @@ public class MainActivity extends BaseActivity {
             }
         });
     }
-
+    protected void refresh() {
+        Log.i(TAG, "refresh: "+devices.size());
+        if (devices.size() != 0||iotDeviceList!=null) {
+            iotDeviceList.removeAll(iotDeviceList);
+            for (GizWifiDevice device : devices) {
+                IotDevice iotDevice = new IotDevice();
+                iotDevice
+                        .setBind(BooleanTranslateUtil.translateString(device.isBind()))
+                        .setDid(device.getDid())
+                        .setDisable(BooleanTranslateUtil.translateString(device.isDisabled()))
+                        .setLan(BooleanTranslateUtil.translateString(device.isLAN()))
+                        .setMac(device.getMacAddress())
+                        .setNetStatus(device.getNetStatus().toString())
+                        .setSubscribed(BooleanTranslateUtil.translateString(device.isSubscribed()));
+                iotDeviceList.add(iotDevice);
+                Log.i(TAG, "列表数量"+iotDeviceList.size());
+                iotAdapter.notifyDataSetChanged();
+            }
+            emptyList.setVisibility(View.GONE);
+            rvDeviceList.setVisibility(View.VISIBLE);
+        }
+    }
 
     @Override
     protected void mDidDiscovered(GizWifiErrorCode result, List<GizWifiDevice> deviceList) {
         // 提示错误原因
         if (result != GizWifiErrorCode.GIZ_SDK_SUCCESS) {
-            Log.d("", "result: " + result.name());
+            Log.e("", "result: " + result.name());
         }
         // 显示变化后的设备列表
         Log.d("", "discovered deviceList: " + deviceList);
         devices = deviceList;
-        initData();
-        initRecyclerView();
-        Snackbar.make(rvDeviceList, "列表发生变化", Snackbar.LENGTH_SHORT).show();
-
+            refresh();
     }
 }
 
