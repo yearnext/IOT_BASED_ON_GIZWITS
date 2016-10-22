@@ -200,7 +200,7 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
         // return unprocessed events
         return (events ^ SYS_EVENT_MSG);
     }
- 
+#if defined (USE_GIZWITS_MOD) 
     if( events & GIZWITS_TIMER_EVEN )
     {
         gizwitsHandle(&currentDataPoint);
@@ -211,6 +211,7 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
         
         return (events ^ GIZWITS_TIMER_EVEN);
     }
+#endif
     
     if( events & DEVICE_LIST_TIMER_EVEN )
     {   
@@ -262,14 +263,15 @@ void ZDO_STATE_CHANGE_CB( devStates_t status )
                 break;
         case DEV_NWK_DISC:
             DEVICE_LOG("Discovering PAN's to join!\n");
+            return;
             break;
         default:
             break;
     }
     
     osal_start_timerEx( SmartDevice_TaskID, 
-                    DEVICE_LIST_TIMER_EVEN, 
-                    DEVICE_LIST_TIME );
+                DEVICE_LIST_TIMER_EVEN, 
+                DEVICE_LIST_TIME );
 }
 
 /**

@@ -3023,7 +3023,7 @@
         </option>
         <option>
           <name>ChipconEraseFlash</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>ChipconRetainMemory</name>
@@ -3031,7 +3031,7 @@
         </option>
         <option>
           <name>ChipconSuppressDownload</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>ChipconVerifyDownload</name>
