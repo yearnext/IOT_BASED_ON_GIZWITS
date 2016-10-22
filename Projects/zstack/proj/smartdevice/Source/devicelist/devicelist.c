@@ -457,14 +457,20 @@ bool through_id_find_deviceinfo( void **ctx, void **list )
  * @note        None
  *******************************************************************************
  */
-void Del_ZombieDevice_ForList( void )
+bool Del_ZombieDevice_ForList( void )
 {
 	uint8 device_num = Get_DeviceNum_ForList();
-
+    bool status = false;
+    
 	for (uint8 i = 0; i < device_num; i++)
 	{
-		list_foreach((void **)&head, clr_zombie_device, NULL);
+		if( list_foreach((void **)&head, clr_zombie_device, NULL) == true )
+        {
+            status = true;
+        }
 	}
+    
+    return status;
 }
 
 /**

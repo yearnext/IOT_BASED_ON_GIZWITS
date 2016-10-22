@@ -33,8 +33,9 @@
 // 设备心跳命令
 #define MYPROTOCOL_TICK_CMD (0x00)
 // 获取设备信息命令
-#define W2D_GET_DEVICE_NUM_CMD  (0x01)
-#define W2D_GET_DEVICE_INFO_CMD (0x02)
+#define W2D_DEVICE_LIST_UPDATE_CMD (0x00)
+#define W2D_GET_DEVICE_NUM_CMD     (0x01)
+#define W2D_GET_DEVICE_INFO_CMD    (0x02)
 
 /* Exported types ------------------------------------------------------------*/
 // 通讯类型
@@ -103,7 +104,7 @@ typedef bool (*packet_func)(void *ctx, MYPROTOCOL_FORMAT *packet);
 
 /* Exported variables --------------------------------------------------------*/
 // 设备类型
-#define SMART_DEVICE_TYPE MYPROTOCOL_DEVICE_LIGHT
+#define SMART_DEVICE_TYPE MYPROTOCOL_DEVICE_COORD
 
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/

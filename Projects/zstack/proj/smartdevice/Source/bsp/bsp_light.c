@@ -23,6 +23,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+
 #include "bsp_light.h"
 #include "timer_config.h"
 #include <string.h>
@@ -287,6 +289,8 @@ bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data )
     }
     return true;
 }
+
+#endif
 
 /** @}*/     /* 智能电灯配置模块 */
 
