@@ -32,6 +32,7 @@
 #include "NLMEDE.h"
 #include "smart_device.h"
 #include "aps_groups.h"
+#include "onBoard.h"
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
 #include "bsp_light.h"
 #endif
@@ -128,7 +129,7 @@ void myprotocol_init( uint8 endpoint, uint8 *task_id )
     
     /** 周期性的发送数据给协调器 */
     SmartDevice_Periodic_DstAddr.addr.shortAddr= 0x0000;
-    SmartDevice_Periodic_DstAddr.addrMode = afAddr16Bit;
+    SmartDevice_Periodic_DstAddr.addrMode = afAddr64Bit;
     SmartDevice_Periodic_DstAddr.endPoint = endpoint;
     
     /** 创建一个组表 */
@@ -285,7 +286,7 @@ static bool MYPROTOCOL_DIR_D2D_SEND_MSG( afAddrType_t *dst_addr, packet_func cre
 static bool MYPROTOCOL_DIR_D2W_SEND_MSG( MYPROTOCOL_FORMAT *packet, packet_func packet_create, void *ctx )
 {
     bool status = false;
-    uint8 *mac_addr = NULL;
+//    uint8 *mac_addr = NULL;
     
     if( packet_create == NULL )
     {
@@ -300,8 +301,9 @@ static bool MYPROTOCOL_DIR_D2W_SEND_MSG( MYPROTOCOL_FORMAT *packet, packet_func 
     tx_packet.sn = 0;
     
     tx_packet.device.device = SMART_DEVICE_TYPE;
-    mac_addr = NLME_GetExtAddr();
-    memcpy(&tx_packet.device.mac,mac_addr,sizeof(tx_packet.device.mac));
+//    mac_addr = NLME_GetExtAddr();
+//    memcpy(&tx_packet.device.mac,mac_addr,sizeof(tx_packet.device.mac));
+    memcpy(&tx_packet.device.mac,&aExtendedAddress,sizeof(tx_packet.device.mac));
     
     tx_packet.check_sum = myprotocol_cal_checksum((uint8 *)&tx_packet);
     
