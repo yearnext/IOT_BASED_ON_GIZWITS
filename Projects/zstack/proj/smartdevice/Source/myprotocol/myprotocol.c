@@ -387,26 +387,27 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
     {
         return;
     }
-    
-    switch( packet->commtype )
+    else
     {
-        case MYPROTOCOL_W2D_WAIT:
+        switch( packet->commtype )
+        {
+            case MYPROTOCOL_W2D_WAIT:
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
         light_cmd_resolve(&packet->user_data);
 #endif
-            break;
-        case MYPROTOCOL_W2D_ACK:
-            break;
-        case MYPROTOCOL_D2W_WAIT:
-            break;
-        case MYPROTOCOL_D2W_ACK:
-            break;
-        case MYPROTOCOL_H2S_WAIT:
-            break;
-        case MYPROTOCOL_H2S_ACK:
-            break;
-        case MYPROTOCOL_S2H_WAIT:
-        {
+                break;
+            case MYPROTOCOL_W2D_ACK:
+                break;
+            case MYPROTOCOL_D2W_WAIT:
+                break;
+            case MYPROTOCOL_D2W_ACK:
+                break;
+            case MYPROTOCOL_H2S_WAIT:
+                break;
+            case MYPROTOCOL_H2S_ACK:
+                break;
+            case MYPROTOCOL_S2H_WAIT:
+            {
 #if defined ( USE_GIZWITS_MOD )
             // 如果为父设备
             DEVICE_INFO *device_info = (DEVICE_INFO *)packet->user_data.data;
@@ -422,14 +423,15 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
             MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2D,(void *)&pkt->srcAddr,create_acktick_packet,&device_info->device);
             MYPROTOCOL_LOG("Coord get one end device tick packet!\n");
 #endif
-            break;
+                break;
+            }
+            case MYPROTOCOL_S2H_ACK:
+                break;
+            case MYPROTOCOL_COMM_ERROR:
+                break;
+            default:
+                break;
         }
-        case MYPROTOCOL_S2H_ACK:
-            break;
-        case MYPROTOCOL_COMM_ERROR:
-            break;
-        default:
-            break;
     }
 }
 
@@ -457,6 +459,7 @@ void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data )
         {
             case MYPROTOCOL_W2D_WAIT:
             {
+                // 检测数据接收设备，若不是本机则进行数据转发操作
                 if( packet->device.device == MYPROTOCOL_DEVICE_COORD )
                 {
                     switch( packet->user_data.cmd )
