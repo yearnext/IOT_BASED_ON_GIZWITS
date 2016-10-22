@@ -58,7 +58,7 @@ typedef LIST_NODE DEVICE_LIST_HEAD;
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern void Del_ZombieDevice_ForList( void );
+extern bool Del_ZombieDevice_ForList( void );
 
 extern void Del_DeviceTickCount( void );
 

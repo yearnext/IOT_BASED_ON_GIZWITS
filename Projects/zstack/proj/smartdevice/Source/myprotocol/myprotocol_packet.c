@@ -245,6 +245,23 @@ bool create_deviceinfo_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
     
     return true;
 }
+ 
+/**
+ *******************************************************************************
+ * @brief       创建读取设备信息应答数据包
+ * @param       [in/out]  ctx     上下文
+ *              [in/out]  packet  数据包  
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+bool create_devicelist_update_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
+{ 
+    packet->commtype = MYPROTOCOL_W2D_WAIT;
+    packet->user_data.cmd = W2D_DEVICE_LIST_UPDATE_CMD;
+    
+    return true;
+}
 
 /**
  *******************************************************************************

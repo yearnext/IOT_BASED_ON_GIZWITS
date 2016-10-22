@@ -283,8 +283,10 @@ void SmartDevice_CommLED_Control( uint8 state )
 void SmartDevice_Key_Headler( uint8 keys, uint8 state )
 {
     if( keys == HAL_KEY_SW_1 )
-    {
+    {  
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
         light_switch_headler();
+#endif
     }
 }
 
@@ -319,7 +321,11 @@ HAL_ISR_FUNCTION( halTimer3Isr, T3_VECTOR )
     
     if( ++Device_Clear_Timer >= CLEAR_ZOMBIE_DEVICE_TIME )
     {
-        Del_ZombieDevice_ForList();
+        if( Del_ZombieDevice_ForList() == true )
+        {
+            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_devicelist_update_packet,NULL);
+        }
+        
         Del_DeviceTickCount();
         Device_Clear_Timer = 0;
     }

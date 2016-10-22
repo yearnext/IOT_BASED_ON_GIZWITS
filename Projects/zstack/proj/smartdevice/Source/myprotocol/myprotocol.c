@@ -296,11 +296,12 @@ static bool MYPROTOCOL_DIR_D2W_SEND_MSG( MYPROTOCOL_FORMAT *packet, packet_func 
     
     status = packet_create(ctx, &tx_packet);
     
-    tx_packet.sn = packet->sn;
+//    tx_packet.sn = packet->sn;    
+    tx_packet.sn = 0;
     
-    packet->device.device = SMART_DEVICE_TYPE;
+    tx_packet.device.device = SMART_DEVICE_TYPE;
     mac_addr = NLME_GetExtAddr();
-    memcpy(&packet->device.mac,mac_addr,sizeof(packet->device.mac));
+    memcpy(&tx_packet.device.mac,mac_addr,sizeof(tx_packet.device.mac));
     
     tx_packet.check_sum = myprotocol_cal_checksum((uint8 *)&tx_packet);
     
@@ -398,14 +399,14 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
                 break;
             case MYPROTOCOL_W2D_ACK:
                 break;
-            case MYPROTOCOL_D2W_WAIT:
-                break;
-            case MYPROTOCOL_D2W_ACK:
-                break;
-            case MYPROTOCOL_H2S_WAIT:
-                break;
-            case MYPROTOCOL_H2S_ACK:
-                break;
+//            case MYPROTOCOL_D2W_WAIT:
+//                break;
+//            case MYPROTOCOL_D2W_ACK:
+//                break;
+//            case MYPROTOCOL_H2S_WAIT:
+//                break;
+//            case MYPROTOCOL_H2S_ACK:
+//                break;
             case MYPROTOCOL_S2H_WAIT:
             {
 #if defined ( USE_GIZWITS_MOD )
@@ -484,14 +485,12 @@ void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data )
                 }
                 else
                 {
+                    // 转发数据并应答APP
                     COORD_FORWARD_PACKET(packet);
+                    MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,packet,create_w2d_ack_packet,NULL);
                 }
                     break;
             }
-            case MYPROTOCOL_W2D_ACK:
-                break;
-            case MYPROTOCOL_D2W_WAIT:
-                break;
             case MYPROTOCOL_D2W_ACK:
                 break;
             case MYPROTOCOL_COMM_ERROR:

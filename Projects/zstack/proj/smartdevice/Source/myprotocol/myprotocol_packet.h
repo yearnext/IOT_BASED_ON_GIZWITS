@@ -43,6 +43,7 @@ extern bool create_d2w_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 extern bool create_d2w_wait_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 extern bool create_devicenum_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 extern bool create_deviceinfo_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_devicelist_update_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 extern bool create_report_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 
 #endif      /* __myprotocol_packet_H__ */
