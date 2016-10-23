@@ -302,7 +302,7 @@ void key_handler(uint8 type)
 {
 	key_message_t message = key_message_read(type);
 
-	switch (message)
+	switch (type)
 	{
 		case KEY_1:
             key1_message_handler(message);
