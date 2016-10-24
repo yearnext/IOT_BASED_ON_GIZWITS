@@ -6811,6 +6811,12 @@
     <group>
       <name>bsp</name>
       <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_key.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_key.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\Source\bsp\bsp_light.c</name>
       </file>
       <file>

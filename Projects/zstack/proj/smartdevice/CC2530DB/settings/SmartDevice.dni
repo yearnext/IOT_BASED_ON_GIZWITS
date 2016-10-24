@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=-1857882283
+Checksum=406042886
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -76,11 +76,13 @@ Category=_ 0
 LoggingEnabled=_ 0
 LogFile=_ ""
 [Breakpoints]
-Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\ZMain\TI2530DB\OnBoard.c}.250.3" 1 0 0 0 "" 0 ""
-Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\Source\myprotocol\myprotocol.c}.466.17" 0 0 0 0 "" 0 ""
-Bp2=_ "STD_CODE" "{$PROJ_DIR$\..\Source\myprotocol\myprotocol.c}.491.21" 0 0 0 0 "" 0 ""
-Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\Source\app\smart_device.c}.188.21" 1 0 0 0 "" 0 ""
-Count=4
+Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\Source\myprotocol\myprotocol.c}.466.17" 0 0 0 0 "" 0 ""
+Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\Source\myprotocol\myprotocol.c}.491.21" 0 0 0 0 "" 0 ""
+Bp2=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_key.c}.411.3" 0 0 0 0 "" 0 ""
+Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\ZMain\TI2530DB\OnBoard.c}.248.3" 1 0 0 0 "" 0 ""
+Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_key.c}.441.3" 0 0 0 0 "" 0 ""
+Bp5=_ "STD_CODE" "{$PROJ_DIR$\..\Source\app\smart_device.c}.342.9" 1 0 0 0 "" 0 ""
+Count=6
 [ChipconEmu]
 Stop timers on halt=0
 Leave target running=1
