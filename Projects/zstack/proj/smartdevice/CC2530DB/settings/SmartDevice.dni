@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=499289817
+Checksum=112094708
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -58,31 +58,35 @@ ShowSource=1
 [Simulator]
 Freq=50000000
 [struct_types]
-Fmt0=user_time-day	4	0
-Fmt1=user_time-hour	4	0
-Fmt2=user_time-minute	4	0
-Fmt3=user_time-month	4	0
-Fmt4=user_time-second	4	0
-Fmt5=user_time-week	4	0
-Fmt6=user_time-year	4	0
+Fmt0=DHT11_DATA_t-hum	3	0
+Fmt1=DHT11_DATA_t-temp	3	0
+Fmt2=user_time-day	4	0
+Fmt3=user_time-hour	4	0
+Fmt4=user_time-minute	4	0
+Fmt5=user_time-month	4	0
+Fmt6=user_time-second	4	0
+Fmt7=user_time-week	4	0
+Fmt8=user_time-year	4	0
 [array_types]
 Fmt0=uint8 [128]	4	0
-Fmt1=uint8 [6]	4	0
-Fmt2=uint8 [8]	4	0
+Fmt1=uint8 [5]	3	0
+Fmt2=uint8 [6]	4	0
+Fmt3=uint8 [8]	4	0
 [watch_formats]
 Fmt0={W}0:activeTaskID	4	0
 Fmt1={W}0:events	4	0
 Fmt2={W}1:a	3	0
-Fmt3={W}1:duty	3	0
-Fmt4={W}1:gizwits_uart_status	4	0
-Fmt5={W}1:size	3	0
+Fmt3={W}1:check_sum	3	0
+Fmt4={W}1:duty	3	0
+Fmt5={W}1:gizwits_uart_status	4	0
+Fmt6={W}1:size	3	0
 [Breakpoints]
 Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\Source\myprotocol\myprotocol.c}.466.17" 0 0 0 0 "" 0 ""
 Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\Source\myprotocol\myprotocol.c}.491.21" 0 0 0 0 "" 0 ""
 Bp2=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_key.c}.411.3" 0 0 0 0 "" 0 ""
 Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\ZMain\TI2530DB\OnBoard.c}.248.3" 1 0 0 0 "" 0 ""
 Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_key.c}.441.3" 0 0 0 0 "" 0 ""
-Bp5=_ "STD_CODE" "{$PROJ_DIR$\..\Source\app\smart_device.c}.346.9" 1 0 0 0 "" 0 ""
+Bp5=_ "STD_CODE" "{$PROJ_DIR$\..\Source\hal\hal_dht11.c}.172.21" 1 0 0 0 "" 0 ""
 Count=6
 [ChipconEmu]
 Stop timers on halt=0

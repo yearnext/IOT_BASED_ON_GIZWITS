@@ -53,6 +53,8 @@
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+#include "hal_dht11.h"
+#else
 #endif
      
 #if defined(USE_GIZWITS_MOD)
@@ -347,6 +349,8 @@ void device_timer_cb( void )
         
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
         light_working_headler();
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+#else
 #endif  
         timer_20ms = 0;
     }

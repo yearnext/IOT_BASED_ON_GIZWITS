@@ -33,10 +33,10 @@
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 // 硬件寄存定义
-#define DHT11_PORT     P2_1
-#define DHT11_BV       BV(1)
-#define DHT11_SEL      P2SEL
-#define DHT11_DIR      P2DIR
+#define DHT11_PORT     P1_3
+#define DHT11_BV       BV(3)
+#define DHT11_SEL      P1SEL
+#define DHT11_DIR      P1DIR
 #define DHT11_POLARITY ACTIVE_HIGH
 // 硬件功能定义
 #define DHT11_PORT_WrMode() ( DHT11_DIR |=  DHT11_BV )
@@ -122,7 +122,7 @@ static uint8 Read_Byte_FromDHT11( void )
 DHT11_DATA_t dht11_rd_data( void )
 {
     uint8 timeout = 0;
-    uint8 i = 0;
+    uint8 i = 0, j = 0;
     uint8 data_cache[5];
     uint8 check_sum = 0;
     DHT11_DATA_t dht11_data = {0xFF, 0xFF};
@@ -160,16 +160,17 @@ DHT11_DATA_t dht11_rd_data( void )
             
             if( i == 4 )
             {
+                for( j=0, check_sum=0; j<4; j++ )
+                {
+                    check_sum += data_cache[j];
+                }
+                
                 if( check_sum == data_cache[i] )
                 {
-                    dht11_data.temp = data_cache[0];
-                    dht11_data.hum  = data_cache[2];
+                    dht11_data.hum  = data_cache[0];
+                    dht11_data.temp = data_cache[2];
                     break;
                 }
-            }
-            else
-            {
-                check_sum |= data_cache[i];
             }
         }
     }
