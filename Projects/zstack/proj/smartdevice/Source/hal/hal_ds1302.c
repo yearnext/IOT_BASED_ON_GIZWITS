@@ -79,8 +79,8 @@
 // DS1302 涓流充电配置
 #define DS1302_TRICK_CONFIG() ds1302_wr_data(DS1302_TRICK_REG_ADDR,0xA5)
 // DS1302 BCD与HEX互相转换
-#define DS1302_HEX2BCD(hex)   ((uint8)((((hex/10)<<4) | (hex%10))))
-#define DS1302_BCD2HEX(bcd)   ((uint8)(((bcd>>4)*10) + (bcd&0x0F)))
+#define DS1302_HEX2BCD(hex)   ((uint8)(((((hex)/10)<<4) | ((hex)%10))))
+#define DS1302_BCD2HEX(bcd)   ((uint8)((((bcd)>>4)*10) + ((bcd)&0x0F)))
      
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -106,7 +106,7 @@ void hal_ds1302_init( void )
     SET_DS1302_SDA();
     DS1302_SDA_RdMode();
     
-    DS1302_TRICK_CONFIG();
+//    DS1302_TRICK_CONFIG();
 }
 
 /**
@@ -120,20 +120,19 @@ void hal_ds1302_init( void )
 static uint8 ds1302_rd_byte( void )
 {
     uint8 rd_data = 0;
-    uint8 i = 0;
+    uint8 i = 0, j = 0;
     
     DS1302_SDA_RdMode();
     
     for( i=0; i<8; i++ )
     {
+        j = (uint8)Read_DS1302_SDA();
+        rd_data |= j << i;
+
+        DS1302_DELAY();
+        
         SET_DS1302_SCK();
-        
-        rd_data <<= 1;
-        rd_data |= (uint8)Read_DS1302_SDA();
-        DS1302_DELAY();
-        
         RST_DS1302_SCK();
-        DS1302_DELAY();
     }
     
     return rd_data;
@@ -154,14 +153,13 @@ static void ds1302_wr_byte( uint8 wr_data )
     DS1302_SDA_WrMode();
     
     for( i=0; i<8; i++ )
-    {
-        RST_DS1302_SCK();
-        
+    {        
         (wr_data & BV(i)) ? (SET_DS1302_SDA()) : (RST_DS1302_SDA());
+
         DS1302_DELAY();
         
         SET_DS1302_SCK();
-        DS1302_DELAY();
+        RST_DS1302_SCK();
     }
 
     DS1302_SDA_RdMode();
@@ -180,11 +178,14 @@ void ds1302_wr_data( uint8 wr_addr, uint8 wr_data )
 {
     uint8 cmd_data = 0x80 | ( wr_addr << 1 );
     
+    RST_DS1302_RST();
+    RST_DS1302_SCK();
     SET_DS1302_RST();
     
     ds1302_wr_byte(cmd_data);
     ds1302_wr_byte(wr_data);
     
+    SET_DS1302_SCK();
     RST_DS1302_RST();
 }
 
@@ -201,11 +202,14 @@ uint8 ds1302_rd_data( uint8 rd_addr )
     uint8 cmd_data = 0x81 | ( rd_addr << 1 );
     uint8 rd_data = 0;
     
+    RST_DS1302_RST();
+    RST_DS1302_SCK();
     SET_DS1302_RST();
     
     ds1302_wr_byte(cmd_data);
     rd_data = ds1302_rd_byte();
     
+    SET_DS1302_SCK();
     RST_DS1302_RST();
     
     return rd_data;
@@ -243,10 +247,14 @@ void ds1302_wr_time( void *time )
     uint8 *data = (uint8 *)time;
     uint8 i = 0;
     
+    DS1302_DISABLE_WP();
+    
     for( i=0; i<7; i++ )
     {
         ds1302_wr_data(DS1302_RD_TIME_ADDR+i,DS1302_HEX2BCD(data[i]));
     }
+    
+    DS1302_ENABLE_WP();
 }
 
 ///**

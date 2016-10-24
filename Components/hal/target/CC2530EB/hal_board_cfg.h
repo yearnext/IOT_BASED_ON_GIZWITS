@@ -143,11 +143,11 @@
 #define ACTIVE_HIGH       !!    /* double negation forces result to be '1' */
 
 /** S1 */
-#define PUSH1_BV          BV(5)
-#define PUSH1_SBIT        P0_5
+#define PUSH1_BV          BV(0)
+#define PUSH1_SBIT        P0_0
 /** S2 */   
-#define PUSH2_BV          BV(7)
-#define PUSH2_SBIT        P0_7
+#define PUSH2_BV          BV(2)
+#define PUSH2_SBIT        P1_2
 
 #if defined (HAL_BOARD_CC2530EB_REV17)
   #define PUSH1_POLARITY    ACTIVE_HIGH
@@ -445,7 +445,7 @@ st( \
 
 /* Set to TRUE enable KEY usage, FALSE disable it */
 #ifndef HAL_KEY
-#define HAL_KEY TRUE
+#define HAL_KEY FALSE
 #endif
 
 /* Set to TRUE enable UART usage, FALSE disable it */

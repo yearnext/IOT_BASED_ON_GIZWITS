@@ -136,7 +136,10 @@ static bool KEY2_DETECT( void )
  */
 void key_message_send(uint8 type, key_message_t message)
 {
-	KEY_MESSAGE[type] = message;
+	if( KEY_MESSAGE[type] == KEY_MESSAGE_NONE )
+    {
+        KEY_MESSAGE[type] = message;
+    }
 }
 
 /**
