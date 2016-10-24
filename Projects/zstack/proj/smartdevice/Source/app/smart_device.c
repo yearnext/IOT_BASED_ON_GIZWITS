@@ -44,6 +44,8 @@
 #include "myprotocol.h"
 #include "myprotocol_packet.h"
 #include "timer_config.h"
+#include "bsp_key.h"
+#include "app_time.h"
 
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
@@ -85,14 +87,18 @@ dataPoint_t currentDataPoint;
 #else
     #define DEVICE_LIST_TIME            (3000)
 #endif
-
 /** 设备定时事件 */
 #define DEVICE_LIST_TIMER_EVEN          (0x0002)
 
-/** 机智云事件处理时间 */
-#define GIZWITS_TIMER_TIME              (75)
-/** 机智云处理事件 */
-#define GIZWITS_TIMER_EVEN              (0x0004)  
+/** 设备后台运行时间 */
+#define DEVICE_BACKSTAGE_TIME           (10)
+/** 设备定时器事件 */
+#define DEVICE_TIMER_EVEN               (0x0008)
+/** 定时器计数值 */
+#define TIMER_20MS_COUNT  (2)
+#define TIMER_50MS_COUNT  (5)
+#define TIMER_100MS_COUNT (10)
+#define TIMER_300MS_COUNT (30)
 
 /** Smart Device 通讯状态指示灯 */
 #define SMARTDEVICE_LED_DISCONNED_STATE (0x00)
@@ -105,10 +111,11 @@ static byte SmartDevice_TaskID;
 /** 设备状态 */
 static devStates_t SmartDevice_NwkState;
 
-/* Private functions ---------------------------------------------------------*/
+/* functions statement -------------------------------------------------------*/
 void SmartDevice_Key_Headler( uint8 keys, uint8 state );
 void ZDO_STATE_CHANGE_CB( devStates_t status );
 void SmartDevice_CommLED_Control( uint8 state );
+void device_timer_cb( void );
 
 /* Exported functions --------------------------------------------------------*/
 /**
@@ -126,18 +133,15 @@ void SmartDevice_Init( byte task_id )
     
     MT_UartInit();
     MT_UartRegisterTaskID(SmartDevice_TaskID);
- 
-    /**  注册按键事件 */
-    RegisterForKeys( SmartDevice_TaskID );
     
     myprotocol_init( SmartDevice_EndPoint, &SmartDevice_TaskID );
     
+    key_foreach(hal_key_init);
+    
+    app_time_init();
+    
 #if defined (USE_GIZWITS_MOD)
     gizwitsInit();
-    
-    osal_start_timerEx( SmartDevice_TaskID, 
-                        GIZWITS_TIMER_EVEN, 
-                        GIZWITS_TIMER_TIME );
 #endif    
     
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
@@ -147,6 +151,10 @@ void SmartDevice_Init( byte task_id )
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
 #endif
+    
+    osal_start_timerEx( SmartDevice_TaskID, 
+                        DEVICE_TIMER_EVEN, 
+                        DEVICE_BACKSTAGE_TIME );
 
     SmartDevice_CommLED_Control(SMARTDEVICE_LED_DISCONNED_STATE);
     
@@ -175,14 +183,9 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
         {
             switch( MSGpkt->hdr.event )
             {
-                case KEY_CHANGE:    
-                    SmartDevice_Key_Headler(((keyChange_t *)MSGpkt)->keys,((keyChange_t *)MSGpkt)->state);
-                    break;
-                /** 接收到数据 */
                 case AF_INCOMING_MSG_CMD:
                     SmartDevice_Message_Headler(MSGpkt);
                     break;
-                /** 状态改变 */
                 case ZDO_STATE_CHANGE:
                     SmartDevice_NwkState = (devStates_t)(MSGpkt->hdr.status);
                     ZDO_STATE_CHANGE_CB(SmartDevice_NwkState);
@@ -200,18 +203,6 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
         // return unprocessed events
         return (events ^ SYS_EVENT_MSG);
     }
-#if defined (USE_GIZWITS_MOD) 
-    if( events & GIZWITS_TIMER_EVEN )
-    {
-        gizwitsHandle(&currentDataPoint);
-        
-        osal_start_timerEx( SmartDevice_TaskID, 
-                            GIZWITS_TIMER_EVEN, 
-                            GIZWITS_TIMER_TIME );
-        
-        return (events ^ GIZWITS_TIMER_EVEN);
-    }
-#endif
     
     if( events & DEVICE_LIST_TIMER_EVEN )
     {   
@@ -231,6 +222,17 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
                             DEVICE_LIST_TIME );
         
         return (events ^ DEVICE_LIST_TIMER_EVEN);
+    }
+    
+    if( events & DEVICE_TIMER_EVEN )
+    {
+        device_timer_cb();
+        
+        osal_start_timerEx( SmartDevice_TaskID, 
+                            DEVICE_TIMER_EVEN, 
+                            DEVICE_BACKSTAGE_TIME );
+        
+        return (events ^ DEVICE_TIMER_EVEN);
     }
     
     // Discard unknown events
@@ -303,19 +305,78 @@ void SmartDevice_CommLED_Control( uint8 state )
 
 /**
  *******************************************************************************
+ * @brief       设备定时器回调函数
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        执行周期为10MS
+ *******************************************************************************
+ */
+void device_timer_cb( void )
+{
+    static uint8 timer_20ms  = 0;
+    static uint8 timer_50ms  = 0;
+    static uint8 timer_100ms = 0;
+    static uint8 timer_300ms = 0;
+    
+    if( ++timer_20ms >= TIMER_20MS_COUNT )
+    {
+        key_foreach(hal_key_scan);
+        timer_20ms = 0;
+    }
+    
+    if( ++timer_50ms >= TIMER_50MS_COUNT )
+    {
+#if defined (USE_GIZWITS_MOD)
+        gizTimer50Ms();
+#endif
+        key_foreach(key_handler);
+        timer_50ms = 0;
+    }
+    
+    if( ++timer_100ms >= TIMER_100MS_COUNT )
+    {
+#if defined (USE_GIZWITS_MOD)
+        gizwitsHandle(&currentDataPoint);
+#endif
+        timer_100ms = 0;
+    }
+    
+    if( ++timer_300ms >= TIMER_300MS_COUNT )
+    {
+        app_time_update();
+        
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+        light_working_headler();
+#endif  
+        timer_20ms = 0;
+    }
+}
+
+/**
+ *******************************************************************************
  * @brief       SmartDevice按键处理
- * @param       [in]   pkt    信息
+ * @param       [in]   message    按键信息
  * @return      [out]  void
  * @note        None
  *******************************************************************************
  */
-void SmartDevice_Key_Headler( uint8 keys, uint8 state )
+void key1_message_handler( key_message_t message )
 {
-    if( keys == HAL_KEY_SW_1 )
-    {  
+    switch (message)
+    {
+        case KEY_MESSAGE_PRESS_EDGE:
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
         light_switch_headler();
 #endif
+            break;
+        case KEY_MESSAGE_PRESS:
+            break;
+        case KEY_MESSAGE_RELEASE_EDGE:
+            break;
+        case KEY_MESSAGE_RELEASE:
+            break;
+        default:
+            break;
     }
 }
 

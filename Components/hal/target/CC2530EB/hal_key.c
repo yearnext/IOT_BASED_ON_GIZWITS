@@ -105,34 +105,35 @@
 
 /* CPU port interrupt */
 #define HAL_KEY_CPU_PORT_0_IF P0IF
+#define HAL_KEY_CPU_PORT_1_IF P1IF
 
-/** SW_1 is at P0.5 */
+/** SW_1 is at P0.0 */
 #define HAL_KEY_SW_1_PORT P0
-#define HAL_KEY_SW_1_BIT  BV(5)
+#define HAL_KEY_SW_1_BIT  BV(0)
 #define HAL_KEY_SW_1_SEL  P0SEL
 #define HAL_KEY_SW_1_DIR  P0DIR
 /** SW_1 edge interrupt */
 #define HAL_KEY_SW_1_EDGEBIT BV(0)
 #define HAL_KEY_SW_1_EDGE    HAL_KEY_FALLING_EDGE
 #define HAL_KEY_SW_1_IEN     IEN1
-#define HAL_KEY_SW_1_IENBIT  BV(5)
+#define HAL_KEY_SW_1_IENBIT  BV(0)
 #define HAL_KEY_SW_1_ICTL    P0IEN
-#define HAL_KEY_SW_1_ICTLBIT BV(5)
+#define HAL_KEY_SW_1_ICTLBIT BV(1)
 #define HAL_KEY_SW_1_PXIFG   P0IFG
 
-/** SW_2 is at P0.7 */
-#define HAL_KEY_SW_2_PORT P0
-#define HAL_KEY_SW_2_BIT  BV(7)
-#define HAL_KEY_SW_2_SEL  P0SEL
-#define HAL_KEY_SW_2_DIR  P0DIR
+/** SW_2 is at P1.2 */
+#define HAL_KEY_SW_2_PORT P1
+#define HAL_KEY_SW_2_BIT  BV(2)
+#define HAL_KEY_SW_2_SEL  P1SEL
+#define HAL_KEY_SW_2_DIR  P1DIR
 /** SW_2 edge interrupt */
-#define HAL_KEY_SW_2_EDGEBIT BV(0)
+#define HAL_KEY_SW_2_EDGEBIT BV(1)
 #define HAL_KEY_SW_2_EDGE    HAL_KEY_FALLING_EDGE
 #define HAL_KEY_SW_2_IEN     IEN1
-#define HAL_KEY_SW_2_IENBIT  BV(7)
-#define HAL_KEY_SW_2_ICTL    P0IEN
-#define HAL_KEY_SW_2_ICTLBIT BV(7)
-#define HAL_KEY_SW_2_PXIFG   P0IFG
+#define HAL_KEY_SW_2_IENBIT  BV(2)
+#define HAL_KEY_SW_2_ICTL    P1IEN
+#define HAL_KEY_SW_2_ICTLBIT BV(2)
+#define HAL_KEY_SW_2_PXIFG   P1IFG
 
 /**************************************************************************************************
  *                                            TYPEDEFS
@@ -216,7 +217,6 @@ void HalKeyConfig (bool interruptEnable, halKeyCBack_t cback)
   #if (HAL_KEY_SW_1_EDGE == HAL_KEY_FALLING_EDGE) || (HAL_KEY_SW_2_EDGE == HAL_KEY_FALLING_EDGE)
     PICTL |= HAL_KEY_SW_1_EDGEBIT;
   #endif
-
 
     /* Interrupt configuration:
      * - Enable interrupt generation at the port
@@ -334,61 +334,6 @@ void HalKeyPoll (void)
 }
 
 /**************************************************************************************************
- * @fn      halGetJoyKeyInput
- *
- * @brief   Map the ADC value to its corresponding key.
- *
- * @param   None
- *
- * @return  keys - current joy key status
- **************************************************************************************************/
-uint8 halGetJoyKeyInput(void)
-{
-//  /* The joystick control is encoded as an analog voltage.
-//   * Read the JOY_LEVEL analog value and map it to joy movement.
-//   */
-//  uint8 adc;
-//  uint8 ksave0 = 0;
-//  uint8 ksave1;
-//
-//  /* Keep on reading the ADC until two consecutive key decisions are the same. */
-//  do
-//  {
-//    ksave1 = ksave0;    /* save previouse key reading */
-//
-//    adc = HalAdcRead (HAL_KEY_JOY_CHN, HAL_ADC_RESOLUTION_8);
-//
-//    if ((adc >= 2) && (adc <= 38))
-//    {
-//       ksave0 |= HAL_KEY_UP;
-//    }
-//    else if ((adc >= 74) && (adc <= 88))
-//    {
-//      ksave0 |= HAL_KEY_RIGHT;
-//    }
-//    else if ((adc >= 60) && (adc <= 73))
-//    {
-//      ksave0 |= HAL_KEY_LEFT;
-//    }
-//    else if ((adc >= 39) && (adc <= 59))
-//    {
-//      ksave0 |= HAL_KEY_DOWN;
-//    }
-//    else if ((adc >= 89) && (adc <= 100))
-//    {
-//      ksave0 |= HAL_KEY_CENTER;
-//    }
-//  } while (ksave0 != ksave1);
-//
-//  return ksave0;
-    return 0;
-}
-
-
-
-
-
-/**************************************************************************************************
  * @fn      halProcessKeyInterrupt
  *
  * @brief   Checks to see if it's a valid key interrupt, saves interrupt driven key states for
@@ -465,7 +410,7 @@ HAL_ISR_FUNCTION( halKeyPort0Isr, P0INT_VECTOR )
 {
   HAL_ENTER_ISR();
 
-  if (HAL_KEY_SW_1_PXIFG & HAL_KEY_SW_1_BIT || HAL_KEY_SW_2_PXIFG & HAL_KEY_SW_2_BIT)
+  if (HAL_KEY_SW_1_PXIFG & HAL_KEY_SW_1_BIT)
   {
     halProcessKeyInterrupt();
   }
@@ -482,6 +427,35 @@ HAL_ISR_FUNCTION( halKeyPort0Isr, P0INT_VECTOR )
   HAL_EXIT_ISR();
 }
 
+/**************************************************************************************************
+ * @fn      halKeyPort1Isr
+ *
+ * @brief   Port1 ISR
+ *
+ * @param
+ *
+ * @return
+ **************************************************************************************************/
+HAL_ISR_FUNCTION( halKeyPort1Isr, P1INT_VECTOR )
+{
+  HAL_ENTER_ISR();
+
+  if (HAL_KEY_SW_2_PXIFG & HAL_KEY_SW_2_BIT)
+  {
+    halProcessKeyInterrupt();
+  }
+
+  /*
+    Clear the CPU interrupt flag for Port_0
+    PxIFG has to be cleared before PxIF
+  */
+  HAL_KEY_SW_2_PXIFG = 0;
+  HAL_KEY_CPU_PORT_1_IF = 0;
+  
+  CLEAR_SLEEP_MODE();
+  HAL_EXIT_ISR();
+}
+
 #else
 
 
@@ -492,12 +466,5 @@ void HalKeyPoll(void){}
 
 #endif /* HAL_KEY */
 
-
-
-
-
 /**************************************************************************************************
 **************************************************************************************************/
-
-
-

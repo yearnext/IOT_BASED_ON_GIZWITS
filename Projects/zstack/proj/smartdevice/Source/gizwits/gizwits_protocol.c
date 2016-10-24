@@ -220,6 +220,11 @@ void gizTimerMs(void)
     gizwitsProtocol.timerMsCount++;
 }
 
+void gizTimer50Ms(void)
+{
+    gizwitsProtocol.timerMsCount++;
+}
+
 /**
 * @brief 读取系统时间毫秒计时数
 
@@ -911,6 +916,10 @@ static int8 gizProtocolModuleStatus(protocolWifiStatus_t *status)
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_DISCON_ROUTER;
         gizwitsProtocol.wifiStatusEvent.num++;
         GIZWITS_LOG("disconnected router \n");
+        
+//        gizwitsSetMode(0x02);
+//        GIZWITS_LOG("set airlink mode! \n");
+        
     }
 
     //M2M server status
@@ -1046,7 +1055,7 @@ static int32 gizReportData(uint8 action, uint8 *data, uint32 len)
     GIZWITS_UART_WRITE((uint8 *)&protocolReport, sizeof(protocolReport_t));
 
     gizProtocolWaitAck((uint8 *)&protocolReport, sizeof(protocolReport_t));
-    gizwitsProtocol.lastReportTime = gizGetTimerCount();
+//    gizwitsProtocol.lastReportTime = gizGetTimerCount();
 
     return sizeof(protocolReport_t);
 }
