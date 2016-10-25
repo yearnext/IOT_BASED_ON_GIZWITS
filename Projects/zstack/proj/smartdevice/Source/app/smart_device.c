@@ -138,7 +138,7 @@ void SmartDevice_Init( byte task_id )
     
     myprotocol_init( SmartDevice_EndPoint, &SmartDevice_TaskID );
     
-    key_foreach(hal_key_init);
+    hal_key_init();
     
     app_time_init();
     
@@ -322,7 +322,7 @@ void device_timer_cb( void )
     
     if( ++timer_20ms >= TIMER_20MS_COUNT )
     {
-        key_foreach(hal_key_scan);
+        key_scan();
         timer_20ms = 0;
     }
     
@@ -331,7 +331,7 @@ void device_timer_cb( void )
 #if defined (USE_GIZWITS_MOD)
         gizTimer50Ms();
 #endif
-        key_foreach(key_handler);
+        key_handler();
         timer_50ms = 0;
     }
     
@@ -364,23 +364,17 @@ void device_timer_cb( void )
  * @note        None
  *******************************************************************************
  */
-void key1_message_handler( key_message_t message )
+void key_switch_handler( key_message_t message )
 {
     switch (message)
     {
-        case KEY_MESSAGE_PRESS_EDGE:
+		case KEY_MESSAGE_PRESS_EDGE:
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
         light_switch_headler();
 #endif
-            break;
-        case KEY_MESSAGE_PRESS:
-            break;
-        case KEY_MESSAGE_RELEASE_EDGE:
-            break;
-        case KEY_MESSAGE_RELEASE:
-            break;
-        default:
-            break;
+			break;
+		default:
+			break;
     }
 }
 
