@@ -8,7 +8,9 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.xzy.myhome.R;
@@ -32,9 +34,16 @@ public class WIFIActivity extends BaseActivity {
     EditText editTextWifiPassword;
 
     AlertDialog alertDialog;
+    @BindView(R.id.textView1)
+    TextView textView1;
     private SharedPreferences preferences;
     private SharedPreferences.Editor editor;
     String ssid;
+
+    String wifiSSD;
+    String wifiPassword;
+    List<GizWifiGAgentType> types;
+    AlertDialog.Builder builder;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,25 +69,26 @@ public class WIFIActivity extends BaseActivity {
     }
 
 
-    @OnClick(R.id.button_wifi_login)
+  /*  @OnClick(R.id.button_wifi_login)
     public void onClick() {
         String wifiSSD = editTextWifiSsd.getText().toString();
         String wifiPassword = editTextWifiPassword.getText().toString();
         List<GizWifiGAgentType> types = new ArrayList<GizWifiGAgentType>();
         types.add(GizWifiGAgentType.GizGAgentESP);
         GizWifiSDK.sharedInstance().setDeviceOnboarding(wifiSSD, wifiPassword, GizWifiConfigureMode.GizWifiAirLink, null, 30, types);
+        //GizWifiSDK.sharedInstance().setDeviceOnboarding(wifiSSD, wifiPassword, GizWifiConfigureMode.GizWifiSoftAP, "XPG-GAgent-", 60, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        alertDialog=builder.setTitle(R.string.AirLinkTitle)
+        alertDialog = builder.setTitle(R.string.AirLinkTitle)
                 .setMessage(R.string.AirLinkMessage)
                 .setCancelable(false).show();
         editor = preferences.edit();
-        editor.putString(ssid,wifiPassword);
+        editor.putString(ssid, wifiPassword);
         editor.commit();
 
-    }
+    }*/
 
     @Override
-    protected  void mDidSetDeviceOnboarding (GizWifiErrorCode result, String mac, String did, String productKey) {
+    protected void mDidSetDeviceOnboarding(GizWifiErrorCode result, String mac, String did, String productKey) {
         if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
             Toast.makeText(WIFIActivity.this, "配置成功", Toast.LENGTH_SHORT).show();
             Log.d("WIFI", "didSetDeviceOnboarding:UDP广播发送成功 ");
@@ -86,11 +96,46 @@ public class WIFIActivity extends BaseActivity {
             startActivity(intent);
         } else {
             Toast.makeText(WIFIActivity.this, "配置失败", Toast.LENGTH_SHORT).show();
-            Log.e("WIFI", "didSetDeviceOnboarding:UDP广播发送失败   "+result);
+            Log.e("WIFI", "didSetDeviceOnboarding:UDP广播发送失败   " + result);
             alertDialog.dismiss();
 
         }
     }
 
 
+    @OnClick({R.id.button_wifi_login, R.id.button_wifi_login1})
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.button_wifi_login:
+               String wifiSSD = editTextWifiSsd.getText().toString();
+               String wifiPassword = editTextWifiPassword.getText().toString();
+                List<GizWifiGAgentType> types = new ArrayList<GizWifiGAgentType>();
+                types.add(GizWifiGAgentType.GizGAgentESP);
+                GizWifiSDK.sharedInstance().setDeviceOnboarding(wifiSSD, wifiPassword, GizWifiConfigureMode.GizWifiAirLink, null, 30, types);
+                //GizWifiSDK.sharedInstance().setDeviceOnboarding(wifiSSD, wifiPassword, GizWifiConfigureMode.GizWifiSoftAP, "XPG-GAgent-", 60, null);
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                alertDialog = builder.setTitle(R.string.AirLinkTitle)
+                        .setMessage(R.string.AirLinkMessage)
+                        .setCancelable(false).show();
+                editor = preferences.edit();
+                editor.putString(ssid, wifiPassword);
+                editor.commit();
+                break;
+            case R.id.button_wifi_login1:
+                wifiSSD = editTextWifiSsd.getText().toString();
+                wifiPassword = editTextWifiPassword.getText().toString();
+                types = new ArrayList<GizWifiGAgentType>();
+                types.add(GizWifiGAgentType.GizGAgentESP);
+                //GizWifiSDK.sharedInstance().setDeviceOnboarding(wifiSSD, wifiPassword, GizWifiConfigureMode.GizWifiAirLink, null, 30, types);
+                GizWifiSDK.sharedInstance().setDeviceOnboarding(wifiSSD, wifiPassword, GizWifiConfigureMode.GizWifiSoftAP, "XPG-GAgent-", 60, null);
+                builder = new AlertDialog.Builder(this);
+                alertDialog = builder.setTitle(R.string.AirLinkTitle)
+                        .setMessage(R.string.AirLinkMessage)
+                        .setCancelable(false).show();
+                editor = preferences.edit();
+                editor.putString(ssid, wifiPassword);
+                editor.commit();
+                break;
+        }
+    }
 }

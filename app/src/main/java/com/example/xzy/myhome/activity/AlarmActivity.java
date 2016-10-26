@@ -71,7 +71,7 @@ public class AlarmActivity extends AppCompatActivity {
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(AlarmActivity.this, R.style.AlertDialog_AppCompat_TimePicker);
                 builder.setMessage("要舍弃更改么")
-                        .setNegativeButton("不舍弃", new DialogInterface.OnClickListener() {
+                        .setNegativeButton("取消", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                             }

@@ -22,4 +22,11 @@
         <item name="colorAccent">@color/colorPrimary</item>
     </style>
 
+    <style name="text" parent="@android:style/TextAppearance.Small">
+        <item name="android:textColor">#009688</item>
+
+    </style>
+
+
+
 </resources>
