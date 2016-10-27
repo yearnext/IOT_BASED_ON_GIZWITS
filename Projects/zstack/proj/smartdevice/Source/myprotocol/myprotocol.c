@@ -226,12 +226,12 @@ bool MYPROTOCO_S2H_MSG_SEND( packet_func create_packet, void *ctx )
     create_packet(ctx,&packet);
     
     packet.device.device = SMART_DEVICE_TYPE;
-    memcpy(&packet.device.mac,&aExtendedAddress,sizeof(tx_packet.device.mac));
+    memcpy(&packet.device.mac,&aExtendedAddress,sizeof(packet.device.mac));
     
     packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
 
-    memcpy(&dst_addr.addr.extAddr,&packet.device.mac,sizeof(dst_addr.addr.extAddr));
-    dst_addr.addrMode = afAddr64Bit;
+    dst_addr.addr.shortAddr = 0x0000;
+    dst_addr.addrMode = afAddr16Bit;
     dst_addr.endPoint = SmartDevice_EndPoint;
     
     return AF_DataRequest(&dst_addr,
@@ -253,10 +253,9 @@ bool MYPROTOCO_S2H_MSG_SEND( packet_func create_packet, void *ctx )
  * @note        本函数只能用于存在完整数据包的情况
  *******************************************************************************
  */
-bool MYPROTOCO_H2S_MSG_SEND( packet_func create_packet, void *ctx )
+bool MYPROTOCO_H2S_MSG_SEND( MYPROTOCOL_DEVICE_INFO info, packet_func create_packet, void *ctx )
 {
     MYPROTOCOL_FORMAT packet;
-    MYPROTOCOL_FORMAT *last_packet = (MYPROTOCOL_FORMAT *)ctx;
     afAddrType_t dst_addr;
     
     memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
@@ -264,13 +263,12 @@ bool MYPROTOCO_H2S_MSG_SEND( packet_func create_packet, void *ctx )
     
     create_packet(ctx,&packet);
     
-    packet.device.device = last_packet->device.device;
-    memcpy(&packet.device.mac,&packet.device.mac,sizeof(tx_packet.device.mac));
-    
+    packet.device.device = info.device;
+    memcpy(&packet.device.mac,&info.mac,sizeof(packet.device.mac));
     packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
 
-    dst_addr.addr.shortAddr = 0x0000;
-    dst_addr.addrMode = afAddr16Bit;
+    memcpy(&dst_addr.addr.extAddr,&info.mac,sizeof(dst_addr.addr.extAddr));
+    dst_addr.addrMode = afAddr64Bit;
     dst_addr.endPoint = SmartDevice_EndPoint;
     
     return AF_DataRequest(&dst_addr,
@@ -373,14 +371,6 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
                 break;
             case MYPROTOCOL_W2D_ACK:
                 break;
-//            case MYPROTOCOL_D2W_WAIT:
-//                break;
-//            case MYPROTOCOL_D2W_ACK:
-//                break;
-//            case MYPROTOCOL_H2S_WAIT:
-//                break;
-//            case MYPROTOCOL_H2S_ACK:
-//                break;
             case MYPROTOCOL_S2H_WAIT:
             {
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
