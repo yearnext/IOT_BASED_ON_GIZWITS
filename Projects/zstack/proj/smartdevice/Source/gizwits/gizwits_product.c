@@ -17,7 +17,8 @@
 
 #include <string.h>
 #include "gizwits_product.h"
-#include "myprotocol.h"
+#include "myprotocol_packet.h"
+#include "devicelist.h"
 
 /** 用户区当前设备状态结构体*/
 extern dataPoint_t currentDataPoint;
@@ -63,8 +64,6 @@ int8 gizwitsEventProcess(eventInfo_t *info, uint8 *data, uint8 len)
         break;
 
       case WIFI_SOFTAP:
-//        gizwitsSetMode(0x02);
-//        GIZWITS_LOG("set airlink\n");
         break;
       case WIFI_AIRLINK:
         break;
@@ -73,15 +72,21 @@ int8 gizwitsEventProcess(eventInfo_t *info, uint8 *data, uint8 len)
       case WIFI_CON_ROUTER:
         break;
       case WIFI_DISCON_ROUTER:
-//        gizwitsSetMode(0x02);
-//        GIZWITS_LOG("set airlink\n");
             break;
       case WIFI_CON_M2M:
         break;
       case WIFI_DISCON_M2M:
         break;
       case WIFI_RSSI:
-//        GIZWITS_LOG("RSSI %d\n", wifiData->rssi);
+        break;
+      case WIFI_CON_APP:
+      {
+        uint8 num = Get_DeviceNum_ForList();
+        MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_devicenum_packet,(void *)&num);
+        GIZWITS_LOG("SEND DEVICE LIST CHANGED!\n");
+        break;
+      }
+      case WIFI_DISCON_APP:
         break;
 //      case TRANSPARENT_DATA:
 //        break;

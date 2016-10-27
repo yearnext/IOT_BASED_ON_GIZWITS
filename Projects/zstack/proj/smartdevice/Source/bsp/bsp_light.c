@@ -75,7 +75,7 @@ static void report_brightness_data( void )
     user_data.cmd = LIGHT_R_BRIGHTNESS_CMD;
     user_data.data[0] = light.status.now;
     user_data.len = 1;
-    MYPROTOCO_D2D_MSG_SEND(create_d2w_wait_packet,&user_data);
+    MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
 }
 
 /**
@@ -107,7 +107,7 @@ static void report_timer_data( uint8 timer )
     memcpy(&user_data.data,&light.timer[timer],sizeof(DEVICE_TIMER));
     user_data.len = sizeof(DEVICE_TIMER);
     
-    MYPROTOCO_D2D_MSG_SEND(create_d2w_wait_packet,&user_data);
+    MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
 }
 
 /**

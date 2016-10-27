@@ -1135,7 +1135,9 @@ void gizwitsInit(void)
     pRb.rbCapacity = RB_MAX_LEN;
     pRb.rbBuff = rbBuf;
     rbCreate(&pRb);
-    
+        
+    //gizwitsSetMode(0);
+        
     memset((uint8 *)&gizwitsProtocol, 0, sizeof(gizwitsProtocol_t));
 }
 
