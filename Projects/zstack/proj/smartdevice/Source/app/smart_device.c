@@ -41,7 +41,7 @@
 #include "MT.h"
 #include "MT_UART.h"
 #include "hal_uart.h"
-#include "myprotocol_packet.h"
+#include "myprotocol.h"
 #include "timer_config.h"
 #include "bsp_key.h"
 #include "app_time.h"

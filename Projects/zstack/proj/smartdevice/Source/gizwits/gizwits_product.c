@@ -15,7 +15,7 @@
 ***********************************************************/
 #include <string.h>
 #include "gizwits_product.h"
-#include "myprotocol_packet.h"
+#include "myprotocol.h"
 #include "devicelist.h"
 
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)

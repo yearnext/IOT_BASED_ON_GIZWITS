@@ -6876,12 +6876,6 @@
       <file>
         <name>$PROJ_DIR$\..\Source\myprotocol\myprotocol.h</name>
       </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\myprotocol\myprotocol_packet.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\myprotocol\myprotocol_packet.h</name>
-      </file>
     </group>
     <file>
       <name>$PROJ_DIR$\..\Source\app\OSAL_Init.c</name>

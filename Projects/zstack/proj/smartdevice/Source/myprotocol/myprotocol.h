@@ -114,9 +114,25 @@ typedef bool (*packet_func)(void *ctx, MYPROTOCOL_FORMAT *packet);
 extern void myprotocol_init( uint8 *task_id );
 extern void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt );
 extern void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data );
-extern bool MYPROTOCO_S2H_MSG_SEND( packet_func create_packet, void *ctx );
-extern void MYPROTOCOL_D2W_MSG_SEND( uint8 *packet );
+extern bool MYPROTOCO_S2H_MSG_SEND( packet_func, void * );
+extern bool MYPROTOCO_H2S_MSG_SEND( MYPROTOCOL_DEVICE_INFO, packet_func, void* );
+extern bool MYPROTOCOL_FORWARD_PACKET( MYPROTOCOL_DATA_DIR, MYPROTOCOL_FORMAT* );
+extern bool MYPROTOCOL_D2D_SEND_MSG( afAddrType_t*, packet_func, void* );
+extern bool MYPROTOCOL_D2W_SEND_MSG( MYPROTOCOL_FORMAT*, packet_func, void* );
 extern bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR, void*, packet_func, void* );
+
+extern bool create_tick_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_acktick_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_errcode_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_commend_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_w2d_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_w2d_wait_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_d2w_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_d2w_wait_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_devicenum_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_deviceinfo_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_devicelist_update_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+extern bool create_report_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 
 #endif      /* __myprotocol_H__ */
 
