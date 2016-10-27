@@ -13,13 +13,15 @@
 *               www.gizwits.com
 *
 ***********************************************************/
-#if defined ( USE_GIZWITS_MOD )
+
 
 #ifndef _GIZWITS_PRODUCT_H
 #define _GIZWITS_PRODUCT_H
 
 #include "gizwits_protocol.h"
+#include "myprotocol.h"
 
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
 #define GIZWITS_BUFF_CHANGED (0)
 #define GIZWITS_BUFF_NORMAL  (1)
 #define GIZWITS_BUFF_ERROR   (2)

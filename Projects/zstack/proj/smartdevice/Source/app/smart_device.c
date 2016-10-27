@@ -64,7 +64,7 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 // 机智云数据点
-#if defined ( USE_GIZWITS_MOD )
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
 dataPoint_t currentDataPoint;
 #endif
 
@@ -73,7 +73,7 @@ dataPoint_t currentDataPoint;
 #define USE_SMARTDEVICE_DEBUG 1
 
 #if USE_SMARTDEVICE_DEBUG
-    #if defined ( USE_GIZWITS_MOD )
+    #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
         #define DEVICE_LOG(n) HalUARTWrite(1,n,sizeof(n))  ///<运行日志打印
     #else
         #define DEVICE_LOG(n) HalUARTWrite(0,n,sizeof(n))  ///<运行日志打印
