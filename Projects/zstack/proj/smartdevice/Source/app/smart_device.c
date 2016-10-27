@@ -41,7 +41,6 @@
 #include "MT.h"
 #include "MT_UART.h"
 #include "hal_uart.h"
-#include "myprotocol.h"
 #include "myprotocol_packet.h"
 #include "timer_config.h"
 #include "bsp_key.h"
@@ -96,6 +95,7 @@ dataPoint_t currentDataPoint;
 #define DEVICE_BACKSTAGE_TIME           (10)
 /** 设备定时器事件 */
 #define DEVICE_TIMER_EVEN               (0x0008)
+
 /** 定时器计数值 */
 #define TIMER_20MS_COUNT  (2)
 #define TIMER_50MS_COUNT  (5)
@@ -110,6 +110,7 @@ dataPoint_t currentDataPoint;
 /* Private variables ---------------------------------------------------------*/
 /** 任务ID */
 static byte SmartDevice_TaskID;
+
 /** 设备状态 */
 static devStates_t SmartDevice_NwkState;
 
@@ -136,7 +137,7 @@ void SmartDevice_Init( byte task_id )
     MT_UartInit();
     MT_UartRegisterTaskID(SmartDevice_TaskID);
     
-    myprotocol_init( SmartDevice_EndPoint, &SmartDevice_TaskID );
+    myprotocol_init( &SmartDevice_TaskID );
     
     hal_key_init();
     

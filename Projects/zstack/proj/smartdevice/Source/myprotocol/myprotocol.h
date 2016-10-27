@@ -110,7 +110,7 @@ typedef bool (*packet_func)(void *ctx, MYPROTOCOL_FORMAT *packet);
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern void myprotocol_init( uint8 endpoint, uint8 *task_id );
+extern void myprotocol_init( uint8 *task_id );
 extern void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt );
 extern void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data );
 extern bool MYPROTOCO_S2H_MSG_SEND( packet_func create_packet, void *ctx );
