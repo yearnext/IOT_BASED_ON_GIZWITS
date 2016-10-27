@@ -25,20 +25,6 @@
 #include "ZComDef.h"
 
 /* Exported macro ------------------------------------------------------------*/
-/** 设备端点 */
-#define SmartDevice_EndPoint   (20)
-/** 设备ID */
-#define SmartDevice_DeviceID (0x0001)
-/** 设备版本号 */
-#define SmartDevice_Version  (0x00)
-#define SmartDevice_Flags    (0)
-
-//#define SmartDevice_InCoord  (1)
-//#define SmartDevice_InRouter (2)
-//#define SmartDevice_InEnd    (3)
-//
-//#define SmartDevice_Status SmartDevice_InCoord
-
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
