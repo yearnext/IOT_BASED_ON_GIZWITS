@@ -215,8 +215,10 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
         }
         
         Del_DeviceTickCount();
+        DEVICE_LOG("COORD FRESH DEVICE LIST!\n");
 #else
-        MYPROTOCO_D2D_MSG_SEND(create_tick_packet,NULL);
+        MYPROTOCO_S2H_MSG_SEND(create_tick_packet,NULL);
+        DEVICE_LOG("DEVICE SEND TICK PACKET!\n");
 #endif
 
         osal_start_timerEx( SmartDevice_TaskID, 
@@ -256,26 +258,31 @@ void ZDO_STATE_CHANGE_CB( devStates_t status )
         case DEV_ROUTER:
             DEVICE_LOG("I am Router Device!\n");
             SmartDevice_CommLED_Control(SMARTDEVICE_LED_CONNED_STATE);
+            osal_start_timerEx( SmartDevice_TaskID, 
+                                DEVICE_LIST_TIMER_EVEN, 
+                                DEVICE_LIST_TIME );
                 break;
         case DEV_END_DEVICE:
             DEVICE_LOG("I am End Device!\n");
             SmartDevice_CommLED_Control(SMARTDEVICE_LED_CONNED_STATE);
+            osal_start_timerEx( SmartDevice_TaskID, 
+                                DEVICE_LIST_TIMER_EVEN, 
+                                DEVICE_LIST_TIME );
                 break;
         case DEV_ZB_COORD:
             DEVICE_LOG("I am Coord Device!\n");
             SmartDevice_CommLED_Control(SMARTDEVICE_LED_CONNED_STATE);
+            osal_start_timerEx( SmartDevice_TaskID, 
+                                DEVICE_LIST_TIMER_EVEN, 
+                                DEVICE_LIST_TIME );
                 break;
         case DEV_NWK_DISC:
             DEVICE_LOG("Discovering PAN's to join!\n");
-            return;
+            osal_stop_timerEx( SmartDevice_TaskID, DEVICE_LIST_TIMER_EVEN);
             break;
         default:
             break;
     }
-    
-    osal_start_timerEx( SmartDevice_TaskID, 
-                DEVICE_LIST_TIMER_EVEN, 
-                DEVICE_LIST_TIME );
 }
 
 /**

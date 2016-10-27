@@ -129,7 +129,7 @@ void myprotocol_init( uint8 endpoint, uint8 *task_id )
     
     /** 周期性的发送数据给协调器 */
     SmartDevice_Periodic_DstAddr.addr.shortAddr= 0x0000;
-    SmartDevice_Periodic_DstAddr.addrMode = afAddr64Bit;
+    SmartDevice_Periodic_DstAddr.addrMode = afAddr16Bit;
     SmartDevice_Periodic_DstAddr.endPoint = endpoint;
     
     /** 创建一个组表 */
@@ -196,7 +196,7 @@ static bool myprotocol_packet_check( uint8 *data )
  * @note        None
  *******************************************************************************
  */
-bool MYPROTOCO_D2D_MSG_SEND( packet_func create_packet, void *ctx )
+bool MYPROTOCO_S2H_MSG_SEND( packet_func create_packet, void *ctx )
 {
     MYPROTOCOL_FORMAT packet;
     uint8 *mac_addr = NULL;
@@ -210,7 +210,7 @@ bool MYPROTOCO_D2D_MSG_SEND( packet_func create_packet, void *ctx )
     memcpy(&packet.device.mac,mac_addr,sizeof(packet.device.mac));
     
     packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
-    
+
     return AF_DataRequest(&SmartDevice_Periodic_DstAddr,
                            &SmartDevice_epDesc,
                            SmartDevice_Comm_ClustersID,

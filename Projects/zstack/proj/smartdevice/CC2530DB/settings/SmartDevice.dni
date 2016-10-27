@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=112094708
+Checksum=1463792349
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -60,13 +60,14 @@ Freq=50000000
 [struct_types]
 Fmt0=DHT11_DATA_t-hum	3	0
 Fmt1=DHT11_DATA_t-temp	3	0
-Fmt2=user_time-day	4	0
-Fmt3=user_time-hour	4	0
-Fmt4=user_time-minute	4	0
-Fmt5=user_time-month	4	0
-Fmt6=user_time-second	4	0
-Fmt7=user_time-week	4	0
-Fmt8=user_time-year	4	0
+Fmt2=osal_event_hdr_t-event	4	0
+Fmt3=user_time-day	4	0
+Fmt4=user_time-hour	4	0
+Fmt5=user_time-minute	4	0
+Fmt6=user_time-month	4	0
+Fmt7=user_time-second	4	0
+Fmt8=user_time-week	4	0
+Fmt9=user_time-year	4	0
 [array_types]
 Fmt0=uint8 [128]	4	0
 Fmt1=uint8 [5]	3	0
@@ -78,8 +79,23 @@ Fmt1={W}0:events	4	0
 Fmt2={W}1:a	3	0
 Fmt3={W}1:check_sum	3	0
 Fmt4={W}1:duty	3	0
-Fmt5={W}1:gizwits_uart_status	4	0
-Fmt6={W}1:size	3	0
+Fmt5={W}1:events	4	0
+Fmt6={W}1:gizwits_uart_status	4	0
+Fmt7={W}1:size	3	0
+[Breakpoints]
+Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\Source\myprotocol\myprotocol.c}.466.17" 0 0 0 0 "" 0 ""
+Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\Source\myprotocol\myprotocol.c}.491.21" 0 0 0 0 "" 0 ""
+Bp2=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_key.c}.411.3" 0 0 0 0 "" 0 ""
+Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\ZMain\TI2530DB\OnBoard.c}.248.3" 1 0 0 0 "" 0 ""
+Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_key.c}.441.3" 0 0 0 0 "" 0 ""
+Bp5=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits\gizwits_product.c}.85.9" 0 0 0 0 "" 0 ""
+Bp6=_ "STD_CODE" "{$PROJ_DIR$\..\Source\myprotocol\myprotocol.c}.439.1" 1 0 0 0 "" 0 ""
+Bp7=_ "STD_CODE" "{$PROJ_DIR$\..\Source\myprotocol\myprotocol.c}.439.1" 1 0 0 0 "" 0 ""
+Bp8=_ "STD_CODE" "{$PROJ_DIR$\..\Source\app\smart_device.c}.181.5" 1 0 0 0 "" 0 ""
+Count=9
+[ChipconEmu]
+Stop timers on halt=0
+Leave target running=1
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -87,16 +103,6 @@ Category=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
-[Breakpoints]
-Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\Source\myprotocol\myprotocol.c}.466.17" 0 0 0 0 "" 0 ""
-Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\Source\myprotocol\myprotocol.c}.491.21" 0 0 0 0 "" 0 ""
-Bp2=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_key.c}.411.3" 0 0 0 0 "" 0 ""
-Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\ZMain\TI2530DB\OnBoard.c}.248.3" 1 0 0 0 "" 0 ""
-Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_key.c}.441.3" 0 0 0 0 "" 0 ""
-Count=5
-[ChipconEmu]
-Stop timers on halt=0
-Leave target running=1
 [Aliases]
 Count=0
 SuppressDialog=0
