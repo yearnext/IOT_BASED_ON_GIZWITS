@@ -95,6 +95,7 @@ typedef struct
 // 数据发送方向
 typedef enum
 {
+    MYPROTOCOL_DIR_W2D,
     MYPROTOCOL_DIR_D2W,
     MYPROTOCOL_DIR_D2D,
 }MYPROTOCOL_DATA_DIR;

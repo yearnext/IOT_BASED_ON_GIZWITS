@@ -27,12 +27,14 @@
 #include "myprotocol_packet.h"
 #include "hal_uart.h"
 #include <string.h>
-#include "gizwits_protocol.h"
 #include "devicelist.h"
 #include "NLMEDE.h"
 #include "aps_groups.h"
 #include "onBoard.h"
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+#include "gizwits_protocol.h"
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
 #include "bsp_light.h"
 #endif
 
@@ -41,9 +43,9 @@
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /**
-* @name 日志打印宏定义
-* @{
-*/
+ * @name 日志打印宏
+ * @{
+ */
 #define USE_MYPROTOCOL_DEBUG 1
 
 #if USE_MYPROTOCOL_DEBUG
@@ -51,38 +53,49 @@
 #else 
     #define MYPROTOCOL_LOG(n)
 #endif
-
 /**@} */
-#define MYPROTOCOL_UART_PORT 0
-#define MYPROTOCOL_UART_WRITE(data,len)  HalUARTWrite(GIZWITS_UART_PORT,data,len)
 
-#define MYPROTOCOL_PACKET_SIZE          (sizeof(MYPROTOCOL_FORMAT))
-#if defined(USE_GIZWITS_MOD)
-#define MYPROTOCOL_PACKET_REPORT()      gizwitsReport((uint8 *)&tx_packet)
+/**
+ * @name 发送数据至WIFI模块宏
+ * @{
+ */
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+#define MYPROTOCOL_UART_WRITE(data,len)  HalUARTWrite(0,data,len)
+#define MYPROTOCOL_PACKET_REPORT(packet) gizwitsReport(packet)
 #else
-#define MYPROTOCOL_PACKET_REPORT()
+#define MYPROTOCOL_PACKET_REPORT(packet)
+#define MYPROTOCOL_UART_WRITE(data,len)
 #endif
+/**@} */
+
+/**
+ * @name Zigbee通讯配置
+ * @{
+ */
 
 /** 簇的数量 */
 #define SamrtDevice_ClustersNum        (sizeof(SmartDevice_InClusterList)/sizeof(SmartDevice_InClusterList[0]))
 #define SmartDevice_Comm_ClustersID    (0x0001)
-
 /** 设备端点 */
 #define SmartDevice_EndPoint           (20)
-
 /** 设备ID */
 #define SmartDevice_DeviceID           (0x0001)
 /** 设备版本号 */
 #define SmartDevice_Version            (0x00)
 #define SmartDevice_Flags              (0)
-
 #define SmartDevice_ProfileID          (uint16)SMART_DEVICE_TYPE
+
+/**@} */
+
+/** 数据包大小 宏 */
+#define MYPROTOCOL_PACKET_SIZE          (sizeof(MYPROTOCOL_FORMAT))
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 // 数据缓冲区
 static MYPROTOCOL_FORMAT tx_packet;
 //static myprotocol_format rx_packet;
+
 /** 端点描述符 */
 static endPointDesc_t SmartDevice_epDesc;
 
@@ -106,19 +119,20 @@ static const SimpleDescriptionFormat_t SmartDevice_SimpleDesc =
     (cId_t *)&SmartDevice_InClusterList,
 };
 
-/** 周期性发送数据 */
-static afAddrType_t SmartDevice_Periodic_DstAddr;
 /** 发送ID */
 static uint8 SmartDevice_TransID;
 /** 设备组别 */
 static aps_Group_t SmartDevice_Group;
+
+/** 目标地址 */
+//static afAddrType_t MYPROTOCOL_DST_ADDR;
 
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 /**
  *******************************************************************************
  * @brief       初始化函数
- * @param       [in/out]  void
+ * @param       [in/out]  *task_id    任务ID
  * @return      [in/out]  void
  * @note        None
  *******************************************************************************
@@ -135,15 +149,15 @@ void myprotocol_init( uint8 *task_id )
     SmartDevice_epDesc.latencyReq = noLatencyReqs;
     afRegister(&SmartDevice_epDesc);
     
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-    SmartDevice_Periodic_DstAddr.addr.shortAddr= 0x0000;
-    SmartDevice_Periodic_DstAddr.addrMode = afAddr64Bit;
-    SmartDevice_Periodic_DstAddr.endPoint = SmartDevice_EndPoint;
-#else
-    SmartDevice_Periodic_DstAddr.addr.shortAddr= 0x0000;
-    SmartDevice_Periodic_DstAddr.addrMode = afAddr16Bit;
-    SmartDevice_Periodic_DstAddr.endPoint = SmartDevice_EndPoint;
-#endif
+//#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+//    memset(&MYPROTOCOL_DST_ADDR.addr.extaddr,0,sizeof(MYPROTOCOL_DST_ADDR.addr));
+//    MYPROTOCOL_DST_ADDR.addrMode = afAddr64Bit;
+//    MYPROTOCOL_DST_ADDR.endPoint = SmartDevice_EndPoint;
+//#else
+//    MYPROTOCOL_DST_ADDR.addr.shortAddr= 0x0000;
+//    MYPROTOCOL_DST_ADDR.addrMode = afAddr16Bit;
+//    MYPROTOCOL_DST_ADDR.endPoint = SmartDevice_EndPoint;
+//#endif
     
     /** 创建一个组表 */
     SmartDevice_Group.ID = 0x0001;
@@ -180,7 +194,7 @@ static uint8 myprotocol_cal_checksum( uint8 *packet )
  * @note        None
  *******************************************************************************
  */
-static bool myprotocol_packet_check( uint8 *data )
+bool myprotocol_packet_check( uint8 *data )
 {
     MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)data;
     
@@ -188,14 +202,6 @@ static bool myprotocol_packet_check( uint8 *data )
     {
         return false;
     }
-    
-//    if( packet->commtype == MYPROTOCOL_W2D_READ_ACK \
-//        && packet->commtype == MTPROTOCOL_W2D_WRITE_ACK \
-//        && packet->commtype == MYPROTOCOL_D2W_READ_WAIT \
-//        && packet->commtype == MYPROTOCOL_D2W_REPORT_WAIT )
-//    {
-//        return false;
-//    }
     
     return true;
 }
@@ -212,17 +218,23 @@ static bool myprotocol_packet_check( uint8 *data )
 bool MYPROTOCO_S2H_MSG_SEND( packet_func create_packet, void *ctx )
 {
     MYPROTOCOL_FORMAT packet;
-
+    afAddrType_t dst_addr;
+    
     memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
+    memset(&dst_addr,0,sizeof(dst_addr));
     
     create_packet(ctx,&packet);
     
     packet.device.device = SMART_DEVICE_TYPE;
-    memcpy(&tx_packet.device.mac,&aExtendedAddress,sizeof(tx_packet.device.mac));
+    memcpy(&packet.device.mac,&aExtendedAddress,sizeof(tx_packet.device.mac));
     
     packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
 
-    return AF_DataRequest(&SmartDevice_Periodic_DstAddr,
+    memcpy(&dst_addr.addr.extAddr,&packet.device.mac,sizeof(dst_addr.addr.extAddr));
+    dst_addr.addrMode = afAddr64Bit;
+    dst_addr.endPoint = SmartDevice_EndPoint;
+    
+    return AF_DataRequest(&dst_addr,
                            &SmartDevice_epDesc,
                            SmartDevice_Comm_ClustersID,
                            sizeof(MYPROTOCOL_FORMAT),
@@ -238,23 +250,30 @@ bool MYPROTOCO_S2H_MSG_SEND( packet_func create_packet, void *ctx )
  * @param       [in/out]   create_packet    创建数据包功能
  *              [in/out]   ctx              上下文
  * @return      [in/out]  void
- * @note        None
+ * @note        本函数只能用于存在完整数据包的情况
  *******************************************************************************
  */
 bool MYPROTOCO_H2S_MSG_SEND( packet_func create_packet, void *ctx )
 {
     MYPROTOCOL_FORMAT packet;
+    MYPROTOCOL_FORMAT *last_packet = (MYPROTOCOL_FORMAT *)ctx;
+    afAddrType_t dst_addr;
     
     memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
+    memset(&dst_addr,0,sizeof(dst_addr));
     
     create_packet(ctx,&packet);
     
-    packet.device.device = SMART_DEVICE_TYPE;
-    memcpy(&tx_packet.device.mac,&aExtendedAddress,sizeof(tx_packet.device.mac));
+    packet.device.device = last_packet->device.device;
+    memcpy(&packet.device.mac,&packet.device.mac,sizeof(tx_packet.device.mac));
     
     packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
 
-    return AF_DataRequest(&SmartDevice_Periodic_DstAddr,
+    dst_addr.addr.shortAddr = 0x0000;
+    dst_addr.addrMode = afAddr16Bit;
+    dst_addr.endPoint = SmartDevice_EndPoint;
+    
+    return AF_DataRequest(&dst_addr,
                            &SmartDevice_epDesc,
                            SmartDevice_Comm_ClustersID,
                            sizeof(MYPROTOCOL_FORMAT),
@@ -266,147 +285,60 @@ bool MYPROTOCO_H2S_MSG_SEND( packet_func create_packet, void *ctx )
 
 /**
  *******************************************************************************
- * @brief        Coord转发节点信息至WIFI模块函数
+ * @brief        SmartDevice发送信息函数
  * @param       [in/out]   create_packet    创建数据包功能
  *              [in/out]   ctx              上下文
  * @return      [in/out]  void
- * @note        None
+ * @note        本函数只能用于存在完整数据包的情况
  *******************************************************************************
  */
-void MYPROTOCOL_D2W_MSG_SEND( uint8 *packet )
+bool MYPROTOCO_H2S_FORWARD_MSG( MYPROTOCOL_FORMAT *packet )
 {
-    memcpy(&tx_packet,packet,MYPROTOCOL_PACKET_SIZE);
-    MYPROTOCOL_PACKET_REPORT();
-}
-
-/**
- *******************************************************************************
- * @brief        SmartDevice发送信息函数
- * @param       [in/out]   dst_addr         目标地址 
-                [in/out]   create_packet    创建数据包功能
- *              [in/out]   ctx              上下文
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-static bool MYPROTOCOL_DIR_D2D_SEND_MSG( afAddrType_t *dst_addr, packet_func create_packet, void *ctx )
-{
-    MYPROTOCOL_FORMAT packet;
-
-    memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
+    afAddrType_t dst_addr;
     
-    create_packet(ctx,&packet);
+    memset(&dst_addr,0,sizeof(dst_addr));
     
-    packet.device.device = SMART_DEVICE_TYPE;
-    memcpy(&tx_packet.device.mac,&aExtendedAddress,sizeof(tx_packet.device.mac));
+    memcpy(&dst_addr.addr.extAddr,&packet->device.mac,sizeof(dst_addr.addr.shortAddr));
+    dst_addr.addrMode = afAddr64Bit;
+    dst_addr.endPoint = SmartDevice_EndPoint;
     
-    packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
-    
-    AF_DataRequest(dst_addr,
-                   &SmartDevice_epDesc,
-                   SmartDevice_Comm_ClustersID,
-                   sizeof(MYPROTOCOL_FORMAT),
-                   (uint8 *)&packet,
-                   &SmartDevice_TransID,
-                   AF_DISCV_ROUTE,
-                   AF_DEFAULT_RADIUS);
-    
-    return true;
-}
-
-/**
- *******************************************************************************
- * @brief       myprotocol 创建并发送一个数据包
- * @param       [in/out]  packet        接收到的数据包
- *              [in/out]  packet_type   创建数据包的类型
- *              [in/out]  data          需要用到的数据   
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-static bool MYPROTOCOL_DIR_D2W_SEND_MSG( MYPROTOCOL_FORMAT *packet, packet_func packet_create, void *ctx )
-{
-    bool status = false;
-//    uint8 *mac_addr = NULL;
-    
-    if( packet_create == NULL )
-    {
-        return false;
-    }
-    
-    memset(&tx_packet,0,MYPROTOCOL_PACKET_SIZE);
-    
-    status = packet_create(ctx, &tx_packet);
-    
-//    tx_packet.sn = packet->sn;    
-    tx_packet.sn = 0;
-    
-    tx_packet.device.device = SMART_DEVICE_TYPE;
-//    mac_addr = NLME_GetExtAddr();
-//    memcpy(&tx_packet.device.mac,mac_addr,sizeof(tx_packet.device.mac));
-    memcpy(&tx_packet.device.mac,&aExtendedAddress,sizeof(tx_packet.device.mac));
-    
-    tx_packet.check_sum = myprotocol_cal_checksum((uint8 *)&tx_packet);
-    
-    MYPROTOCOL_PACKET_REPORT();
-    
-    return status;
-}
-
-/**
- *******************************************************************************
- * @brief       MYPROTOCOL 数据发送函数
- * @param       [in/out]   data_dir         数据方向
- *              [in/out]   packet           相关数据包
- *              [in/out]   packet_create    应答数据包创建函数
- *              [in/out]   ctx              参数
- * @return      [out]      bool
- * @note        None
- *******************************************************************************
- */
-bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR data_dir, void *ctx, packet_func packet_create, void *param )
-{
-    bool status = false;
-    
-    if( packet_create == NULL )
-    {
-        return false;
-    }
-    
-    if( data_dir == MYPROTOCOL_DIR_D2W )
-    {
-        MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)(ctx);
-        status = MYPROTOCOL_DIR_D2W_SEND_MSG(packet, packet_create, param);
-    }
-    else if( data_dir == MYPROTOCOL_DIR_D2D )
-    {
-        afAddrType_t *dst = (afAddrType_t *)ctx;
-        status = MYPROTOCOL_DIR_D2D_SEND_MSG(dst, packet_create, param);
-    }
-    else
-    {
-        return false;
-    }
-    
-    return status;
+    return AF_DataRequest(&dst_addr,
+                           &SmartDevice_epDesc,
+                           SmartDevice_Comm_ClustersID,
+                           sizeof(MYPROTOCOL_FORMAT),
+                           (uint8 *)&packet,
+                           &SmartDevice_TransID,
+                           AF_DISCV_ROUTE,
+                           AF_DEFAULT_RADIUS);
 }
 
 /**
  *******************************************************************************
  * @brief       转发数据包函数
  * @param       [in/out]   *user_data       用户数据
- * @return      [in/out]      void
+ * @return      [in/out]   bool             返回状态
  * @note        None
  *******************************************************************************
  */
-static void COORD_FORWARD_PACKET( MYPROTOCOL_FORMAT *packet )
+bool MYPROTOCOL_FORWARD_PACKET( MYPROTOCOL_DATA_DIR dir, MYPROTOCOL_FORMAT *packet )
 {
-    afAddrType_t dst_addr;
-
-    dst_addr.addrMode = afAddr16Bit;
-    memcpy(&dst_addr.addr.extAddr,&packet->device.mac,sizeof(dst_addr.addr.extAddr));
-
-    MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2D,&dst_addr,create_w2d_wait_packet,&packet->user_data);
+    if( dir == MYPROTOCOL_DIR_W2D )
+    {
+        MYPROTOCO_H2S_FORWARD_MSG(packet);
+    }
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+    else if( dir == MYPROTOCOL_DIR_D2W )
+    {
+        gizwitsReport(packet);
+        return true;
+    }
+#endif
+    else
+    {
+        
+    }
+    
+    return false;
 }
 
 /**
@@ -451,7 +383,7 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
 //                break;
             case MYPROTOCOL_S2H_WAIT:
             {
-#if defined ( USE_GIZWITS_MOD )
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
             // 如果为父设备
             DEVICE_INFO *device_info = (DEVICE_INFO *)packet->user_data.data;
 
@@ -478,7 +410,7 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
     }
 }
 
-#if defined ( USE_GIZWITS_MOD )       
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)     
 /**
  *******************************************************************************
  * @brief       数据包处理函数

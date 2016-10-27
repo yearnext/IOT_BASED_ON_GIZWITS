@@ -13,13 +13,12 @@
 *               www.gizwits.com
 *
 ***********************************************************/
-#if defined ( USE_GIZWITS_MOD )
-
 #include <string.h>
 #include "gizwits_product.h"
 #include "myprotocol_packet.h"
 #include "devicelist.h"
 
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
 /** 用户区当前设备状态结构体*/
 extern dataPoint_t currentDataPoint;
 

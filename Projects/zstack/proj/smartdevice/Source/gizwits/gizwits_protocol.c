@@ -13,14 +13,13 @@
 *               www.gizwits.com
 *
 ***********************************************************/
-
-#if defined ( USE_GIZWITS_MOD )
-
+#include "myprotocol.h"
 #include <string.h>
 #include "gizwits_product.h"
 #include "gizwits_protocol.h"
 #include "Onboard.h"
 
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
 /** 协议全局变量 **/
 gizwitsProtocol_t gizwitsProtocol;
 
