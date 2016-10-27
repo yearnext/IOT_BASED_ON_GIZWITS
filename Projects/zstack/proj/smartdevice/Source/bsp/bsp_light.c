@@ -30,7 +30,7 @@
 #include <string.h>
 #include "app_save.h"
 #include "app_time.h"
-#include "myprotocol_packet.h"
+#include "myprotocol.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
