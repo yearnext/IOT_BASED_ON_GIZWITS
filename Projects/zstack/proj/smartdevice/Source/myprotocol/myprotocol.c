@@ -92,7 +92,7 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 // 数据缓冲区
-static MYPROTOCOL_FORMAT tx_packet;
+//static MYPROTOCOL_FORMAT tx_packet;
 //static myprotocol_format rx_packet;
 
 /** 端点描述符 */
@@ -138,7 +138,7 @@ static aps_Group_t SmartDevice_Group;
  */
 void myprotocol_init( uint8 *task_id )
 {
-    memset(&tx_packet,0,sizeof(MYPROTOCOL_FORMAT));
+    //memset(&tx_packet,0,sizeof(MYPROTOCOL_FORMAT));
     
     SmartDevice_TransID = 0;
     /** 注册AF层应用对象 */
@@ -401,12 +401,12 @@ bool MYPROTOCOL_D2W_SEND_MSG( MYPROTOCOL_FORMAT *last_packet, packet_func create
     
 //    tx_packet.sn = packet->sn;    
     
-    tx_packet.device.device = SMART_DEVICE_TYPE;
+    packet.device.device = SMART_DEVICE_TYPE;
 //    mac_addr = NLME_GetExtAddr();
 //    memcpy(&tx_packet.device.mac,mac_addr,sizeof(tx_packet.device.mac));
-    memcpy(&tx_packet.device.mac,&aExtendedAddress,sizeof(tx_packet.device.mac));
+    memcpy(&packet.device.mac,&aExtendedAddress,sizeof(packet.device.mac));
     
-    tx_packet.check_sum = myprotocol_cal_checksum((uint8 *)&tx_packet);
+    packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
     
     MYPROTOCOL_PACKET_REPORT((uint8 *)&packet);
     
