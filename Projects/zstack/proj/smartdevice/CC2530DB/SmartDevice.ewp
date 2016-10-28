@@ -7051,7 +7051,6 @@
           <state>xMT_TASK</state>
           <state>xMT_SYS_FUNC</state>
           <state>xMT_ZDO_FUNC</state>
-          <state>USE_GIZWITS_MOD</state>
         </option>
         <option>
           <name>CCPreprocFile</name>

@@ -316,8 +316,6 @@ typedef struct
     moduleStatusInfo_t wifiStatusData;              ///< WIFI 状态信息(信号强度)
 }gizwitsProtocol_t;
 
-#if defined (USE_GIZWITS_MOD)
-
 /**@name Gizwits 用户API接口
 * @{
 */
@@ -332,7 +330,5 @@ int32 gizPutData(uint8 *buf, uint32 len);
 uint32 gizGetTimerCount(void);
 
 int32 gizwitsReport( uint8 *packet );
-
-#endif
 
 #endif
