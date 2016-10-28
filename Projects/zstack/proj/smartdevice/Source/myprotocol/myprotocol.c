@@ -73,16 +73,13 @@
  */
 
 /** 簇的数量 */
-#define SamrtDevice_ClustersNum        (sizeof(SmartDevice_InClusterList)/sizeof(SmartDevice_InClusterList[0]))
+#define SamrtDevice_ClustersNum        (1)
 #define SmartDevice_Comm_ClustersID    (0x0001)
-/** 设备端点 */
 #define SmartDevice_EndPoint           (20)
-/** 设备ID */
 #define SmartDevice_DeviceID           (0x0001)
-/** 设备版本号 */
 #define SmartDevice_Version            (0x00)
 #define SmartDevice_Flags              (0)
-#define SmartDevice_ProfileID          (uint16)SMART_DEVICE_TYPE
+#define SmartDevice_ProfileID          (0x0F08)
 
 /**@} */
 
@@ -99,7 +96,7 @@
 static endPointDesc_t SmartDevice_epDesc;
 
 /** 簇表 */
-const cId_t SmartDevice_InClusterList[] =
+const cId_t SmartDevice_InClusterList[SamrtDevice_ClustersNum] =
 {
     SmartDevice_Comm_ClustersID,
 };
@@ -160,7 +157,7 @@ void myprotocol_init( uint8 *task_id )
     
     /** 创建一个组表 */
     SmartDevice_Group.ID = 0x0001;
-    osal_memcpy( SmartDevice_Group.name, "Group 1", sizeof("Group 1") );
+    osal_memcpy( SmartDevice_Group.name, "Group 1", 7 );
     aps_AddGroup(SmartDevice_EndPoint, &SmartDevice_Group);
 }
 
@@ -228,51 +225,11 @@ bool MYPROTOCO_D2W_MSG_SEND( packet_func create_packet, void *ctx )
     memcpy(&packet.device.mac,&aExtendedAddress,sizeof(packet.device.mac));
     
     packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
-
-    dst_addr.addr.shortAddr = 0x0000;
-    dst_addr.addrMode = afAddr16Bit;
-    dst_addr.endPoint = SmartDevice_EndPoint;
+    
+    MYPROTOCOL_PACKET_REPORT((uint8 *)&packet);
     
     return true;
 }
-
-///**
-// *******************************************************************************
-// * @brief        SmartDevice发送信息函数
-// * @param       [in/out]   create_packet    创建数据包功能
-// *              [in/out]   ctx              上下文
-// * @return      [in/out]  void
-// * @note        None
-// *******************************************************************************
-// */
-//bool MYPROTOCO_W2D_MSG_SEND( packet_func create_packet, void *ctx )
-//{
-//    MYPROTOCOL_FORMAT packet;
-//    afAddrType_t dst_addr;
-//    
-//    memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
-//    memset(&dst_addr,0,sizeof(dst_addr));
-//    
-//    create_packet(ctx,&packet);
-//    
-//    packet.device.device = SMART_DEVICE_TYPE;
-//    memcpy(&packet.device.mac,&aExtendedAddress,sizeof(packet.device.mac));
-//    
-//    packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
-//
-//    dst_addr.addr.shortAddr = 0x0000;
-//    dst_addr.addrMode = afAddr16Bit;
-//    dst_addr.endPoint = SmartDevice_EndPoint;
-//    
-//    return AF_DataRequest(&dst_addr,
-//                           &SmartDevice_epDesc,
-//                           SmartDevice_Comm_ClustersID,
-//                           sizeof(MYPROTOCOL_FORMAT),
-//                           (uint8 *)&packet,
-//                           &SmartDevice_TransID,
-//                           AF_DISCV_ROUTE,
-//                           AF_DEFAULT_RADIUS);
-//}
 
 /**
  *******************************************************************************
@@ -419,9 +376,8 @@ bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR dir, MYPROTOCOL_FORMAT *packet, pa
 {
     switch( dir )
     {
-        case MYPROTOCOL_DIR_W2D:
-            break;
         case MYPROTOCOL_DIR_D2W:
+            MYPROTOCO_D2W_MSG_SEND(create_packet,param);
             break;
         case MYPROTOCOL_DIR_S2H:
             MYPROTOCO_S2H_MSG_SEND(create_packet,param);
@@ -489,7 +445,7 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
             }
             
             // 心跳应答
-            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2D,(void *)&pkt->srcAddr,create_acktick_packet,&device_info->device);
+            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_H2S,(void *)&packet->device,create_acktick_packet,&device_info->device);
             MYPROTOCOL_LOG("Coord get one device tick!\n");
 #endif
                 break;
@@ -519,7 +475,7 @@ void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data )
     
     if( myprotocol_packet_check(packet_data) == false )
     {
-        MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,packet,create_errcode_packet,NULL);
+        MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_errcode_packet,NULL);
         return;
     }
     else 
@@ -536,7 +492,7 @@ void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data )
                         case W2D_GET_DEVICE_NUM_CMD:
                         {
                             uint8 num = Get_DeviceNum_ForList();
-                            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,packet,create_devicenum_packet,(void *)&num);
+                            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_devicenum_packet,(void *)&num);
                         }
                             break;
                         case W2D_GET_DEVICE_INFO_CMD:
@@ -544,7 +500,7 @@ void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data )
                             MYPROTOCOL_DEVCICE_ACK device;
                             device.id = packet->user_data.data[0];
                             device.info = (MYPROTOCOL_DEVICE_INFO *)Get_DeviceInfo_InList(device.id);
-                            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,packet,create_deviceinfo_packet,(void *)&device);
+                            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_deviceinfo_packet,&device);
                         }
                             break;
                         default:
@@ -554,8 +510,8 @@ void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data )
                 else
                 {
                     // 转发数据并应答APP
-                    COORD_FORWARD_PACKET(packet);
-                    MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,packet,create_w2d_ack_packet,NULL);
+                    MYPROTOCOL_FORWARD_PACKET(MYPROTOCOL_FORWORD_W2D,packet);
+                    MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_w2d_ack_packet,&packet->user_data);
                 }
                     break;
             }

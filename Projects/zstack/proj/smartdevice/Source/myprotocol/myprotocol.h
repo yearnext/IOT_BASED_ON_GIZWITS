@@ -123,7 +123,6 @@ extern void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data );
 extern bool MYPROTOCO_S2H_MSG_SEND( packet_func, void * );
 extern bool MYPROTOCO_H2S_MSG_SEND( MYPROTOCOL_DEVICE_INFO, packet_func, void* );
 extern bool MYPROTOCOL_FORWARD_PACKET( MYPROTOCOL_DATA_DIR, MYPROTOCOL_FORMAT* );
-extern bool MYPROTOCOL_D2D_SEND_MSG( afAddrType_t*, packet_func, void* );
 extern bool MYPROTOCOL_D2W_SEND_MSG( MYPROTOCOL_FORMAT*, packet_func, void* );
 extern bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR, MYPROTOCOL_FORMAT*, packet_func, void* );
 // 创建数据包函数
