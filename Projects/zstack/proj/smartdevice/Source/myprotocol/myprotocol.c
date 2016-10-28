@@ -48,7 +48,11 @@
 #define USE_MYPROTOCOL_DEBUG 1
 
 #if USE_MYPROTOCOL_DEBUG
-    #define MYPROTOCOL_LOG(n) HalUARTWrite(1,n,sizeof(n))  ///<运行日志打印
+    #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+        #define MYPROTOCOL_LOG(n) HalUARTWrite(1,n,sizeof(n))  ///<运行日志打印
+    #else
+        #define MYPROTOCOL_LOG(n) HalUARTWrite(0,n,sizeof(n))  ///<运行日志打印
+    #endif
 #else 
     #define MYPROTOCOL_LOG(n)
 #endif
