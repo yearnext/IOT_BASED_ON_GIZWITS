@@ -97,7 +97,10 @@ typedef enum
 {
     MYPROTOCOL_DIR_W2D,
     MYPROTOCOL_DIR_D2W,
-    MYPROTOCOL_DIR_D2D,
+    MYPROTOCOL_DIR_S2H,
+    MYPROTOCOL_DIR_H2S,
+    MYPROTOCOL_FORWORD_D2W,
+    MYPROTOCOL_FORWORD_W2D,
 }MYPROTOCOL_DATA_DIR;
 
 // 创建数据包函数
@@ -111,16 +114,19 @@ typedef bool (*packet_func)(void *ctx, MYPROTOCOL_FORMAT *packet);
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
+// MYPROTOCOL初始化函数
 extern void myprotocol_init( uint8 *task_id );
+// 数据包解析函数
 extern void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt );
 extern void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data );
+// 数据包发送函数
 extern bool MYPROTOCO_S2H_MSG_SEND( packet_func, void * );
 extern bool MYPROTOCO_H2S_MSG_SEND( MYPROTOCOL_DEVICE_INFO, packet_func, void* );
 extern bool MYPROTOCOL_FORWARD_PACKET( MYPROTOCOL_DATA_DIR, MYPROTOCOL_FORMAT* );
 extern bool MYPROTOCOL_D2D_SEND_MSG( afAddrType_t*, packet_func, void* );
 extern bool MYPROTOCOL_D2W_SEND_MSG( MYPROTOCOL_FORMAT*, packet_func, void* );
-extern bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR, void*, packet_func, void* );
-
+extern bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR, MYPROTOCOL_FORMAT*, packet_func, void* );
+// 创建数据包函数
 extern bool create_tick_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 extern bool create_acktick_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
 extern bool create_errcode_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
