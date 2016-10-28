@@ -142,12 +142,9 @@ void SmartDevice_Init( byte task_id )
     hal_key_init();
     
     app_time_init();
-    
-#if defined (USE_GIZWITS_MOD)
-    gizwitsInit();
-#endif    
-    
+
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+    gizwitsInit();
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
     bsp_light_init();
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
@@ -209,7 +206,7 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
     
     if( events & DEVICE_LIST_TIMER_EVEN )
     {   
-#if defined (USE_GIZWITS_MOD)
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
         if( Del_ZombieDevice_ForList() == true )
         {
             MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_devicelist_update_packet,NULL);
@@ -336,7 +333,7 @@ void device_timer_cb( void )
     
     if( ++timer_50ms >= TIMER_50MS_COUNT )
     {
-#if defined (USE_GIZWITS_MOD)
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
         gizTimer50Ms();
 #endif
         key_handler();
@@ -345,7 +342,7 @@ void device_timer_cb( void )
     
     if( ++timer_100ms >= TIMER_100MS_COUNT )
     {
-#if defined (USE_GIZWITS_MOD)
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
         gizwitsHandle(&currentDataPoint);
 #endif
         timer_100ms = 0;
