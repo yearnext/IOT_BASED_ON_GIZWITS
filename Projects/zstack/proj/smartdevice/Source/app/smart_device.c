@@ -47,6 +47,7 @@
 #include "app_time.h"
 
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+#include "gizwits_protocol.h"
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
 #include "bsp_light.h"
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
@@ -54,10 +55,6 @@
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
 #include "hal_dht11.h"
 #else
-#endif
-     
-#if defined(USE_GIZWITS_MOD)
-#include "gizwits_protocol.h"
 #endif
 
 /* Exported macro ------------------------------------------------------------*/
@@ -83,7 +80,7 @@ dataPoint_t currentDataPoint;
 #endif
      
 /** 设备定时时间 */
-#if defined (USE_GIZWITS_MOD)
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
     #define DEVICE_LIST_TIME            (30000)
 #else
     #define DEVICE_LIST_TIME            (3000)

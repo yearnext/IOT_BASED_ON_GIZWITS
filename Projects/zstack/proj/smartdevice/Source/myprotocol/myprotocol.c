@@ -445,12 +445,13 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
             }
             
             // 心跳应答
-            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_H2S,(void *)&packet->device,create_acktick_packet,&device_info->device);
+            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_H2S,packet,create_acktick_packet,&device_info->device);
             MYPROTOCOL_LOG("Coord get one device tick!\n");
 #endif
                 break;
             }
             case MYPROTOCOL_S2H_ACK:
+                MYPROTOCOL_LOG("Device Get Coord Ack Tick!\n");
                 break;
             case MYPROTOCOL_COMM_ERROR:
                 break;
