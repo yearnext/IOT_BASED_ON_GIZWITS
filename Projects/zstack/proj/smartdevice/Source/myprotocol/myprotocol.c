@@ -438,18 +438,15 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
             case MYPROTOCOL_S2H_WAIT:
             {
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-            // 如果为父设备
-            DEVICE_INFO *device_info = (DEVICE_INFO *)packet->user_data.data;
+            DEVICE_INFO device_info;
+            memcpy(&device_info.device,&packet->device,sizeof(packet->device));
 
-            // 添加设备
-            if( Add_Device_Forlist(device_info) == false )
+            if( Add_Device_Forlist(&device_info) == false )
             {
-                // 增加设备心跳计数
-                Add_DeviceTick_ForList(device_info);
+                Add_DeviceTick_ForList(&device_info);
             }
-            
-            // 心跳应答
-            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_H2S,packet,create_acktick_packet,&device_info->device);
+
+            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_H2S,packet,create_acktick_packet,&device_info.device);
             MYPROTOCOL_LOG("Coord get one device tick!\n");
 #endif
                 break;
@@ -504,7 +501,7 @@ void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data )
                         {
                             MYPROTOCOL_DEVCICE_ACK device;
                             device.id = packet->user_data.data[0];
-                            device.info = (MYPROTOCOL_DEVICE_INFO *)Get_DeviceInfo_InList(device.id);
+                            Get_DeviceInfo_InList(&device);
                             MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_deviceinfo_packet,&device);
                         }
                             break;
@@ -731,12 +728,12 @@ bool create_deviceinfo_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
     }
 
     packet->commtype = MYPROTOCOL_W2D_ACK;
-    packet->user_data.cmd = W2D_GET_DEVICE_NUM_CMD;
+    packet->user_data.cmd = W2D_GET_DEVICE_INFO_CMD;
     packet->user_data.data[0] = device_info->id;
     packet->user_data.data[1] = device_info->info->device;
     memcpy(&packet->user_data.data[2],&device_info->info->mac,sizeof(device_info->info->mac));
     
-    packet->user_data.len = sizeof(uint8);
+    packet->user_data.len = sizeof(uint8)+ sizeof(MYPROTOCOL_DEVICE_INFO);
     
     return true;
 }
@@ -752,8 +749,17 @@ bool create_deviceinfo_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
  */
 bool create_devicelist_update_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
 { 
-    packet->commtype = MYPROTOCOL_W2D_WAIT;
-    packet->user_data.cmd = W2D_DEVICE_LIST_UPDATE_CMD;
+    uint8 *num = (uint8 *)ctx;
+    
+    if( ctx == NULL )
+    {
+        return false;
+    }
+    
+    packet->commtype = MYPROTOCOL_D2W_WAIT;
+    packet->user_data.cmd = W2D_GET_DEVICE_NUM_CMD;
+    packet->user_data.data[0] = *num;
+    packet->user_data.len = sizeof(uint8);
     
     return true;
 }

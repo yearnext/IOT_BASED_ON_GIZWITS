@@ -342,7 +342,7 @@ bool Add_Device_Forlist(DEVICE_INFO *info)
 
 		if (device_info != NULL && list_node != NULL)
 		{
-			device_info->device = info->device;
+			device_info->device.device = info->device.device;
             
             memcpy(device_info->device.mac,info->device.mac,sizeof(device_info->device.mac));
             
@@ -438,11 +438,11 @@ bool clr_zombie_device(void **ctx, void **list)
 bool through_id_find_deviceinfo( void **ctx, void **list )
 {
     bool status = false;
-    uint8 *num = *ctx;
+    MYPROTOCOL_DEVCICE_ACK *info = *ctx;
     
-    if( --(*num) == 0 )
+    if( --(info->id) == 0 )
     {
-        *ctx = ((LIST_NODE)(*list))->data;
+        info->info = ((LIST_NODE)(*list))->data;
         status = true;
     }
     
@@ -507,21 +507,23 @@ void Add_DeviceTick_ForList( DEVICE_INFO *info )
  * @note        None
  *******************************************************************************
  */
-DEVICE_INFO *Get_DeviceInfo_InList( uint8 device_id )
+bool Get_DeviceInfo_InList( void *device )
 {
-    uint8 *data = &device_id;
+    MYPROTOCOL_DEVCICE_ACK *info = device;
+    uint8 id = info->id;
     
-    if( device_id == 0 )
+    if( id == 0 )
     {
-        return NULL;
+        return false;
     }
     
-    if ( list_foreach((void **)&head, through_id_find_deviceinfo, (void **)&data) == true )
+    if ( list_foreach((void **)&head, through_id_find_deviceinfo, (void **)&device) == true )
     {
-        return ((DEVICE_INFO *)(data));
+        info->id = id;
+        return true;
     }
     
-    return NULL;
+    return false;
 }
 
 /**
