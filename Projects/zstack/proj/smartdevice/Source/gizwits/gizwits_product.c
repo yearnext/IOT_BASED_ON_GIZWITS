@@ -81,7 +81,7 @@ int8 gizwitsEventProcess(eventInfo_t *info, uint8 *data, uint8 len)
       case WIFI_CON_APP:
       {
         uint8 num = Get_DeviceNum_ForList();
-        MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_devicenum_packet,(void *)&num);
+        MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_devicelist_update_packet,(void *)&num);
         GIZWITS_LOG("SEND DEVICE LIST CHANGED!\n");
         break;
       }

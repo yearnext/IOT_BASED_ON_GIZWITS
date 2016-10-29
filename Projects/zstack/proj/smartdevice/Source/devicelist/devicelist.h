@@ -70,7 +70,7 @@ extern void Add_DeviceTick_ForList( DEVICE_INFO * );
 
 extern uint8 Get_DeviceNum_ForList( void );
 
-extern DEVICE_INFO *Get_DeviceInfo_InList( uint8 device_id );
+extern bool Get_DeviceInfo_InList( void* );
 
 #endif      /* __MY_DEVICE_LIST_H__ */
 
