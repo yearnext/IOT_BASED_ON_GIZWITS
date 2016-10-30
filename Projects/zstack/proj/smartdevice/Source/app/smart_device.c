@@ -273,6 +273,7 @@ void ZDO_STATE_CHANGE_CB( devStates_t status )
                 break;
         case DEV_NWK_DISC:
             DEVICE_LOG("Discovering PAN's to join!\n");
+            SmartDevice_CommLED_Control(SMARTDEVICE_LED_DISCONNED_STATE);
             osal_stop_timerEx( SmartDevice_TaskID, DEVICE_LIST_TIMER_EVEN);
             break;
         default:
@@ -354,7 +355,7 @@ void device_timer_cb( void )
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
 #else
 #endif  
-        timer_20ms = 0;
+        timer_300ms = 0;
     }
 }
 

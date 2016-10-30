@@ -550,31 +550,31 @@ static int8 gizDataPoint2Event(gizwitsIssued_t *issuedData, eventInfo_t *info, d
     return 0;
 }
 
-/**
-* @brief 对比当前数据和上次数据
-*
-* @param [in] cur        : 当前数据点数据
-* @param [in] last       : 上次数据点数据
-*
-* @return : 0,数据无变化;1，数据有变化
-*/
-static int8 gizCheckReport(dataPoint_t *cur, dataPoint_t *last)
-{
-    int8 ret = 0;
-//    static uint32 lastReportTime = 0;
-
-    if((NULL == cur) || (NULL == last))
-    {
-        return -1;
-    }
-    if(0 != memcmp((uint8 *)&last->valuePacket,(uint8 *)&cur->valuePacket,sizeof(last->valuePacket)))
-    {
-        ret = 1;
-    }
-
-
-    return ret;
-}
+///**
+//* @brief 对比当前数据和上次数据
+//*
+//* @param [in] cur        : 当前数据点数据
+//* @param [in] last       : 上次数据点数据
+//*
+//* @return : 0,数据无变化;1，数据有变化
+//*/
+//static int8 gizCheckReport(dataPoint_t *cur, dataPoint_t *last)
+//{
+//    int8 ret = 0;
+////    static uint32 lastReportTime = 0;
+//
+//    if((NULL == cur) || (NULL == last))
+//    {
+//        return -1;
+//    }
+//    if(0 != memcmp((uint8 *)&last->valuePacket,(uint8 *)&cur->valuePacket,sizeof(last->valuePacket)))
+//    {
+//        ret = 1;
+//    }
+//
+//
+//    return ret;
+//}
 
 /**
 * @brief 用户数据点数据转换为机智云上报数据点数据
@@ -1025,38 +1025,87 @@ static int32 gizProtocolIssuedDataAck(protocolHead_t *head, uint8 *data, uint32 
     return dataLen;
 }
 
+///**
+//* @brief 上报数据
+//*
+//* @param [in] action            : PO cmd
+//* @param [in] data              : 数据地址
+//* @param [in] len               : 数据长度
+//*
+//* @return : 正确返回有效数据长度;-1，错误返回
+//*/
+//static int32 gizReportData(uint8 action, uint8 *data, uint32 len)
+//{
+//    protocolReport_t protocolReport;
+//
+//    if(NULL == data)
+//    {
+////        GIZWITS_LOG("gizReportData Error , Illegal Param\n");
+//        return -1;
+//    }
+//    gizProtocolHeadInit((protocolHead_t *)&protocolReport);
+//    protocolReport.head.cmd = CMD_REPORT_P0;
+//    protocolReport.head.sn = gizwitsProtocol.sn++;
+//    protocolReport.action = action;
+//    protocolReport.head.len = gizProtocolExchangeBytes(sizeof(protocolReport_t)-4);
+//    memcpy((gizwitsReport_t *)&protocolReport.reportData, (gizwitsReport_t *)data,len);
+//    protocolReport.sum = gizProtocolSum((uint8 *)&protocolReport, sizeof(protocolReport_t));
+//    
+//    GIZWITS_UART_WRITE((uint8 *)&protocolReport, sizeof(protocolReport_t));
+//
+//    gizProtocolWaitAck((uint8 *)&protocolReport, sizeof(protocolReport_t));
+////    gizwitsProtocol.lastReportTime = gizGetTimerCount();
+//
+//    return sizeof(protocolReport_t);
+//}
+
 /**
-* @brief 上报数据
+* @brief 转发
 *
-* @param [in] action            : PO cmd
-* @param [in] data              : 数据地址
+* @param [in] devstatus         : 数据地址
 * @param [in] len               : 数据长度
 *
 * @return : 正确返回有效数据长度;-1，错误返回
 */
-static int32 gizReportData(uint8 action, uint8 *data, uint32 len)
+static int32 gizForwardData( uint8 *devstatus, uint8 len )
 {
-    protocolReport_t protocolReport;
-
-    if(NULL == data)
+    uint8 packet[ sizeof(protocolReport_t)+sizeof(devStatus_t) ];
+    protocolHead_t *head = (protocolHead_t *)packet;
+    uint8 start = sizeof(protocolHead_t);
+    uint8 i = 0;
+    
+    if( NULL == devstatus )
     {
-//        GIZWITS_LOG("gizReportData Error , Illegal Param\n");
         return -1;
     }
-    gizProtocolHeadInit((protocolHead_t *)&protocolReport);
-    protocolReport.head.cmd = CMD_REPORT_P0;
-    protocolReport.head.sn = gizwitsProtocol.sn++;
-    protocolReport.action = action;
-    protocolReport.head.len = gizProtocolExchangeBytes(sizeof(protocolReport_t)-4);
-    memcpy((gizwitsReport_t *)&protocolReport.reportData, (gizwitsReport_t *)data,len);
-    protocolReport.sum = gizProtocolSum((uint8 *)&protocolReport, sizeof(protocolReport_t));
+
+    memset(packet,0,sizeof(packet));
     
-    GIZWITS_UART_WRITE((uint8 *)&protocolReport, sizeof(protocolReport_t));
+    gizProtocolHeadInit(head);
+    
+    head->cmd = CMD_REPORT_P0;
+    head->sn = gizwitsProtocol.sn++;
+    head->flags[0] = 0x00;
+    head->flags[1] = 0x00;
+    packet[start++] = ACTION_REPORT_DEV_STATUS;
+    
+    for( i=0; i<len; i++ )
+    {
+        packet[start++] = devstatus[i];
+        if( devstatus[i] == 0xFF )
+        {
+           packet[start++] = 0x55; 
+        }
+    }
+    start++;
+    head->len = gizProtocolExchangeBytes(start-4);
+    packet[start-1] = gizProtocolSum(packet, start);
 
-    gizProtocolWaitAck((uint8 *)&protocolReport, sizeof(protocolReport_t));
-//    gizwitsProtocol.lastReportTime = gizGetTimerCount();
+    GIZWITS_UART_WRITE(packet, start);
+    
+    gizProtocolWaitAck(packet, start);
 
-    return sizeof(protocolReport_t);
+    return len;
 }
 
 /**
@@ -1226,11 +1275,39 @@ int32 gizwitsReport( uint8 *packet )
 //    }
     
     gizDataPoints2ReportData((dataPoint_t *)packet,&gizwitsProtocol.reportData.devStatus);
-    gizReportData(ACTION_REPORT_DEV_STATUS, (uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
+    gizForwardData((uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
+//    gizReportData(ACTION_REPORT_DEV_STATUS, (uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
+//    gizReportData(ACTION_D2W_TRANSPARENT_DATA, (uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
     memcpy((uint8 *)&gizwitsProtocol.gizLastDataPoint, packet, sizeof(dataPoint_t));
         
     return ret;
 }
+
+///**
+//* @brief 机智云转发函数
+//
+//* 用户可以调用该接口上报数据
+//
+//* @param[in] packet 数据包
+//* @return 错误命令码
+//*/
+//int32 gizwitsForward( uint8 *packet )
+//{
+//    int32 ret = 0;
+//    
+////    if( packet == NULL )
+////    {
+////        return -1;
+////    }
+//    
+//    gizDataPoints2ReportData((dataPoint_t *)packet,&gizwitsProtocol.reportData.devStatus);
+//    //gizReportData(ACTION_REPORT_DEV_STATUS, (uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
+//    gizForwardData((uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
+////    gizReportData(ACTION_D2W_TRANSPARENT_DATA, (uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
+//    memcpy((uint8 *)&gizwitsProtocol.gizLastDataPoint, packet, sizeof(dataPoint_t));
+//        
+//    return ret;
+//}
 
 /**
 * @brief 协议处理函数
@@ -1296,6 +1373,7 @@ int32 gizwitsHandle(dataPoint_t *currentData)
                 gizProtocolReboot();
                 break;
             case CMD_ERROR_PACKAGE:
+                GIZWITS_LOG("I SEND ERROR PACKET TO GIZWITS!\n");
                 break;
             default:
                 gizProtocolErrorCmd(recvHead,ERROR_CMD);
@@ -1330,11 +1408,11 @@ int32 gizwitsHandle(dataPoint_t *currentData)
 //        gizwitsEventProcess(&gizwitsProtocol.issuedProcessEvent, (uint8 *)gizwitsProtocol.transparentBuff, gizwitsProtocol.transparentLen);
 //    }
     
-    if((1 == gizCheckReport(currentData, (dataPoint_t *)&gizwitsProtocol.gizLastDataPoint)))
-    {
-        GIZWITS_LOG("changed, report data\n");
-        gizwitsReport((uint8 *)currentData);
-    }
+//    if((1 == gizCheckReport(currentData, (dataPoint_t *)&gizwitsProtocol.gizLastDataPoint)))
+//    {
+//        GIZWITS_LOG("changed, report data\n");
+//        gizwitsReport((uint8 *)currentData);
+//    }
     
 //    if(600000 <= (gizGetTimerCount() - gizwitsProtocol.lastReportTime))
 //    {

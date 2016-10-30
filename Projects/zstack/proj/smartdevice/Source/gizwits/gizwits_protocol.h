@@ -329,6 +329,7 @@ void gizTimerMs(void);
 int32 gizPutData(uint8 *buf, uint32 len);
 uint32 gizGetTimerCount(void);
 
+//int32 gizwitsForward( uint8 *packet );
 int32 gizwitsReport( uint8 *packet );
 
 #endif

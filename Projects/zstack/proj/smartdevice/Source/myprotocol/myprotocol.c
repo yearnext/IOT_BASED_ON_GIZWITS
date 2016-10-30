@@ -325,7 +325,7 @@ bool MYPROTOCO_H2S_FORWARD_MSG( MYPROTOCOL_FORMAT *packet )
     
     memset(&dst_addr,0,sizeof(dst_addr));
     
-    memcpy(&dst_addr.addr.extAddr,&packet->device.mac,sizeof(dst_addr.addr.shortAddr));
+    memcpy(&dst_addr.addr.extAddr,&packet->device.mac,sizeof(dst_addr.addr.extAddr));
     dst_addr.addrMode = afAddr64Bit;
     dst_addr.endPoint = SmartDevice_EndPoint;
     
@@ -333,7 +333,7 @@ bool MYPROTOCO_H2S_FORWARD_MSG( MYPROTOCOL_FORMAT *packet )
                            &SmartDevice_epDesc,
                            SmartDevice_Comm_ClustersID,
                            sizeof(MYPROTOCOL_FORMAT),
-                           (uint8 *)&packet,
+                           (uint8 *)packet,
                            &SmartDevice_TransID,
                            AF_DISCV_ROUTE,
                            AF_DEFAULT_RADIUS);
@@ -431,9 +431,12 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
             case MYPROTOCOL_W2D_WAIT:
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
         light_cmd_resolve(&packet->user_data);
+        MYPROTOCOL_LOG("Device Light Get a Control CMD!\n");
 #endif
                 break;
-            case MYPROTOCOL_W2D_ACK:
+            case MYPROTOCOL_D2W_WAIT:
+                MYPROTOCOL_FORWARD_PACKET(MYPROTOCOL_FORWORD_D2W,packet);
+                MYPROTOCOL_LOG("REPORT DEVICE DATA!\n");
                 break;
             case MYPROTOCOL_S2H_WAIT:
             {
@@ -453,6 +456,8 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
             }
             case MYPROTOCOL_S2H_ACK:
                 MYPROTOCOL_LOG("Device Get Coord Ack Tick!\n");
+                break;
+            case MYPROTOCOL_W2D_ACK:
                 break;
             case MYPROTOCOL_COMM_ERROR:
                 break;
@@ -675,7 +680,8 @@ bool create_d2w_wait_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
 {
     if( ctx != NULL )
     {
-        memcpy(&packet->user_data,ctx,sizeof(MYPROTOCOL_USER_DATA));
+        MYPROTOCOL_USER_DATA *data = (MYPROTOCOL_USER_DATA *)ctx;
+        memcpy(&packet->user_data,ctx,sizeof(data->cmd)+sizeof(data->cmd)+data->len);
     }
 
     packet->commtype = MYPROTOCOL_D2W_WAIT;
@@ -757,7 +763,7 @@ bool create_devicelist_update_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
     }
     
     packet->commtype = MYPROTOCOL_D2W_WAIT;
-    packet->user_data.cmd = W2D_GET_DEVICE_NUM_CMD;
+    packet->user_data.cmd = W2D_DEVICE_LIST_UPDATE_CMD;
     packet->user_data.data[0] = *num;
     packet->user_data.len = sizeof(uint8);
     
