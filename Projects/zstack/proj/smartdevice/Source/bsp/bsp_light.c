@@ -150,6 +150,11 @@ void light_brightness_set( uint8 brightness )
 {
     if( brightness != light_brightness_get() )
     {
+        if( light.status.now == 0xFE )
+        {
+            light.status.now = 0xFF;
+        }
+        
         light.status.last = light.status.now;
         light.status.now = brightness;
         
@@ -159,6 +164,12 @@ void light_brightness_set( uint8 brightness )
                       (uint16)(&((DEVICE_LIGHT_SAVE_DATA *)0)->status),\
                       sizeof(light.status),\
                       (void *)&light.status);
+        
+        if( light.status.now == 0xFF )
+        {
+            light.status.now = 0xFE;
+        }
+        
     }
 }
 
@@ -173,6 +184,11 @@ void light_brightness_set( uint8 brightness )
 void light_switch_headler( void )
 {
     uint8 temp = 0;
+    
+    if( light.status.now == 0xFE )
+    {
+        light.status.now = 0xFF;
+    }
     
     if( light.status.now == Light_OFF_Brightness )
     {
@@ -200,6 +216,11 @@ void light_switch_headler( void )
               ((uint16)&light.status - (uint16)&light),\
               sizeof(light.status),\
               (void *)&light.status); 
+    
+    if( light.status.now == 0xFF )
+    {
+        light.status.now = 0xFE;
+    }
     
     report_brightness_data();
 }
