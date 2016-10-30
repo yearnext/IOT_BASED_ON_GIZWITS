@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DeviceDatabaseHelper extends SQLiteOpenHelper {
     public static final String CREATE_DEVICE="create table device ("
-            + "id integer primary key autoincrement, "
+                    + "id integer primary key autoincrement, "
             + "mac text, "
             + "type integer, "
             + "count integer, "

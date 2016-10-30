@@ -57,7 +57,11 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<DeviceIte
         byte deviceState = device.getSwitchState();
         if (deviceType == ParsePacket.DEVICE_TYPE.LAMP) {
             //// TODO: 2016/10/25 灯调节用
+            if (deviceState == 0)
 
+                holder.switchDeviceItem.setChecked(false);
+            else
+                holder.switchDeviceItem.setChecked(true);
         } else {
             if (deviceState == 0)
 
@@ -95,16 +99,16 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<DeviceIte
 
             }
         });
-        holder.tvDeviceItemTiming.setOnClickListener(new View.OnClickListener() {
+        holder.tvDeviceItemCountdownOff.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                deviceSetListener.onTimingClick(position);
+                deviceSetListener.onCountdownClickOff(position);
             }
         });
-        holder.tvDeviceItemCountdown.setOnClickListener(new View.OnClickListener() {
+        holder.tvDeviceItemCountdownOn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                deviceSetListener.onCountdownClick(position);
+                deviceSetListener.onCountdownClickOn(position);
 
             }
         });
@@ -123,10 +127,10 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<DeviceIte
         TextView tvDeviceItemName;
         @BindView(R.id.image_device_item)
         ImageView imageDeviceItem;
-        @BindView(R.id.tv_device_item_timing)
-        TextView tvDeviceItemTiming;
-        @BindView(R.id.tv_device_item_countdown)
-        TextView tvDeviceItemCountdown;
+        @BindView(R.id.tv_device_item_countdown_off)
+        TextView tvDeviceItemCountdownOff;
+        @BindView(R.id.tv_device_item_countdown_on)
+        TextView tvDeviceItemCountdownOn;
         @BindView(R.id.switch_device_item)
         Switch switchDeviceItem;
 
@@ -147,9 +151,9 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<DeviceIte
     public interface DeviceSetListener {
         int a = 0;
 
-        void onCountdownClick(int position);
+        void onCountdownClickOn(int position);
 
-        void onTimingClick(int position);
+        void onCountdownClickOff(int position);
 
         void onNameClick(int position, View view);
 

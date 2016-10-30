@@ -31,15 +31,18 @@ public class StartActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        final String account = mSharedPreferences.getString("account", "");
+        final String password = mSharedPreferences.getString("password", "");
             //启动界面选择
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (mSharedPreferences.getBoolean("loginState", false)) {
-                        String account = mSharedPreferences.getString("account", "");
-                        String password = mSharedPreferences.getString("password", "");
-                        if (!ExceptionUtil.isException(account, password, StartActivity.this))
-                            GizWifiSDK.sharedInstance().userLogin(account, password);
+                    if (mSharedPreferences.getBoolean("loginState", false)||!ExceptionUtil.isException(account, password, StartActivity.this)) {
+                            //GizWifiSDK.sharedInstance().userLogin(account, password);
+                        Log.i(TAG, "run: 开始启动登录界面");
+                        Intent inter = new Intent(StartActivity.this, LoginActivity.class);
+                        startActivity(inter);
+                        finish();
                     }else {
                     Log.i(TAG, "run: 开始启动登录界面");
                     Intent inter = new Intent(StartActivity.this, LoginActivity.class);

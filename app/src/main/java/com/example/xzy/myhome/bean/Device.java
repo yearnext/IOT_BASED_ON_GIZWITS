@@ -11,7 +11,7 @@ public class Device {
     String deviceName;
     String timingState;
     String countdownState;
-    String mac;
+    byte[] mac;
     byte switchState;
 
     public byte getSwitchState() {
@@ -26,11 +26,11 @@ public class Device {
 
 
 
-    public String getMac() {
+    public byte[] getMac() {
         return mac;
     }
 
-    public void setMac(String mac) {
+    public void setMac(byte[] mac) {
         this.mac = mac;
     }
 

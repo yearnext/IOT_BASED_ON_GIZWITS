@@ -1,11 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="countdown_data">
-        <item>10分钟后</item>
-        <item>20分钟后</item>
-        <item>30分钟后</item>
-        <item>60分钟后</item>
-        <item>90分钟后</item>
+    <string-array name="countdown_data_on">
+        <item>10分钟后打开</item>
+        <item>20分钟后打开</item>
+        <item>30分钟后打开</item>
+        <item>60分钟后打开</item>
+        <item>90分钟后打开</item>
         <item>自定义</item>
 
-    </string-array></resources>
+    </string-array>
+    <string-array name="countdown_data_off">
+        <item>10分钟后关闭</item>
+        <item>20分钟后关闭</item>
+        <item>30分钟后关闭</item>
+        <item>60分钟后关闭</item>
+        <item>90分钟后关闭</item>
+        <item>自定义</item>
+
+    </string-array>
+</resources>

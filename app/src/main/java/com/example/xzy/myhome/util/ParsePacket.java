@@ -1,91 +1,194 @@
 package com.example.xzy.myhome.util;
 
+import android.util.Log;
+
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.mxchip.helper.ProbeReqData.bytesToHex;
 
 /**
  * Created by xzy on 16/9/18.
  */
 
 public class ParsePacket implements Serializable {
+    public ParsePacket() {
+
+    }
+
     static ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
 
-
-    private byte[] parket = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
+    private byte[] packet = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     public interface TYPE {
-        byte END = 0;//结束此次通信流程
-        byte APP_READ = 1;  //APP读取数据等待应答
-        byte DEVICE_RESPONSE_APP_READ = 2;  //设备回应APP读取数据
-        byte APP_WRITE = 3;  //设备请求与app通信
-        byte DEVICE_RESPONSE_APP_WRITE = 4;  //app应答设备
-        byte DEVICE_WRITE = 7;  //
-        byte APP_RESPONSE_DEVICE_WRITE = 8;  //
-        byte CHECK_ERROR = 9;
+        byte APP_REQUEST = 1;
+        byte DEVICE_RESPONSE = 2;
+        byte DEVICE_REQUEST = 3;
+        byte APP_RESPONSE = 4;
     }
 
     public interface DEVICE_TYPE {
         byte GATEWAY = 0;
         byte LAMP = 1;
         byte SOCKET = 2;
-        byte CURTAIN= 3;
-        byte SENSOR_TEMPERATURE= 4;
-
+        byte CURTAIN = 3;
+        byte SENSOR_TEMPERATURE = 4;
     }
 
     public interface MAC {
-        byte[] LAMP = {0x20, 0x01};
-        byte[] SOCKET = {0x20, 0x02,};
-        byte[] CURTAIN = {0x20, 0x03};
+
     }
 
     public interface COMMAND {
-        byte SWITCH = 1;
-        byte TIMING = 2;
-        byte COUNTDOWN = 3;
+        byte RESPONSE = 0;
+        byte STATE_READ = 1;
+        byte STATE_WRITE = 2;
+        byte TIMING_READ = 3;
+        byte TIMING_WRITE = 4;
+        byte COUNTDOWN_READ = 5;
+        byte COUNTDOWN_WRITE = 6;
+        byte CURTAIN_STATE_READ = 7;
+        byte CURTAIN_STATE_WRITE = 8;
+        byte DEVICE_RESPONSE_APP_COUNT = 0;
+        byte UPDATE_DEVICE_COUNT = 1;
+        byte UPDATE_DEVICE_MESSAGE = 2;
+
+
     }
 
-    public interface DATALENGTH {
-        byte SWITCH = 2;
-        byte TIMING = 9;
-        byte COUNTDOWN = 5;
+    public interface DATA_LENGTH {
+
     }
 
     public interface DATA {
-        byte[] OFF = {0};
-        byte[] ON = {1};
-    }
 
-
-    public ParsePacket() {
-
-    }
-
-    public ParsePacket(byte[] packet) {
-        type = packet[0];
-        eventNumber = packet[1];
-        for (int i = 2; i < 8; i++) {
-            mac[i - 2] = packet[i];
-        }
-        for (int i = 10; i < 31; i++) {
-            data[i - 10] = packet[i];
-        }
-        dataLength = packet[8];
-        command = packet[9];
-
-        checkSum = parket[31];
     }
 
     byte type;
     byte eventNumber;
-    byte[] mac = {0, 0, 0, 0, 0, 0};
+    byte deviceType;
+    byte[] mac = {0, 0, 0, 0, 0, 0, 0, 0};
     byte dataLength;
     byte command;
-    byte[] data = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    byte[] data = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+
+    public ParsePacket(byte[] packet) {
+        type = packet[0];
+        eventNumber = packet[1];
+        deviceType = packet[2];
+
+        for (int i = 3; i < 11; i++) {
+            mac[i - 3] = packet[i];
+        }
+
+        command = packet[11];
+        dataLength = packet[12];
+
+        for (int i = 13; i < 31; i++) {
+            data[i - 13] = packet[i];
+        }
+
+        checkSum = packet[31];
+    }
+
+
     byte checkSum;
+
+
+    public void sendPacket(GizWifiDevice mDevice) {
+        packet[0] = type;
+        packet[1] = eventNumber;
+        packet[2] = deviceType;
+
+        for (int i = 0; i < 8; i++) {
+            packet[3 + i] = mac[i];
+        }
+        Log.e("Main2Activity", "sendPacket: " + bytesToHex(mac));
+
+        packet[11] = command;
+        packet[12] = dataLength;
+
+        for (int i = 0; i < data.length; i++) {
+            packet[13 + i] = data[i];
+        }
+
+        packet[31] = getCheckSum();
+        dataMap.put("Packet", packet);
+        mDevice.write(dataMap, 0);
+        Log.e("Main2Activity", "sendPacket: " + bytesToHex(packet));
+
+    }
+
+    public void requestDeviceList(GizWifiDevice mDevice, byte count) {
+        packet[0] = TYPE.APP_REQUEST;
+        packet[2] = DEVICE_TYPE.GATEWAY;
+        packet[11] = COMMAND.UPDATE_DEVICE_MESSAGE;
+        packet[12] = 1;
+        packet[13] = ++count;
+        packet[31] = getCheckSum();
+        dataMap.put("Packet", packet);
+        mDevice.write(dataMap, 0);
+        Log.e("Main2Activity", "sendPacket: " + bytesToHex(packet));
+    }
+
+    //各种get set方法
+    public byte[] getDataMac() {
+        byte[] a=new byte[8];
+        for (int i = 2; i < 10; i++) {
+            a[i - 2] = data[i];
+        }
+        return a;
+    }
+
+    public byte getDataDeviceType() {
+        return data[1];
+    }
+    public byte getDataDeviceCount() {
+        return data[0];
+    }
+
+
+    public byte getDataState() {
+        return data[0];
+
+    }
+    public ParsePacket setDataState(byte dataState) {
+        data[0] = dataState;
+        return this;
+
+    }
+
+    public ParsePacket setDataCountdown(int hour, int minute) {
+        long time =System.currentTimeMillis();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(time);
+        int startHour = calendar.get(Calendar.HOUR_OF_DAY);
+        int startMinute = calendar.get(Calendar.MINUTE);
+        int endMinute = (startMinute + minute) % 60;
+        int endHour = (startHour + hour+(startMinute + minute)/60)%24;
+        data[0] = 1;
+        data[2] = (byte) startHour;
+        data[3] = (byte) startMinute;
+        data[4] = (byte) endHour;
+        data[5] = (byte) endMinute;
+        data[6] = (byte) 0;
+        data[7] = (byte) 255;
+        //// TODO: 2016/10/30 7  灯状态记录 
+        return this;
+    }
+    public ParsePacket setDataTimeState(byte state) {
+        data[7] = state;
+        return this;
+    }
+
+
+
+
+
 
     public byte getType() {
         return type;
@@ -137,14 +240,14 @@ public class ParsePacket implements Serializable {
     }
 
     public byte getCheckSum() {
-        return checkSum;
+        int sum = 0;
+        for (int i = 0; i < 31; i++) {
+            sum += (int) packet[i];
+        }
+        sum = (byte) (sum % 256);
+        return (byte) sum;
     }
 
-    public ParsePacket setCheckSum(byte checkSum) {
-        this.checkSum = checkSum;
-        return this;
-
-    }
 
     public byte[] getData() {
         return data;
@@ -156,72 +259,13 @@ public class ParsePacket implements Serializable {
 
     }
 
-    public void sendPacket(GizWifiDevice mDevice) {
-        parket[0] = type;
-        parket[1] = eventNumber;
-        for (int i = 0; i < mac.length; i++) {
-            parket[2 + i] = mac[i];
-        }
-
-        parket[8] = dataLength;
-        parket[9] = command;
-        for (int i = 0; i < data.length; i++) {
-            parket[10 + i] = data[i];
-        }
-
-        int sum = 0;
-        for (int i = 0; i < 31; i++) {
-            sum += (int) parket[i];
-        }
-
-        parket[31] = (byte) (sum % 256);
-        dataMap.put("Packet", parket);
-        mDevice.write(dataMap, 0);
+    public byte getDeviceType() {
+        return deviceType;
     }
 
-    public void sendPacket(GizWifiDevice mDevice, byte type, byte eventNumber, byte[] mac, byte dataLength, byte command, byte[] data) {
-        parket[0] = type;
-        parket[1] = eventNumber;
-        for (int i = 0; i < mac.length; i++) {
-            parket[2 + i] = mac[i];
-        }
-        parket[8] = dataLength;
-        parket[9] = command;
-        for (int i = 0; i < data.length; i++) {
-            parket[10 + i] = data[i];
-        }
-        int sum = 0;
-        for (int i = 0; i < 31; i++) {
-            sum += (int) parket[i];
-        }
-
-        parket[31] = (byte) (sum % 256);
-        dataMap.put("Packet", parket);
-        mDevice.write(dataMap, 0);
+    public ParsePacket setDeviceType(byte deviceType) {
+        this.deviceType = deviceType;
+        return this;
     }
-
-
-
-
-    /*public byte[] getParket() {
-        parket[0] = type;
-        parket[1] = eventNumber;
-        for (int i = 0; i < mac.length; i++) {
-            parket[2 + i] = mac[i];
-        }
-        for (int i = 0; i < data.length; i++) {
-            parket[10 + i] = data[i];
-        }
-        parket[8] = dataLength;
-        parket[9] = command;
-
-        parket[31] = checkSum;
-        return parket;
-    }
-
-    public void sendParket(GizWifiDevice mDevice) {
-        dataMap.put("Packet", parket);
-        mDevice.write(dataMap, 0);
-    }*/
 
 }
