@@ -50,13 +50,16 @@
  */
 static DEVICE_STATUS_SIGNAL period_timer_inquire(TIMER_WOKRING_TIME *timer, uint16 time)
 {
-	if (timer->start < timer->end)
+    uint16 start_time = Time_Hour2Minute(timer->start_hour)+timer->start_minute;
+    uint16 end_time = Time_Hour2Minute(timer->end_hour)+timer->end_minute;
+    
+	if (start_time < end_time)
 	{
-		if (time >= timer->end)
+		if (time >= end_time)
 		{
 			return DEVICE_STOP_SIGNAL;
 		}
-		else if (time >= timer->start)
+		else if (time >= start_time)
 		{
 			return DEVICE_START_SIGNAL;
 		}
@@ -79,25 +82,33 @@ static DEVICE_STATUS_SIGNAL period_timer_inquire(TIMER_WOKRING_TIME *timer, uint
  */
 static DEVICE_STATUS_SIGNAL downcnt_timer_inquire(TIMER_WOKRING_TIME *timer, uint16 time)
 {
-	if (timer->end)
+    uint16 start_time = Time_Hour2Minute(timer->start_hour)+timer->start_minute;
+    uint16 end_time = Time_Hour2Minute(timer->end_hour)+timer->end_minute;
+    
+	if (end_time)
 	{
 // 		if (timer->start == time)
 // 		{
 // 			return DEVICE_START_SIGNAL;
 // 		} 
 
-		uint16 past_time = time - timer->start;
-		timer->start = time;
+		uint16 past_time = time - start_time;
+		timer->start_hour = time/60;
+        timer->start_minute = time&60;
 
-		if (timer->end > past_time)
+		if (end_time > past_time)
 		{
-			timer->end -= past_time;
+			end_time -= past_time;
+            timer->end_hour = end_time/60;
+            timer->end_minute = end_time%60;
 			return DEVICE_KEEP_SIGNAL;
 		} 
 		else
 		{
-			timer->start = 0;
-			timer->end = 0;
+			timer->end_hour = 0;
+            timer->end_minute = 0;
+			timer->start_hour = 0;
+            timer->start_minute = 0;
 			return DEVICE_STOP_SIGNAL;
 		}
 	}
