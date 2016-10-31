@@ -42,13 +42,13 @@
 
 /* Private typedef -----------------------------------------------------------*/
 // 电灯控制命令
-#define LIGHT_TICK_CMD         (0x00)
-#define LIGHT_R_BRIGHTNESS_CMD (0x01)
-#define LIGHT_W_BRIGHTNESS_CMD (0x02)
-#define LIGHT_R_COUNTDOWN_CMD  (0x03)
-#define LIGHT_W_COUNTDOWN_CMD  (0x04)
-#define LIGHT_R_GENTIMER_CMD   (0x05)
-#define LIGHT_W_GENTIMER_CMD   (0x06)
+#define LIGHT_TICK_CMD            (0x00)
+#define LIGHT_R_BRIGHTNESS_CMD    (0x01)
+#define LIGHT_W_BRIGHTNESS_CMD    (0x02)
+#define LIGHT_R_SINGLE_TIMER_CMD  (0x03)
+#define LIGHT_W_SINGLE_TIMER_CMD  (0x04)
+#define LIGHT_R_CIRCUL_TIMER_CMD  (0x05)
+#define LIGHT_W_CIRCUL_TIMER_CMD  (0x06)
 
 typedef struct
 {
@@ -94,11 +94,11 @@ static void report_timer_data( uint8 timer )
     
     if( timer == 0 )
     {
-        user_data.cmd = LIGHT_R_COUNTDOWN_CMD;
+        user_data.cmd = LIGHT_R_SINGLE_TIMER_CMD;
     }
     else if( timer == 1 )
     {
-        user_data.cmd = LIGHT_R_GENTIMER_CMD;
+        user_data.cmd = LIGHT_R_CIRCUL_TIMER_CMD;
     }
     else
     {
@@ -295,23 +295,23 @@ bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data )
             report_brightness_data();
             break;
         }
-        case LIGHT_R_COUNTDOWN_CMD:
+        case LIGHT_R_SINGLE_TIMER_CMD:
         {
             report_timer_data(0);
             break;
         }
-        case LIGHT_W_COUNTDOWN_CMD:
+        case LIGHT_W_SINGLE_TIMER_CMD:
         {
             memcpy(&light.timer[0],data->data,sizeof(light.timer[0]));
             report_timer_data(0);
             break;
         }
-        case LIGHT_R_GENTIMER_CMD:
+        case LIGHT_R_CIRCUL_TIMER_CMD:
         {
             report_timer_data(1);
             break;
         }
-        case LIGHT_W_GENTIMER_CMD:
+        case LIGHT_W_CIRCUL_TIMER_CMD:
         {
             memcpy(&light.timer[1],data->data,sizeof(light.timer[1]));
             report_timer_data(1);

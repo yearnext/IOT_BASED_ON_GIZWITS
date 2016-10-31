@@ -69,8 +69,10 @@ typedef struct
 // 定时器工作时间
 typedef struct
 {
-    uint16 start;
-	uint16 end;
+    uint8 start_hour;
+    uint8 start_minute;
+	uint8 end_hour;
+    uint8 end_minute;
 }TIMER_WOKRING_TIME;
 
 // 定时器工作时间
