@@ -69,7 +69,7 @@ typedef struct
 // 定时器工作时间
 typedef struct
 {
-	uint16 start;
+    uint16 start;
 	uint16 end;
 }TIMER_WOKRING_TIME;
 
@@ -105,7 +105,7 @@ typedef void (*device_timer_func)(uint8);
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern bool device_timer_handler(DEVICE_TIMER*, device_timer_func);
+extern bool device_timer_handler(DEVICE_TIMER *timer, device_timer_func func);
 
 #endif      /* __APP_USER_TIMER_H__ */
 

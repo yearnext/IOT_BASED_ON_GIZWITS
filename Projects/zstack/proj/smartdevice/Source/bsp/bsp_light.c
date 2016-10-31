@@ -29,7 +29,7 @@
 #include "timer_config.h"
 #include <string.h>
 #include "app_save.h"
-#include "app_time.h"
+#include "app_timer.h"
 #include "myprotocol.h"
 
 /* Exported macro ------------------------------------------------------------*/
@@ -122,7 +122,7 @@ static void report_timer_data( uint8 timer )
 void bsp_light_init( void )
 {
     Timer4_PWM_Init( TIM4_CH0_PORT_P2_0 );
-    light_brightness_set(Light_OFF_Brightness);
+    set_light_brightness(Light_OFF_Brightness);
     
     // FLASH 数据初始化
     if( Device_FirstWrite_Check() == false \
@@ -136,7 +136,7 @@ void bsp_light_init( void )
         osal_nv_write(DEVICE_LIGHT_SAVE_ID,0,DEVICE_LIGHT_DATA_SIZE,(void *)&light);
     }
     
-    light_brightness_set(light.status.now);
+    set_light_brightness(light.status.now);
 }
 
 /**
@@ -173,9 +173,9 @@ uint8 get_light_brightness( void )
  * @note        None
  *******************************************************************************
  */
-void light_wificmd_handler( uint8 brightness )
+void light_control_handler( uint8 brightness )
 {
-    if( brightness != light_brightness_get() )
+    if( brightness != get_light_brightness() )
     {
         if( light.status.now == 0xFE )
         {
@@ -185,7 +185,7 @@ void light_wificmd_handler( uint8 brightness )
         light.status.last = light.status.now;
         light.status.now = brightness;
         
-        light_brightness_set( light.status.now );
+        set_light_brightness( light.status.now );
         
         osal_nv_write(DEVICE_LIGHT_SAVE_ID,\
                       (uint16)(&((DEVICE_LIGHT_SAVE_DATA *)0)->status),\
@@ -237,7 +237,7 @@ void light_switch_headler( void )
         light.status.now = Light_OFF_Brightness;
     }
     
-    TIM4_CH0_UpdateDuty( Light_Brightness_Conversion(light.status.now) );
+    set_light_brightness( light.status.now );
     
     osal_nv_write(DEVICE_LIGHT_SAVE_ID,\
               ((uint16)&light.status - (uint16)&light),\
@@ -266,7 +266,7 @@ void light_working_headler( void )
     
     for( i=0; i<SIMPLE_DEVICE_TIMER_NUM; i++ )
     {
-        device_timer_headler(&light.timer[i],light_brightness_set);
+        device_timer_handler((DEVICE_TIMER*)&light.timer[i],light_control_handler);
     }
 }
 
@@ -291,7 +291,7 @@ bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data )
         }
         case LIGHT_W_BRIGHTNESS_CMD:
         {
-            light_brightness_set(data->data[0]);
+            light_control_handler(data->data[0]);
             report_brightness_data();
             break;
         }

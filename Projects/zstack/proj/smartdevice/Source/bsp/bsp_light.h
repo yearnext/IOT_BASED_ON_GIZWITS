@@ -22,6 +22,7 @@
 #define __SMART_DEVICE_LIGHT_H__
 
 /* Includes ------------------------------------------------------------------*/
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
 #include "comdef.h"
 #include "myprotocol.h"
 
@@ -37,12 +38,14 @@
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 extern void bsp_light_init( void );
-extern void light_brightness_set( uint8 brightness );
-extern uint8 light_brightness_get( void );
+extern void set_light_brightness( uint8 );
+extern uint8 get_light_brightness( void );
+extern void light_control_handler( uint8 );
 extern void light_switch_headler( void );
-extern bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data );
 extern void light_working_headler( void );
+extern bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data );
 
+#endif
 #endif      /* __CC2530_TIMER_CONFIG_H__ */
 
 /**********************************END OF FILE*********************************/
