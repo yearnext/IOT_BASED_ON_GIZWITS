@@ -31,7 +31,8 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define ONE_DAY_MINUTES ( 24*60 )
+// 时间相关宏
+#define ONE_DAY_MINUTES        ( 24*60 )
 #define Time_Hour2Minute(hour) ((hour)*60)
 #define TIMER_CUSTOM_BV(n)     ( 0x01 << (n) )
 
@@ -43,121 +44,143 @@
  *******************************************************************************
  * @brief       设备运行状态判定函数
  * @param       [in/out]  timer    当前定时器的状态
- * @return      [in/out]  status   定时器动作信号
+ * @return      [in/out]  time     当前时间信息
  * @note        None
  *******************************************************************************
  */
-DEVICE_STATUS_SIGNAL device_timer_check( DEVICE_TIMER timer )
+static DEVICE_STATUS_SIGNAL period_timer_inquire(TIMER_WOKRING_TIME *timer, uint16 time)
 {
-    user_time time = app_get_time();
-    
-    uint16 start_time = Time_Hour2Minute(timer.time.start_hour)+timer.time.start_minute;
-    uint16 stop_time  = Time_Hour2Minute(timer.time.stop_hour)+timer.time.stop_minute;
-    uint16 now_time = Time_Hour2Minute(time.hour) + time.minute;
-    
-    uint8 mode = *((uint8 *)&timer.custom);
-    DEVICE_STATUS_SIGNAL status = DEVICE_KEEP_SIGNAL;
-    
-    
-    if( timer.mode != TIMER_SLEEP_MODE )
-    {
-        if( start_time < stop_time )
-        {
-            if( now_time >= stop_time )
-            {
-                status = DEVICE_STOP_SIGNAL;
-            }
-            else if( now_time >= start_time )
-            {
-                if( (timer.mode == TIMER_SIGNAL_WAIT_MODE) \
-                    || ((timer.mode == TIMER_CUSTOM_WAIT_MODE) \
-                        && (mode & TIMER_CUSTOM_BV(time.week)) \
-                        && (timer.custom.status)) )
-                {
-                    status = DEVICE_START_SIGNAL;
-                }
-            }
-            else
-            {
-                status = DEVICE_KEEP_SIGNAL;
-            }
-        }
-        else
-        {
-            if( now_time >= start_time )
-            {
-                if( (timer.mode == TIMER_SIGNAL_WAIT_MODE) \
-                    || ((timer.mode == TIMER_CUSTOM_WAIT_MODE) \
-                        && (mode & TIMER_CUSTOM_BV(time.week)) \
-                        && (timer.custom.status)) )
-                {
-                    status = DEVICE_START_SIGNAL;
-                }
-            }
-            else if( now_time >= stop_time )
-            {
-                status = DEVICE_STOP_SIGNAL;
-            }
-            else
-            {
-                status = DEVICE_KEEP_SIGNAL;
-            }
-        }
-    }
-    
-    return status;
+	if (timer->start < timer->end)
+	{
+		if (time >= timer->end)
+		{
+			return DEVICE_STOP_SIGNAL;
+		}
+		else if (time >= timer->start)
+		{
+			return DEVICE_START_SIGNAL;
+		}
+		else
+		{
+			return DEVICE_KEEP_SIGNAL;
+		}
+	}
+
+	return DEVICE_KEEP_SIGNAL;
 }
-         
+
 /**
  *******************************************************************************
- * @brief       定时器处理函数
- * @param       [in/out]  *timer    当前定时器的配置
- *              [in/out]  func      定时器功能回调函数
- * @return      [in/out]  void
+ * @brief       设备运行状态判定函数
+ * @param       [in/out]  timer    当前定时器的状态
+ * @return      [in/out]  time     当前时间信息
  * @note        None
  *******************************************************************************
  */
-void device_timer_headler( DEVICE_TIMER *timer, device_timer_func func )
+static DEVICE_STATUS_SIGNAL downcnt_timer_inquire(TIMER_WOKRING_TIME *timer, uint16 time)
 {
-    DEVICE_TIMER timer_bkp;
-    DEVICE_STATUS_SIGNAL status;
-    
-    memcpy(&timer_bkp,timer,sizeof(DEVICE_TIMER));
-    status = device_timer_check(timer_bkp);
-    
-    switch( timer->mode )
-    {
-        case TIMER_SIGNAL_WAIT_MODE:
-            if( status == DEVICE_START_SIGNAL )
-            {
-                timer->mode = TIMER_SIGNAL_MODE;
-                func(timer->device_start_status);
-            }
-            break;
-        case TIMER_CUSTOM_WAIT_MODE:
-            if( status == DEVICE_START_SIGNAL )
-            {
-                timer->mode = TIMER_CUSTOM_MODE;
-                func(timer->device_start_status);
-            }
-            break;
-        case TIMER_SIGNAL_MODE:
-            if( status == DEVICE_STOP_SIGNAL )
-            {
-                timer->mode = TIMER_SLEEP_MODE;
-                func(timer->device_end_status);
-            }
-            break;
-        case TIMER_CUSTOM_MODE:
-            if( status == DEVICE_STOP_SIGNAL )
-            {
-                timer->mode = TIMER_CUSTOM_WAIT_MODE;
-                func(timer->device_end_status);
-            }
-            break;
-        default:
-            break;
-    }
+	if (timer->end)
+	{
+// 		if (timer->start == time)
+// 		{
+// 			return DEVICE_START_SIGNAL;
+// 		} 
+
+		uint16 past_time = time - timer->start;
+		timer->start = time;
+
+		if (timer->end > past_time)
+		{
+			timer->end -= past_time;
+			return DEVICE_KEEP_SIGNAL;
+		} 
+		else
+		{
+			timer->start = 0;
+			timer->end = 0;
+			return DEVICE_STOP_SIGNAL;
+		}
+	}
+
+	return DEVICE_KEEP_SIGNAL;
+}
+
+/**
+ *******************************************************************************
+ * @brief       设备运行状态判定函数
+ * @param       [in/out]  timer    当前定时器的状态
+ * @return      [in/out]  func     定时器执行功能
+ * @note        None
+ *******************************************************************************
+ */
+bool device_timer_handler(DEVICE_TIMER *timer, device_timer_func func)
+{
+	user_time time = app_get_time();
+	uint16 now_time = Time_Hour2Minute(time.hour) + time.minute;
+
+	switch (timer->mode)
+	{
+		case TIMER_SLEEP_MODE:
+			return true;
+			break;
+		case TIMER_PERIOD_MODE_WAIT:
+			if (period_timer_inquire(&timer->time,now_time) == DEVICE_START_SIGNAL)
+			{
+				func(timer->status.start);
+				timer->mode = TIMER_PERIOD_MODE;
+			}
+			break;
+		case TIMER_PERIOD_MODE:
+			if (period_timer_inquire(&timer->time, now_time) == DEVICE_STOP_SIGNAL)
+			{
+				func(timer->status.end);
+				timer->mode = TIMER_SLEEP_MODE;
+			}
+			break;
+		case TIMER_DOWNCNT_MODE_WAIT:
+			func(timer->status.start);
+			timer->mode = TIMER_DOWNCNT_MODE;
+		case TIMER_DOWNCNT_MODE:
+			if (downcnt_timer_inquire(&timer->time, now_time) == DEVICE_STOP_SIGNAL)
+			{
+				func(timer->status.end);
+				timer->mode = TIMER_SLEEP_MODE;
+			}
+			break;		
+		case TIMER_CUSTOM_MODE_WAIT:
+		{
+			uint8 week = *(uint8 *)(&timer->custom);
+			if (( week & TIMER_CUSTOM_BV(time.week)) \
+				&&(period_timer_inquire(&timer->time, now_time) == DEVICE_START_SIGNAL))
+			{
+				func(timer->status.start);
+				timer->mode = TIMER_CUSTOM_MODE;
+			}
+			break;
+		}
+		case TIMER_CUSTOM_MODE:
+		{
+			uint8 week = *(uint8 *)(&timer->custom);
+			if (week & TIMER_CUSTOM_BV(time.week))
+			{
+				if (period_timer_inquire(&timer->time, now_time) == DEVICE_STOP_SIGNAL)
+				{
+					func(timer->status.end);
+					timer->mode = TIMER_CUSTOM_MODE_WAIT;
+				} 
+			}
+			else
+			{
+				func(timer->status.end);
+				timer->mode = TIMER_CUSTOM_MODE_WAIT;
+			}
+			break;
+		}	
+		default:
+			break;
+	}
+
+	return false;
 }
 
 /** @}*/     /* 定时器应用模块 */
