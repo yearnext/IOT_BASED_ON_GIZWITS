@@ -38,6 +38,7 @@
 /* Private define ------------------------------------------------------------*/
 // 灯的亮度与PWM占空比之间转换
 #define Light_Brightness_Conversion(n) ( 0xFF - (n) )
+#define Get_Light_Brightness()         ( Get_TIM4_CH0_Duty() )
 
 /* Private typedef -----------------------------------------------------------*/
 // 电灯控制命令
@@ -141,12 +142,38 @@ void bsp_light_init( void )
 /**
  *******************************************************************************
  * @brief       电灯亮度设置函数
+ * @param       [in/out]  uint8    电灯的亮度
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void set_light_brightness( uint8 brightness )
+{
+    TIM4_CH0_UpdateDuty( Light_Brightness_Conversion(light.status.now) );
+}
+
+/**
+ *******************************************************************************
+ * @brief       读取电灯亮度函数
+ * @param       [in/out]  void
+ * @return      [in/out]  uint8    电灯的亮度
+ * @note        None
+ *******************************************************************************
+ */
+uint8 get_light_brightness( void )
+{
+    return Light_Brightness_Conversion( Get_Light_Brightness() );
+}
+
+/**
+ *******************************************************************************
+ * @brief       电灯亮度设置函数
  * @param       [in/out]  void
  * @return      [in/out]  void
  * @note        None
  *******************************************************************************
  */
-void light_brightness_set( uint8 brightness )
+void light_wificmd_handler( uint8 brightness )
 {
     if( brightness != light_brightness_get() )
     {
@@ -158,7 +185,7 @@ void light_brightness_set( uint8 brightness )
         light.status.last = light.status.now;
         light.status.now = brightness;
         
-        TIM4_CH0_UpdateDuty( Light_Brightness_Conversion(light.status.now) );
+        light_brightness_set( light.status.now );
         
         osal_nv_write(DEVICE_LIGHT_SAVE_ID,\
                       (uint16)(&((DEVICE_LIGHT_SAVE_DATA *)0)->status),\
@@ -225,20 +252,6 @@ void light_switch_headler( void )
     report_brightness_data();
 }
 
-
-/**
- *******************************************************************************
- * @brief       读取电灯亮度函数
- * @param       [in/out]  void
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-uint8 light_brightness_get( void )
-{
-    return Light_Brightness_Conversion( Get_TIM4_CH0_Duty() );
-}
-
 /**
  *******************************************************************************
  * @brief       电灯工作处理函数
@@ -253,7 +266,7 @@ void light_working_headler( void )
     
     for( i=0; i<SIMPLE_DEVICE_TIMER_NUM; i++ )
     {
-        device_timer_headler(&light.timer[i],&light_brightness_set);
+        device_timer_headler(&light.timer[i],light_brightness_set);
     }
 }
 

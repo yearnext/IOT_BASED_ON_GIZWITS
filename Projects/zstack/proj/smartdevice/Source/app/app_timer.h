@@ -43,43 +43,50 @@
 // 定时器工作模式
 typedef enum
 {
-    TIMER_SLEEP_MODE  = 0xB0,
-    TIMER_SIGNAL_WAIT_MODE = 0xB1,
-    TIMER_CUSTOM_WAIT_MODE = 0xB2,
-    TIMER_SIGNAL_MODE = 0xB3,
-    TIMER_CUSTOM_MODE = 0xB4,
+	TIMER_SLEEP_MODE = 0x00,
+	TIMER_DOWNCNT_MODE_WAIT = 0xB1,
+	TIMER_PERIOD_MODE_WAIT = 0xB2,
+	TIMER_CUSTOM_MODE_WAIT = 0xB3,
+	TIMER_DOWNCNT_MODE,
+	TIMER_PERIOD_MODE ,
+	TIMER_CUSTOM_MODE ,
 }TIMER_MODE;
 
 // 定时器自定义工作类型
+// 定时器自定义工作类型
 typedef struct
 {
-    uint8 status    : 1;
-    uint8 monday    : 1;
-    uint8 tuesday   : 1;
-    uint8 wednesday : 1;
-    uint8 thursday  : 1;
-    uint8 friday    : 1;
-    uint8 saturday  : 1;
-    uint8 sunday    : 1;
+	const uint8 res : 1;
+	uint8 monday     : 1;
+	uint8 tuesday    : 1;
+	uint8 wednesday  : 1;
+	uint8 thursday   : 1;
+	uint8 friday     : 1;
+	uint8 saturday   : 1;
+	uint8 sunday     : 1;
 }TIMER_CUSTOM_PARAM;
 
 // 定时器工作时间
 typedef struct
 {
-    uint8 start_hour;
-    uint8 start_minute;
-    uint8 stop_hour;
-    uint8 stop_minute;
+	uint16 start;
+	uint16 end;
 }TIMER_WOKRING_TIME;
+
+// 定时器工作时间
+typedef struct
+{
+	uint8 start;
+	uint8 end;
+}TIMER_WOKRING_STATUS;
 
 // 设备定时器类型
 typedef struct
 {
-    TIMER_MODE mode;
-    TIMER_CUSTOM_PARAM custom;
-    TIMER_WOKRING_TIME time;
-    uint8 device_start_status;
-    uint8 device_end_status;
+	TIMER_MODE mode;
+	TIMER_CUSTOM_PARAM custom;
+	TIMER_WOKRING_TIME time;
+	TIMER_WOKRING_STATUS status;
 }DEVICE_TIMER;
 
 // 设备状态信号
@@ -98,8 +105,7 @@ typedef void (*device_timer_func)(uint8);
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern DEVICE_STATUS_SIGNAL device_timer_check( DEVICE_TIMER timer );
-extern void device_timer_headler( DEVICE_TIMER *timer, device_timer_func func );
+extern bool device_timer_handler(DEVICE_TIMER*, device_timer_func);
 
 #endif      /* __APP_USER_TIMER_H__ */
 
