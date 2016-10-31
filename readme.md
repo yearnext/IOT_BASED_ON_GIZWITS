@@ -153,8 +153,8 @@
 例：倒计时8小时后关闭
 
     Timer_Mode = TIMER_DOWNCNT_MODE;
-    Start_Hour = 0;
-    Start_Minute = 0;
+    Start_Hour = now_time_hour;
+    Start_Minute = now_time_minute;
     Stop_Hour = 8;
     Stop_Minute = 0;
     device_start_status = now_status;
