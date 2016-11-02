@@ -4813,7 +4813,7 @@
         </option>
         <option>
           <name>CCDiagSuppress</name>
-          <state>Pe001,Pa010</state>
+          <state>Pe001,Pa010,Pa050</state>
         </option>
         <option>
           <name>CCDiagRemark</name>
@@ -5952,7 +5952,7 @@
         </option>
         <option>
           <name>CCDiagSuppress</name>
-          <state>Pe001,Pa010</state>
+          <state>Pe001,Pa010,Pa050</state>
         </option>
         <option>
           <name>CCDiagRemark</name>
@@ -7090,7 +7090,7 @@
         </option>
         <option>
           <name>CCDiagSuppress</name>
-          <state>Pe001,Pa010</state>
+          <state>Pe001,Pa010,Pa050</state>
         </option>
         <option>
           <name>CCDiagRemark</name>
@@ -7920,6 +7920,12 @@
     <group>
       <name>bsp</name>
       <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_htsensor.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_htsensor.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\Source\bsp\bsp_key.c</name>
       </file>
       <file>
@@ -7930,6 +7936,12 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\Source\bsp\bsp_light.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_socket.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_socket.h</name>
       </file>
     </group>
     <group>

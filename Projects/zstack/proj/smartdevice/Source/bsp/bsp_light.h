@@ -46,6 +46,6 @@ extern void light_working_headler( void );
 extern bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data );
 
 #endif
-#endif      /* __CC2530_TIMER_CONFIG_H__ */
+#endif      /* __SMART_DEVICE_LIGHT_H__ */
 
 /**********************************END OF FILE*********************************/

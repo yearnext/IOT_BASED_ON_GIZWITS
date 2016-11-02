@@ -51,9 +51,10 @@
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
 #include "bsp_light.h"
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+#include "bsp_socket.h"
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
-#include "hal_dht11.h"
+#include "bsp_htsensor.h"
 #else
 #endif
 
@@ -97,7 +98,7 @@ dataPoint_t currentDataPoint;
 #define TIMER_20MS_COUNT  (2)
 #define TIMER_50MS_COUNT  (5)
 #define TIMER_100MS_COUNT (10)
-#define TIMER_300MS_COUNT (30)
+#define TIMER_350MS_COUNT (30)
 
 /** Smart Device 通讯状态指示灯 */
 #define SMARTDEVICE_LED_DISCONNED_STATE (0x00)
@@ -147,6 +148,8 @@ void SmartDevice_Init( byte task_id )
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+	ht_sensor_init();
+#else
 #endif
     
     osal_start_timerEx( SmartDevice_TaskID, 
@@ -321,7 +324,7 @@ void device_timer_cb( void )
     static uint8 timer_20ms  = 0;
     static uint8 timer_50ms  = 0;
     static uint8 timer_100ms = 0;
-    static uint8 timer_300ms = 0;
+    static uint8 timer_350ms = 0;
     
     if( ++timer_20ms >= TIMER_20MS_COUNT )
     {
@@ -346,16 +349,19 @@ void device_timer_cb( void )
         timer_100ms = 0;
     }
     
-    if( ++timer_300ms >= TIMER_300MS_COUNT )
+    if( ++timer_350ms >= TIMER_350MS_COUNT )
     {
         app_time_update();
         
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
         light_working_headler();
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+        socket_working_headler();
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+		report_ht_sensor_data();
 #else
 #endif  
-        timer_300ms = 0;
+        timer_350ms = 0;
     }
 }
 
@@ -374,6 +380,8 @@ void key_switch_handler( key_message_t message )
 		case KEY_MESSAGE_PRESS_EDGE:
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
         light_switch_headler();
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+        socket_switch_headler();
 #endif
 			break;
 		default:

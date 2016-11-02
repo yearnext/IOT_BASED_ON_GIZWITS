@@ -1,15 +1,15 @@
 /**
  ******************************************************************************
-  * @file       hal_dht11.h
+  * @file       bsp_socket.h
   * @author     yearnext
   * @version    1.0.0
   * @date       2016年9月17日
-  * @brief      DHT11 驱动头文件
+  * @brief      插座配置 头文件
   * @par        工作平台                                  
   *                  CC2530
   * @par        工作频率                                  
   *                  32MHz
-  * @par        编译平台									                         
+  * @par        编译平台									                          
   * 				 IAR
  ******************************************************************************
   * @note
@@ -18,28 +18,32 @@
  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __HAL_DHT11_H__
-#define __HAL_DHT11_H__
+#ifndef __SMART_DEVICE_SOCKET_H__
+#define __SMART_DEVICE_SOCKET_H__
 
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
+#include "myprotocol.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-/* Private typedef -----------------------------------------------------------*/
-typedef struct
-{
-    uint8 temp;
-    uint8 hum;
-}DHT11_DATA_t;
+// 灯的开启关闭亮度
+#define SOCKET_ON_CMD  ( 255 )
+#define SOCKET_OFF_CMD ( 0 )
 
+/* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern void hal_dht11_init( void );
-extern DHT11_DATA_t dht11_rd_data( void );
+extern void bsp_socket_init( void );
+extern void set_socket_value( uint8 );
+extern uint8 get_socket_value( void );
+extern void socket_control_handler( uint8 );
+extern void socket_switch_headler( void );
+extern void socket_working_headler( void );
+extern bool socket_cmd_resolve( MYPROTOCOL_USER_DATA *data );
 
-#endif      /* __HAL_DHT11_H__ */
+#endif      /* __SMART_DEVICE_socket_H__ */
 
 /**********************************END OF FILE*********************************/
