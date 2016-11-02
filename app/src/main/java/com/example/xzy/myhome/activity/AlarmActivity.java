@@ -11,7 +11,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TimePicker;
 
@@ -31,13 +30,8 @@ public class AlarmActivity extends AppCompatActivity {
     Button startTimeButton;
     @BindView(R.id.close_time_button)
     Button closeTimeButton;
-    byte[] timeData = {100, 100, 100, 100, 0, 0, 0, 0};
-    ParsePacket parsePacket;
-    GizWifiDevice mDevice;
     @BindView(R.id.button_ok)
     Button buttonOk;
-    @BindView(R.id.fr_custom)
-    FrameLayout frCustom;
     @BindView(R.id.rg_custom)
     LinearLayout rgCustom;
     @BindView(R.id.checkbox_mon)
@@ -55,11 +49,16 @@ public class AlarmActivity extends AppCompatActivity {
     @BindView(R.id.checkbox_sun)
     CheckBox checkboxSun;
 
+    byte[] timeData = {3, 0, 0, 0, 0, 0, 0, 0};
+    ParsePacket parsePacket;
+    GizWifiDevice mDevice;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alarm);
         ButterKnife.bind(this);
+
         Intent intent = getIntent();
         parsePacket = (ParsePacket) intent.getSerializableExtra("parsePacket");
         mDevice = intent.getParcelableExtra("mDevice");
@@ -89,7 +88,7 @@ public class AlarmActivity extends AppCompatActivity {
     }
 
 
-    @OnClick({R.id.start_time_button, R.id.close_time_button, R.id.button_ok, R.id.radio_button_every_day, R.id.radio_button_one, R.id.radio_button_custom})
+    @OnClick({R.id.start_time_button, R.id.close_time_button, R.id.button_ok})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.start_time_button:
@@ -97,8 +96,8 @@ public class AlarmActivity extends AppCompatActivity {
                         new TimePickerDialog.OnTimeSetListener() {
                             @Override
                             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                                timeData[0] = (byte) hourOfDay;
-                                timeData[1] = (byte) minute;
+                                timeData[2] = (byte) hourOfDay;
+                                timeData[3] = (byte) minute;
                                 startTimeButton.setText(hourOfDay+":"+minute);
                             }
                         }, 0, 0, true);
@@ -109,8 +108,8 @@ public class AlarmActivity extends AppCompatActivity {
                 TimePickerDialog close = new TimePickerDialog(AlarmActivity.this, R.style.AlertDialog_AppCompat_mTime, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        timeData[2] = (byte) hourOfDay;
-                        timeData[3] = (byte) minute;
+                        timeData[4] = (byte) hourOfDay;
+                        timeData[5] = (byte) minute;
                         closeTimeButton.setText(hourOfDay+":"+minute);
 
                     }
@@ -118,41 +117,20 @@ public class AlarmActivity extends AppCompatActivity {
                 close.show();
                 break;
             case R.id.button_ok:
-                if (checkboxMon.isSelected()) {
-                    timeData[7] = 1;
-                } else if (checkboxTue.isSelected()) {
-                    timeData[7] += 2;
-                } else if (checkboxWed.isSelected()) {
-                    timeData[7] += 4;
-                } else if (checkboxThu.isSelected()) {
-                    timeData[7] += 8;
-                } else if (checkboxFri.isSelected()) {
-                    timeData[7] += 16;
-                } else if (checkboxSat.isSelected()) {
-                    timeData[7] += 32;
-                } else if (checkboxSun.isSelected()){
-                    timeData[7] += 64;
-                }
-                parsePacket.setData(timeData);
+                if (checkboxMon.isChecked()) timeData[1] = 1;
+                if (checkboxTue.isChecked()) timeData[1] += 2;
+                if (checkboxWed.isChecked()) timeData[1] += 4;
+                if (checkboxThu.isChecked()) timeData[1] += 8;
+                if (checkboxFri.isChecked()) timeData[1] += 16;
+                if (checkboxSat.isChecked()) timeData[1] += 32;
+                if (checkboxSun.isChecked()) timeData[1] += 64;
+                parsePacket.setDataTiming(timeData);
                 parsePacket.sendPacket(mDevice);
+                finish();
                 break;
-            case R.id.radio_button_every_day:
-                rgCustom.setVisibility(View.GONE);
-                frCustom.setVisibility(View.GONE);
-                timeData[6] = 1;
-                break;
-            case R.id.radio_button_one:
-                rgCustom.setVisibility(View.GONE);
-                frCustom.setVisibility(View.GONE);
-                timeData[6] = 0;
-                break;
-            case R.id.radio_button_custom:
-                timeData[6] = 2;
-                rgCustom.setVisibility(View.VISIBLE);
-                frCustom.setVisibility(View.VISIBLE);
-                break;
+                }
+
         }
     }
 
 
-}

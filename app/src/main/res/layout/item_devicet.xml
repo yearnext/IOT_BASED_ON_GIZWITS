@@ -12,17 +12,17 @@
     <RelativeLayout
 
         android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:orientation="vertical">
+        android:layout_height="70dp">
 
         <ImageView
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:src="@drawable/lamp"
+            android:layout_marginTop="5dp"
             android:id="@+id/image_device_item"/>
 
         <TextView
-            android:layout_toRightOf="@+id/image_device_item"
+            android:layout_toRightOf="@id/image_device_item"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:gravity="center"
@@ -36,17 +36,17 @@
             android:layout_marginLeft="24dp"
             android:gravity="bottom"
             android:layout_toRightOf="@id/tv_device_item_name"
-            android:text="倒计时关"
+            android:text="倒计时"
             android:layout_alignParentBottom="true"
-            android:id="@+id/tv_device_item_countdown_off"/>
+            android:id="@+id/tv_device_item_countdown"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="25dp"
             android:layout_alignParentBottom="true"
-            android:layout_toRightOf="@id/tv_device_item_countdown_off"
-            android:id="@+id/tv_device_item_countdown_on"
-            android:text="倒计时开"/>
+            android:layout_toRightOf="@id/tv_device_item_countdown"
+            android:id="@+id/tv_device_item_timing"
+            android:text="定时"/>
 
         <Switch
             android:layout_width="60dp"

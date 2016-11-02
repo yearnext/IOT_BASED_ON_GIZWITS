@@ -22,6 +22,13 @@ public class ParsePacket implements Serializable {
     static ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
 
     private byte[] packet = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    private byte type;
+    private byte eventNumber;
+    private byte deviceType;
+    private byte[] mac = {0, 0, 0, 0, 0, 0, 0, 0};
+    private  byte dataLength;
+    private  byte command;
+    private  byte[] data = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     public interface TYPE {
         byte APP_REQUEST = 1;
@@ -46,10 +53,10 @@ public class ParsePacket implements Serializable {
         byte RESPONSE = 0;
         byte STATE_READ = 1;
         byte STATE_WRITE = 2;
-        byte TIMING_READ = 3;
-        byte TIMING_WRITE = 4;
-        byte COUNTDOWN_READ = 5;
-        byte COUNTDOWN_WRITE = 6;
+        byte TIMING_READ = 5;
+        byte TIMING_WRITE = 6;
+        byte COUNTDOWN_READ = 3;
+        byte COUNTDOWN_WRITE = 4;
         byte CURTAIN_STATE_READ = 7;
         byte CURTAIN_STATE_WRITE = 8;
         byte DEVICE_RESPONSE_APP_COUNT = 0;
@@ -67,13 +74,7 @@ public class ParsePacket implements Serializable {
 
     }
 
-    byte type;
-    byte eventNumber;
-    byte deviceType;
-    byte[] mac = {0, 0, 0, 0, 0, 0, 0, 0};
-    byte dataLength;
-    byte command;
-    byte[] data = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 
 
     public ParsePacket(byte[] packet) {
@@ -105,6 +106,7 @@ public class ParsePacket implements Serializable {
         packet[2] = deviceType;
 
         for (int i = 0; i < 8; i++) {
+            Log.e("", "sendPacket: "+i );
             packet[3 + i] = mac[i];
         }
         Log.e("Main2Activity", "sendPacket: " + bytesToHex(mac));
@@ -175,13 +177,12 @@ public class ParsePacket implements Serializable {
         data[3] = (byte) startMinute;
         data[4] = (byte) endHour;
         data[5] = (byte) endMinute;
-        data[6] = (byte) 0;
-        data[7] = (byte) 255;
+        data[7] = (byte) 0;
         //// TODO: 2016/10/30 7  灯状态记录 
         return this;
     }
     public ParsePacket setDataTimeState(byte state) {
-        data[7] = state;
+        data[6] = state;
         return this;
     }
 
@@ -224,6 +225,7 @@ public class ParsePacket implements Serializable {
     }
 
     public ParsePacket setMac(byte[] mac) {
+        if (mac!=null)
         this.mac = mac;
         return this;
 
@@ -267,5 +269,23 @@ public class ParsePacket implements Serializable {
         this.deviceType = deviceType;
         return this;
     }
+    public ParsePacket setDataTiming(byte[] data) {
+        for (int i = 0; i < 8; i++) {
+            if (i==6) i++;
+            this.data[i] = data[i];
+        }
+        return this;
+
+    }
+    public byte getDataTemperature() {
+        return data[0];
+
+    }
+    public byte getDataHumidity() {
+        return data[1];
+
+    }
+
+
 
 }

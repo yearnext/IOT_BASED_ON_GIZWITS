@@ -39,4 +39,5 @@ dependencies {
     compile files('libs/hiflying-iots-android-smartlink7.0.2.jar')
     compile 'com.android.support:recyclerview-v7:24.1.1'
     compile 'com.android.support:cardview-v7:24.1.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha4'
 }

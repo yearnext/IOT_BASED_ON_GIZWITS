@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_marginTop="5dp"
+    android:layout_marginLeft="3dp"
+    android:layout_marginRight="3dp"
+    android:layout_width="match_parent"
+    android:layout_height="70dp"
+    android:id="@+id/device_item">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="65dp">
+
+        <ImageView
+            android:layout_marginTop="5dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/temperature"
+            android:id="@+id/image_item_temperature" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_toRightOf="@id/image_item_temperature"
+            android:text="温度"
+            android:paddingBottom="5dp"
+            android:id="@+id/textView1"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="38sp"
+            android:text="℃"
+            android:id="@+id/textView2"
+            android:layout_alignParentBottom="true"
+            android:layout_toEndOf="@+id/tv_temperature"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_toRightOf="@id/textView2"
+            android:paddingLeft="12dp"
+            android:paddingBottom="5dp"
+            android:text="湿度"
+            android:id="@+id/textView3"
+
+            android:layout_marginStart="8dp" />
+
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_toRightOf="@id/tv_humidity"
+            android:textSize="38sp"
+            android:text="%"
+            android:id="@+id/textView6"
+            tools:ignore="HardcodedText" />
+
+        <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="10dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_refresh_gray_24dp"
+            android:id="@+id/button_temperature_refresh"/>
+
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+
+            android:textSize="38sp"
+            android:text="0"
+            android:id="@+id/tv_humidity"
+            android:contentDescription="44"
+            android:layout_alignParentBottom="true"
+            android:layout_toEndOf="@+id/textView3" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:textSize="38sp"
+            android:text="0"
+            android:id="@+id/tv_temperature"
+            android:layout_alignParentBottom="true"
+            android:layout_toEndOf="@+id/textView1" />
+
+
+    </RelativeLayout>
+
+
+</android.support.v7.widget.CardView>
+
+
+
+
+

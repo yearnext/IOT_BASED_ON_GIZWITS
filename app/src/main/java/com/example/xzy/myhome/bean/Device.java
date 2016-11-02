@@ -13,6 +13,25 @@ public class Device {
     String countdownState;
     byte[] mac;
     byte switchState;
+    byte temperture;
+
+    public byte getTemperture() {
+        return temperture;
+    }
+
+    public void setTemperture(byte temperture) {
+        this.temperture = temperture;
+    }
+
+    public byte getHumidity() {
+        return humidity;
+    }
+
+    public void setHumidity(byte humidity) {
+        this.humidity = humidity;
+    }
+
+    byte humidity;
 
     public byte getSwitchState() {
         return switchState;

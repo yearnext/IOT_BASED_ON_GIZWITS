@@ -26,6 +26,8 @@ import com.gizwits.gizwifisdk.api.GizWifiDevice;
 import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,7 +38,7 @@ import butterknife.OnClick;
 import static com.example.xzy.myhome.util.ParsePacket.COMMAND.UPDATE_DEVICE_COUNT;
 import static com.mxchip.helper.ProbeReqData.bytesToHex;
 
-public class Main2Activity extends BaseActivity {
+public class Main2Activity extends BaseActivity implements DeviceItemRecycerViewAdapter.DeviceSetListener {
 
     private static final int ON = 0;
     private static final int OFF = 1;
@@ -55,12 +57,12 @@ public class Main2Activity extends BaseActivity {
     byte eventNumber = 0;
     String logcat;
     int i = 0;
-    //private byte[] emptyacket = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    private String  emptyacket= "0000000000000000000000000000000000000000000000000000000000000000";
+    private byte[] emptyacket = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     List<Device> deviceList;
     DeviceItemRecycerViewAdapter deviceRVAdapter;
     static ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
     byte count = 0;
+    byte lampuminance = (byte) 150;
 
 
     @Override
@@ -73,6 +75,7 @@ public class Main2Activity extends BaseActivity {
         mDevice.setListener(mDeviceListener);
         mDevice.getDeviceStatus();
         deviceList = new ArrayList<Device>();
+        //initData();
         initView();
     }
 
@@ -104,48 +107,7 @@ public class Main2Activity extends BaseActivity {
 
         //RecyclerView
         deviceRVAdapter = new DeviceItemRecycerViewAdapter(deviceList);
-        deviceRVAdapter.setDeviceSetListener(new DeviceItemRecycerViewAdapter.DeviceSetListener() {
-            @Override
-            public void onCountdownClickOn(int position) {
-                final ParsePacket parsePacket = new ParsePacket();
-                parsePacket.setDataTimeState((byte) 255);
-                //// TODO: 2016/10/30 lamp state
-                showCountdownDialog(position,parsePacket,ON);
-            }
-
-            @Override
-            public void onCountdownClickOff(int position) {
-                final ParsePacket parsePacket = new ParsePacket();
-                parsePacket.setDataTimeState((byte) 0);
-                showCountdownDialog(position,parsePacket,OFF);
-
-            }
-
-            @Override
-            public void onNameClick(int position, View view) {
-                //// TODO: 2016/10/26 名字修改 
-
-            }
-
-            @Override
-            public void onSwtichClick(int position, View view, boolean switchState) {
-                byte switchStateB;
-                if (switchState) {
-                    switchStateB = (byte) 255;
-                } else {
-                    switchStateB = 0;
-                }
-                Log.i(TAG, "点击开关，开关状态准备变成：" + switchState);
-                ParsePacket parsePacket = new ParsePacket();
-                parsePacket.setMac(deviceList.get(position).getMac())
-                        .setDeviceType(deviceList.get(position).getDeviceType())
-                        .setType(ParsePacket.TYPE.APP_REQUEST)
-                        .setCommand(ParsePacket.COMMAND.STATE_WRITE)
-                        .setDataState(switchStateB)
-                        .setDataLength((byte) 1)
-                        .sendPacket(mDevice);
-            }
-        });
+        deviceRVAdapter.setDeviceSetListener(this);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         rvDeviceItem.setLayoutManager(linearLayoutManager);
         rvDeviceItem.setAdapter(deviceRVAdapter);
@@ -162,7 +124,8 @@ public class Main2Activity extends BaseActivity {
                 byte[] bytes = (byte[]) map.get(Config.DATA_NAME);
                 if (bytes == null ) {
                     Log.i(TAG, "mDidReceiveData: " + "bytes为空");
-                } else if (bytesToHex(bytes).equals(emptyacket)) {
+                } else if (Arrays.equals(bytes,emptyacket)) {
+                    //bytesToHex(bytes).equals(emptyacket)
                     Log.d(TAG, "mDidReceiveData: " + "全为0数据一条");
                 } else {
                     updateLogcat(bytes);
@@ -219,44 +182,52 @@ public class Main2Activity extends BaseActivity {
     private void assessDataType(byte[] b) {
         //// TODO: 2016/10/25 接收数据解析 
         ParsePacket parsePacket = new ParsePacket(b);
-        if (parsePacket.getType() == ParsePacket.TYPE.DEVICE_REQUEST||
-                parsePacket.getType() == ParsePacket.TYPE.DEVICE_RESPONSE) {
-            processReceiveData(parsePacket);
-
-       /* } else if (parsePacket.getType() == ParsePacket.TYPE.DEVICE_RESPONSE) {
-            Log.i(TAG, "收到设备回应");*/
+        if (parsePacket.getType() == ParsePacket.TYPE.DEVICE_RESPONSE &&
+                parsePacket.getDeviceType() == ParsePacket.DEVICE_TYPE.GATEWAY) {
+            Log.d(TAG, "assessDataType: 收到网关数据，准备更新设备列表");
+            updateDeviceList(parsePacket);
+        } else if (parsePacket.getType() == ParsePacket.TYPE.DEVICE_REQUEST) {
+            Log.d(TAG, "assessDataType: 收到设备请求，准备更新设备数据");
+            updateDeviceData(parsePacket);
         } else {
             Log.e(TAG, "assessDataType:通讯代号错误：" + parsePacket.getType());
         }
     }
 
-    private void processReceiveData(ParsePacket parsePacket) {
-        if (parsePacket.getDeviceType() == ParsePacket.DEVICE_TYPE.GATEWAY) {
-            Log.i(TAG, "processingData: 网关");
-            updateDeviceList(parsePacket);
-        } else {
-            switch (parsePacket.getCommand()) {
-                case ParsePacket.COMMAND.STATE_WRITE:
-                    int index = getListIndex(parsePacket.getMac());
-                    deviceList.get(index).setSwitchState(parsePacket.getDataState());
-                    Log.i(TAG, "接收到灯数据"+deviceList.get(index)+"    "+parsePacket.getDataState());
-                    deviceRVAdapter.notifyDataSetChanged();
-                    break;
-                case ParsePacket.COMMAND.TIMING_WRITE:
+    private void updateDeviceData(ParsePacket parsePacket) {
+        int index = getListIndex(parsePacket.getMac());
+        if (index == -1) {
+            Log.e(TAG, "processReceiveData: " + "收到未知设备的神秘请求");
+            return;
+        }
+        if (parsePacket.getCommand() == ParsePacket.COMMAND.STATE_READ) {
 
-                    break;
-                case ParsePacket.COMMAND.COUNTDOWN_WRITE:
+            if (parsePacket.getDeviceType() == ParsePacket.DEVICE_TYPE.SENSOR_TEMPERATURE) {
+                deviceList.get(index).setTemperture(parsePacket.getDataTemperature());
+                deviceList.get(index).setHumidity(parsePacket.getDataHumidity());
+                Log.i(TAG, "温度传感器数据" + deviceList.get(index) + "    " + parsePacket.getDataState());
+                deviceRVAdapter.notifyDataSetChanged();
+            } else {
+                deviceList.get(index).setSwitchState(parsePacket.getDataState());
+                Log.i(TAG, "接收到设备数据（温度传感器以外）" + deviceList.get(index) + "    " + parsePacket.getDataState());
+                deviceRVAdapter.notifyDataSetChanged();
 
-                    break;
             }
+
+
         }
 
     }
 
     private int getListIndex(byte[] mac) {
         for (int a = 0;a<deviceList.size(); a++) {
+            Log.i(TAG, "判断位  "+"deviceList.size():"+deviceList.size()+"\n"+
+                    "deviceList.get(a).getMac()"+bytesToHex(deviceList.get(a).getMac())+"\n"+
+                    "mac"+bytesToHex(mac)+"\n"+
+                    "Arrays.equals(deviceList.get(a).getMac(),mac)"+Arrays.equals(deviceList.get(a).getMac(),mac)
+            );
 
-            if (deviceList.get(a).getMac().equals(mac))
+            if (Arrays.equals(deviceList.get(a).getMac(),mac))
                 return a;
 
         }
@@ -268,11 +239,6 @@ public class Main2Activity extends BaseActivity {
         //请求设备数量
         if (parsePacket.getCommand() == ParsePacket.COMMAND.UPDATE_DEVICE_COUNT||
                 parsePacket.getCommand() == ParsePacket.COMMAND.DEVICE_RESPONSE_APP_COUNT) {
-            /*//回应设备（暂时没有意义）
-            ParsePacket mParsePacket = new ParsePacket();
-            mParsePacket.setType(ParsePacket.TYPE.APP_RESPONSE);
-            mParsePacket.sendPacket(mDevice);*/
-
             count = 0;
             byte[] data = parsePacket.getData();
             count = data[0];
@@ -284,7 +250,7 @@ public class Main2Activity extends BaseActivity {
             //获取设备信息
         } else if (parsePacket.getCommand() == ParsePacket.COMMAND.UPDATE_DEVICE_MESSAGE) {
             Device device= new Device();
-            int index=getListIndex(parsePacket.getMac());
+            int index=getListIndex(parsePacket.getDataMac());
             Log.w(TAG, "index:"+index );
             if (index != -1) {
                 device = deviceList.get(index);
@@ -296,44 +262,16 @@ public class Main2Activity extends BaseActivity {
                 deviceList.add(device);
             }
 
-
             Log.i(TAG, "获取到的设备MAC：" + bytesToHex(parsePacket.getDataMac()) +
                     "类型" + parsePacket.getDataDeviceType());
-
                 deviceRVAdapter.notifyDataSetChanged();
-
-            /*if (MAC != null) {
-                Log.i(TAG,"保存的MAC"+MAC+"\n"+
-                        "当前的mac"+bytesToHex(parsePacket.getDataMac()));
-            }
-            if (MAC == null || !MAC .equals( bytesToHex(parsePacket.getDataMac()))) {
-                MAC = bytesToHex(parsePacket.getDataMac());
-                device.setMac(parsePacket.getDataMac());
-                device.setDeviceType(parsePacket.getDataDeviceType());
-                Log.i(TAG, "获取到的设备MAC：" + bytesToHex(parsePacket.getDataMac()) +
-                        "类型" + parsePacket.getDataDeviceType());
-                deviceList.add(device);
-                if (count == parsePacket.getDataDeviceCount()) {
-                    deviceRVAdapter.notifyDataSetChanged();
-                }
-            } else {
-                Log.e(TAG, "updateDeviceList: "+MAC);
-            }*/
-
-
-
 
         }
     }
 
 
-    private void showCountdownDialog(int position, final ParsePacket parsePacket,int state) {
 
-        Log.e(TAG, "position "+position);
-        Device device = deviceList.get(position);
-        parsePacket.setDeviceType(device.getDeviceType());
-        parsePacket.setMac(device.getMac());
-
+    private void showCountdownDialog( final ParsePacket parsePacket) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(Main2Activity.this);
         DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
             @Override
@@ -379,26 +317,25 @@ public class Main2Activity extends BaseActivity {
                                 .setNegativeButton("取消", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                        ToastUtil.showToast(Main2Activity.this, "No");
+
                                     }
-                                }).setMessage("倒计时时间")
+                                }).setMessage("几小时几分后关闭？")
                                 .show();
 
                         Window window = alertDialog.getWindow();
                         TimePicker timePicker = (TimePicker) window.findViewById(R.id.timePicker);
                         timePicker.setIs24HourView(true);
+                        timePicker.setCurrentHour(0);
+                        timePicker.setCurrentMinute(0);
                         break;
                 }
 
             }
         };
-        if (state == ON) {
-            builder.setItems(R.array.countdown_data_on, clickListener).show();
 
-        } else {
             builder.setItems(R.array.countdown_data_off, clickListener).show();
 
-        }
+
     }
 
     @OnClick({R.id.button_error, R.id.button_error1})
@@ -415,4 +352,86 @@ public class Main2Activity extends BaseActivity {
                 break;
         }
     }
+
+
+
+    @Override
+    public void onCountdownClick(int position) {
+        ParsePacket parsePacket = new ParsePacket();
+
+        Device device = deviceList.get(position);
+        parsePacket.setType(ParsePacket.TYPE.APP_REQUEST)
+                .setDeviceType(device.getDeviceType())
+                .setMac(device.getMac())
+                .setDataLength((byte) 8)
+                .setCommand(ParsePacket.COMMAND.COUNTDOWN_WRITE);
+        if (device.getDeviceType() == ParsePacket.DEVICE_TYPE.LAMP) {
+            parsePacket.setDataTimeState(lampuminance);
+        } else {
+            parsePacket.setDataTimeState((byte) 1);
+        }
+        showCountdownDialog(parsePacket);
+    }
+
+    @Override
+    public void onTimingClick(int position) {
+        ParsePacket parsePacket = new ParsePacket();
+        Device device = deviceList.get(position);
+        parsePacket.setType(ParsePacket.TYPE.APP_REQUEST)
+                .setDeviceType(device.getDeviceType())
+                .setMac(device.getMac())
+                .setDataLength((byte) 8)
+                .setCommand(ParsePacket.COMMAND.TIMING_WRITE);
+        if (device.getDeviceType() == ParsePacket.DEVICE_TYPE.LAMP) {
+            parsePacket.setDataTimeState(lampuminance);
+        } else {
+            parsePacket.setDataTimeState((byte) 1);
+        }
+        Intent intent = new Intent(this, AlarmActivity.class);
+        intent.putExtra("parsePacket", parsePacket);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onNameClick(int position, View view) {
+        //// TODO: 2016/10/26 名字修改
+
+    }
+
+    @Override
+    public void onSwtichClick(int position, View view, byte switchState) {
+        ParsePacket parsePacket = new ParsePacket();
+        parsePacket.setMac(deviceList.get(position).getMac())
+                .setDeviceType(deviceList.get(position).getDeviceType())
+                .setType(ParsePacket.TYPE.APP_REQUEST)
+                .setCommand(ParsePacket.COMMAND.STATE_WRITE)
+                .setDataState(switchState)
+                .setDataLength((byte) 1)
+                .sendPacket(mDevice);
+        lampuminance = switchState;
+    }
+
+    private void initData() {
+        Device device1 = new Device();
+        device1.setDeviceType(ParsePacket.DEVICE_TYPE.SENSOR_TEMPERATURE);
+        device1.setMac(new byte[]{0,0,0,0,0,0,0,1});
+        Device device2 = new Device();
+        device2.setDeviceType(ParsePacket.DEVICE_TYPE.LAMP);
+        device2.setMac(new byte[]{0,0,0,0,0,0,0,2});
+
+        Device device3 = new Device();
+        device3.setDeviceType(ParsePacket.DEVICE_TYPE.CURTAIN);
+        device3.setMac(new byte[]{0,0,0,0,0,0,0,3});
+
+        Device device4 = new Device();
+        device4.setDeviceType(ParsePacket.DEVICE_TYPE.SOCKET);
+        device4.setMac(new byte[]{0,0,0,0,0,0,0,4});
+
+        Device device5 = new Device();
+        device5.setDeviceType(ParsePacket.DEVICE_TYPE.SOCKET);
+        device5.setMac(new byte[]{0,0,0,0,0,0,0,5});
+
+
+        Collections.addAll(deviceList, device1,device2,device3,device4, device5);
+    };
 }
