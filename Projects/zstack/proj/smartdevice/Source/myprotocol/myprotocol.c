@@ -35,6 +35,10 @@
 #include "gizwits_protocol.h"
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
 #include "bsp_light.h"
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+#include "bsp_socket.h"
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+#include "bsp_htsensor.h"
 #endif
 
 /* Exported macro ------------------------------------------------------------*/
@@ -432,6 +436,12 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
         light_cmd_resolve(&packet->user_data);
         MYPROTOCOL_LOG("Device Light Get a Control CMD!\n");
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)  
+        socket_cmd_resolve(&packet->user_data);
+        MYPROTOCOL_LOG("Device Socket Get a Control CMD!\n");  
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+		ht_sensor_cmd_resolve(&packet->user_data);
+		MYPROTOCOL_LOG("Device DHT11 Get a Control CMD!\n");
 #endif
                 break;
             case MYPROTOCOL_D2W_WAIT:
