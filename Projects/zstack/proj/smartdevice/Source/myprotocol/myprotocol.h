@@ -27,11 +27,11 @@
 
 /* Exported macro ------------------------------------------------------------*/
 /** 通讯格式 用户数据大小 */
-#define MYPROTOCOL_USER_DATA_SIZE (18)
+#define MYPROTOCOL_USER_DATA_SIZE  (18)
 /** 通讯格式 MAC地址大小 */
-#define MYPROTOCOL_MAC_ADDR_SIZE  (8)
+#define MYPROTOCOL_MAC_ADDR_SIZE   (8)
 // 设备心跳命令
-#define MYPROTOCOL_TICK_CMD (0x00)
+#define MYPROTOCOL_TICK_CMD        (0x00)
 // 获取设备信息命令
 #define W2D_DEVICE_LIST_UPDATE_CMD (0x00)
 #define W2D_GET_DEVICE_NUM_CMD     (0x01)
@@ -108,7 +108,7 @@ typedef bool (*packet_func)(void *ctx, MYPROTOCOL_FORMAT *packet);
 
 /* Exported variables --------------------------------------------------------*/
 // 设备类型
-#define SMART_DEVICE_TYPE MYPROTOCOL_DEVICE_HT_SENSOR
+#define SMART_DEVICE_TYPE MYPROTOCOL_DEVICE_COORD
 
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/

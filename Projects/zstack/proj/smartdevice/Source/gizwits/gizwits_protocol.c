@@ -940,12 +940,14 @@ static int8 gizProtocolModuleStatus(protocolWifiStatus_t *status)
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_CON_APP;
         gizwitsProtocol.wifiStatusEvent.num++;
+        gizwitsProtocol.app_connt_status = true;
         GIZWITS_LOG("app connect \n");
     }
     else
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_DISCON_APP;
         gizwitsProtocol.wifiStatusEvent.num++;
+        gizwitsProtocol.app_connt_status = false;
         GIZWITS_LOG("no app connect \n");
     }
 
@@ -1184,7 +1186,7 @@ void gizwitsInit(void)
     pRb.rbBuff = rbBuf;
     rbCreate(&pRb);
         
-    //gizwitsSetMode(0);
+//  gizwitsSetMode(0);
         
     memset((uint8 *)&gizwitsProtocol, 0, sizeof(gizwitsProtocol_t));
 }
@@ -1281,6 +1283,19 @@ int32 gizwitsReport( uint8 *packet )
     memcpy((uint8 *)&gizwitsProtocol.gizLastDataPoint, packet, sizeof(dataPoint_t));
         
     return ret;
+}
+
+/**
+* @brief 获取APP连接状态
+
+* 用户可以调用检测WIFI模块与APP之间的连接状态
+
+* @param[in] void
+* @return bool
+*/
+bool gizwitsGetAppConntStatus( void )
+{
+    return gizwitsProtocol.app_connt_status;
 }
 
 ///**

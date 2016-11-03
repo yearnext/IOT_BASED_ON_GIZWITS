@@ -314,6 +314,7 @@ typedef struct
     dataPoint_t gizLastDataPoint;                   ///< 上次上报的设备状态数据
     gizwitsReport_t reportData;                     ///< 协议上报实际数据
     moduleStatusInfo_t wifiStatusData;              ///< WIFI 状态信息(信号强度)
+    bool app_connt_status;
 }gizwitsProtocol_t;
 
 /**@name Gizwits 用户API接口
@@ -330,6 +331,7 @@ int32 gizPutData(uint8 *buf, uint32 len);
 uint32 gizGetTimerCount(void);
 
 //int32 gizwitsForward( uint8 *packet );
+bool gizwitsGetAppConntStatus( void );
 int32 gizwitsReport( uint8 *packet );
 
 #endif
