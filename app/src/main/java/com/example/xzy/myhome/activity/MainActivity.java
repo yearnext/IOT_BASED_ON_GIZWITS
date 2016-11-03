@@ -148,6 +148,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RESULT_OK) {
         ToastUtil.showToast(MainActivity.this,"云端设备未响应，请稍后再试");
         Snackbar.make(tbDeviceList, "云端设备未响应", Snackbar.LENGTH_LONG)
                 .setAction("查看帮助", new View.OnClickListener() {
@@ -174,6 +175,9 @@ public class MainActivity extends BaseActivity {
 
                     }
                 }).show();
+
+
+        }
 
     }
 }

@@ -174,8 +174,8 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
                     deviceSetListener.onSwtichClick(position,null,(byte) 0);
                 }
             });
-            temperatureHolder.tvHumidity.setText(device.getHumidity());
-            temperatureHolder.tvTemperature.setText(device.getTemperture());
+            temperatureHolder.tvHumidity.setText(device.getHumidity()+"");
+            temperatureHolder.tvTemperature.setText(device.getTemperture()+"");
 
         }
     }

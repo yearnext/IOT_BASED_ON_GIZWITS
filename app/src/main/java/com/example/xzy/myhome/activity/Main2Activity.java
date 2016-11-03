@@ -86,6 +86,7 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
         deviceList = new ArrayList<Device>();
         //initData();
         initView();
+        setResult(RESULT_OK);
 
     }
 
@@ -110,7 +111,6 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
     }
 
     private void initView() {
-
         //toolbarList
         tbDeviceList.setTitle(R.string.toolbar1);
         tbDeviceList.setTitleTextColor(Color.WHITE);
@@ -212,8 +212,10 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
     private void assessDataType(byte[] b) {
         //// TODO: 2016/10/25 接收数据解析 
         ParsePacket parsePacket = new ParsePacket(b);
-        if (parsePacket.getType() == ParsePacket.TYPE.DEVICE_RESPONSE &&
-                parsePacket.getDeviceType() == ParsePacket.DEVICE_TYPE.GATEWAY) {
+        if ((parsePacket.getType() == ParsePacket.TYPE.DEVICE_RESPONSE &&
+                parsePacket.getDeviceType() == ParsePacket.DEVICE_TYPE.GATEWAY)||
+                (parsePacket.getType() == ParsePacket.TYPE.DEVICE_REQUEST &&
+                        parsePacket.getDeviceType() == ParsePacket.DEVICE_TYPE.GATEWAY)) {
             Log.d(TAG, "assessDataType: 收到网关数据，准备更新设备列表");
             updateDeviceList(parsePacket);
         } else if (parsePacket.getType() == ParsePacket.TYPE.DEVICE_REQUEST) {
@@ -241,7 +243,6 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
                 deviceList.get(index).setSwitchState(parsePacket.getDataState());
                 Log.i(TAG, "接收到设备数据（温度传感器以外）" + deviceList.get(index) + "    " + parsePacket.getDataState());
                 deviceRVAdapter.notifyDataSetChanged();
-
             }
 
 
@@ -266,7 +267,7 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
 
     private void updateDeviceList(ParsePacket parsePacket) {
         //// TODO: 控制命令
-        //请求设备数量
+        //请求设备数
         if (parsePacket.getCommand() == ParsePacket.COMMAND.UPDATE_DEVICE_COUNT||
                 parsePacket.getCommand() == ParsePacket.COMMAND.DEVICE_RESPONSE_APP_COUNT) {
             count = 0;
@@ -461,7 +462,6 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
         device5.setDeviceType(ParsePacket.DEVICE_TYPE.SOCKET);
         device5.setMac(new byte[]{0,0,0,0,0,0,0,5});
 
-
         Collections.addAll(deviceList, device1,device2,device3,device4, device5);
     }
 
@@ -477,6 +477,10 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
             case GizDeviceControlled:
                 alertDialog.cancel();
                 controlled = true;
+                ParsePacket parsePacket = new ParsePacket();
+                parsePacket.setType(ParsePacket.TYPE.APP_REQUEST);
+                parsePacket.setCommand(UPDATE_DEVICE_COUNT);
+                parsePacket.sendPacket(mDevice);
                 ToastUtil.showToast(Main2Activity.this, device.getProductName() +"设备状态变为:可控");
                 break;
             case GizDeviceUnavailable:
