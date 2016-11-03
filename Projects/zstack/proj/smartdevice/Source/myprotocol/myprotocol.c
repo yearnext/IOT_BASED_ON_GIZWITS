@@ -223,7 +223,7 @@ bool MYPROTOCO_D2W_MSG_SEND( packet_func create_packet, void *ctx )
 {
     MYPROTOCOL_FORMAT packet;
     afAddrType_t dst_addr;
-    
+        
     memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
     memset(&dst_addr,0,sizeof(dst_addr));
     
@@ -359,7 +359,14 @@ bool MYPROTOCOL_FORWARD_PACKET( MYPROTOCOL_DATA_DIR dir, MYPROTOCOL_FORMAT *pack
             MYPROTOCO_H2S_FORWARD_MSG(packet);
             break;
         case MYPROTOCOL_FORWORD_D2W:
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+            if( gizwitsGetAppConntStatus() == false )
+            {
+                return false;
+            }
+#endif
             MYPROTOCOL_PACKET_REPORT((uint8 *)packet);  
+            MYPROTOCOL_LOG("REPORT DEVICE DATA!\n");
             break;
         default:
             return false;
@@ -385,6 +392,12 @@ bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR dir, MYPROTOCOL_FORMAT *packet, pa
     switch( dir )
     {
         case MYPROTOCOL_DIR_D2W:
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+            if( gizwitsGetAppConntStatus() == false )
+            {
+                return false;
+            }
+#endif
             MYPROTOCO_D2W_MSG_SEND(create_packet,param);
             break;
         case MYPROTOCOL_DIR_S2H:
@@ -394,6 +407,12 @@ bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR dir, MYPROTOCOL_FORMAT *packet, pa
             MYPROTOCO_H2S_MSG_SEND(packet->device,create_packet,param);
             break;
         case MYPROTOCOL_FORWORD_D2W:
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+            if( gizwitsGetAppConntStatus() == false )
+            {
+                return false;
+            }
+#endif
             MYPROTOCOL_PACKET_REPORT((uint8 *)packet);
             break;
         case MYPROTOCOL_FORWORD_W2D:
@@ -446,7 +465,6 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
                 break;
             case MYPROTOCOL_D2W_WAIT:
                 MYPROTOCOL_FORWARD_PACKET(MYPROTOCOL_FORWORD_D2W,packet);
-                MYPROTOCOL_LOG("REPORT DEVICE DATA!\n");
                 break;
             case MYPROTOCOL_S2H_WAIT:
             {
@@ -460,7 +478,7 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
             }
 
             MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_H2S,packet,create_acktick_packet,&device_info.device);
-            MYPROTOCOL_LOG("Coord get one device tick!\n");
+            //MYPROTOCOL_LOG("Coord get one device tick!\n");
 #endif
                 break;
             }

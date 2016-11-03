@@ -99,6 +99,7 @@ dataPoint_t currentDataPoint;
 #define TIMER_50MS_COUNT  (5)
 #define TIMER_100MS_COUNT (10)
 #define TIMER_350MS_COUNT (30)
+#define TIMER_1MIN_COUNT  (6000)
 
 /** Smart Device 通讯状态指示灯 */
 #define SMARTDEVICE_LED_DISCONNED_STATE (0x00)
@@ -325,6 +326,7 @@ void device_timer_cb( void )
     static uint8 timer_50ms  = 0;
     static uint8 timer_100ms = 0;
     static uint8 timer_350ms = 0;
+    static uint16 timer_1min = 0;
     
     if( ++timer_20ms >= TIMER_20MS_COUNT )
     {
@@ -357,11 +359,17 @@ void device_timer_cb( void )
         light_working_headler();
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
         socket_working_headler();
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
-		report_ht_sensor_data();
 #else
 #endif  
         timer_350ms = 0;
+    }
+    
+    if( ++timer_1min >= TIMER_1MIN_COUNT )
+    {
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+		report_ht_sensor_data();
+#endif
+        timer_1min = 0;
     }
 }
 
