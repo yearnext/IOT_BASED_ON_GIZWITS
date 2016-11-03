@@ -30,6 +30,7 @@ public class StartActivity extends BaseActivity {
 
     @Override
     protected void onStart() {
+        //
         super.onStart();
         final String account = mSharedPreferences.getString("account", "");
         final String password = mSharedPreferences.getString("password", "");
