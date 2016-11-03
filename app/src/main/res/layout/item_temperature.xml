@@ -52,6 +52,18 @@
             android:id="@+id/textView3"
 
             android:layout_marginStart="8dp" />
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+
+            android:textSize="38sp"
+            android:text="0"
+            android:id="@+id/tv_humidity"
+            android:contentDescription="44"
+            android:layout_alignParentBottom="true"
+            android:layout_toEndOf="@+id/textView3" />
 
         <TextView
 
@@ -73,18 +85,7 @@
             android:src="@drawable/ic_refresh_gray_24dp"
             android:id="@+id/button_temperature_refresh"/>
 
-        <TextView
 
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-
-            android:textSize="38sp"
-            android:text="0"
-            android:id="@+id/tv_humidity"
-            android:contentDescription="44"
-            android:layout_alignParentBottom="true"
-            android:layout_toEndOf="@+id/textView3" />
 
         <TextView
             android:layout_width="wrap_content"

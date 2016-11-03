@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,6 +24,7 @@ import com.example.xzy.myhome.bean.Device;
 import com.example.xzy.myhome.util.ParsePacket;
 import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
+import com.gizwits.gizwifisdk.enumration.GizWifiDeviceNetStatus;
 import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
 
 import java.util.ArrayList;
@@ -43,6 +45,7 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
     private static final int ON = 0;
     private static final int OFF = 1;
     private static  String MAC;
+    private boolean controlled=false;
     @BindView(R.id.tb_device_list1)
     Toolbar tbDeviceList;
 
@@ -63,6 +66,7 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
     static ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
     byte count = 0;
     byte lampuminance = (byte) 150;
+    AlertDialog alertDialog;
 
 
     @Override
@@ -70,6 +74,11 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
         ButterKnife.bind(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(Main2Activity.this,R.style.MyAlertDialog);
+        alertDialog = builder.setView(R.layout.logining)
+                .setCancelable(false)
+                .create();
+        alertDialog.show();
         Intent intent = getIntent();
         mDevice = intent.getParcelableExtra("mDevice");
         mDevice.setListener(mDeviceListener);
@@ -77,6 +86,27 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
         deviceList = new ArrayList<Device>();
         //initData();
         initView();
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (controlled == false) {
+                    finish();
+                }
+            }
+        },20000);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        alertDialog.cancel();
+
     }
 
     private void initView() {
@@ -433,5 +463,26 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
 
 
         Collections.addAll(deviceList, device1,device2,device3,device4, device5);
-    };
+    }
+
+    @Override
+    protected void mDidUpdateNetStatus(GizWifiDevice device, GizWifiDeviceNetStatus netStatus) {
+        switch (netStatus) {
+            case GizDeviceOnline:
+                ToastUtil.showToast(Main2Activity.this, device.getProductName() +"设备状态变为:在线");
+                break;
+            case GizDeviceOffline:
+                ToastUtil.showToast(Main2Activity.this, device.getProductName() +"设备状态变为:离线" );
+                break;
+            case GizDeviceControlled:
+                alertDialog.cancel();
+                controlled = true;
+                ToastUtil.showToast(Main2Activity.this, device.getProductName() +"设备状态变为:可控");
+                break;
+            case GizDeviceUnavailable:
+                ToastUtil.showToast(Main2Activity.this, device.getProductName() +"设备状态变为:难以获得的");
+                break;
+        }
+
+    }
 }

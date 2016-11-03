@@ -1,8 +1,11 @@
 package com.example.xzy.myhome.activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -16,6 +19,7 @@ import com.example.xzy.myhome.R;
 import com.example.xzy.myhome.adapter.IotRecyckerViewAdapter;
 import com.example.xzy.myhome.bean.IotDevice;
 import com.example.xzy.myhome.util.BooleanTranslateUtil;
+import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
 import com.gizwits.gizwifisdk.api.GizWifiSDK;
 import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
@@ -38,6 +42,7 @@ public class MainActivity extends BaseActivity {
     List<GizWifiDevice> devices = GizWifiSDK.sharedInstance().getDeviceList();
     String mUid;
     String mToken;
+    int mPosition;
     List<IotDevice> iotDeviceList;
     IotRecyckerViewAdapter iotAdapter;
 
@@ -101,7 +106,7 @@ public class MainActivity extends BaseActivity {
                 Bundle bundle = new Bundle();
                 bundle.putParcelable("mDevice", mDevice);
                 intent.putExtras(bundle);
-                startActivity(intent);
+                startActivityForResult(intent,0);
             }
         });
     }
@@ -138,6 +143,38 @@ public class MainActivity extends BaseActivity {
         Log.d("", "discovered deviceList: " + deviceList);
         devices = deviceList;
             refresh();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        ToastUtil.showToast(MainActivity.this,"云端设备未响应，请稍后再试");
+        Snackbar.make(tbDeviceList, "云端设备未响应", Snackbar.LENGTH_LONG)
+                .setAction("查看帮助", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        builder.setTitle("云端设备未响应解决方法")
+                                .setMessage("1 检查WIFI网络状况" + "\n" +
+                                "2 确认网关设备已成功连接网络" + "\n" +
+                                "3 尝试再次连接")
+                                .setPositiveButton("再次连接", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        mDevice.setListener(mDeviceListener);
+                                        mDevice.setSubscribe(true);
+                                        Intent intent = new Intent(MainActivity.this, Main2Activity.class);
+                                        Bundle bundle = new Bundle();
+                                        bundle.putParcelable("mDevice", mDevice);
+                                        intent.putExtras(bundle);
+                                        startActivityForResult(intent,0);
+                                    }
+                                })
+                                .show();
+
+                    }
+                }).show();
+
     }
 }
 
