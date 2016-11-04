@@ -99,7 +99,7 @@ dataPoint_t currentDataPoint;
 #define TIMER_50MS_COUNT  (5)
 #define TIMER_100MS_COUNT (10)
 #define TIMER_350MS_COUNT (30)
-#define TIMER_1MIN_COUNT  (6000)
+#define TIMER_1MIN_COUNT  (600)
 
 /** Smart Device 通讯状态指示灯 */
 #define SMARTDEVICE_LED_DISCONNED_STATE (0x00)

@@ -108,7 +108,7 @@ typedef bool (*packet_func)(void *ctx, MYPROTOCOL_FORMAT *packet);
 
 /* Exported variables --------------------------------------------------------*/
 // 设备类型
-#define SMART_DEVICE_TYPE MYPROTOCOL_DEVICE_COORD
+#define SMART_DEVICE_TYPE MYPROTOCOL_DEVICE_HT_SENSOR
 
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
