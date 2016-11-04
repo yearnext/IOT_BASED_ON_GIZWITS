@@ -226,12 +226,11 @@ bool MYPROTOCO_D2W_MSG_SEND( packet_func create_packet, void *ctx )
         
     memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
     memset(&dst_addr,0,sizeof(dst_addr));
-    
-    create_packet(ctx,&packet);
-    
+
     packet.device.device = SMART_DEVICE_TYPE;
     memcpy(&packet.device.mac,&aExtendedAddress,sizeof(packet.device.mac));
     
+    create_packet(ctx,&packet);
     packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
     
     MYPROTOCOL_PACKET_REPORT((uint8 *)&packet);
@@ -293,11 +292,12 @@ bool MYPROTOCO_H2S_MSG_SEND( MYPROTOCOL_DEVICE_INFO info, packet_func create_pac
     
     memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
     memset(&dst_addr,0,sizeof(dst_addr));
+
+    packet.device.device = info.device;
+    memcpy(&packet.device.mac,&info.mac,sizeof(packet.device.mac));
     
     create_packet(ctx,&packet);
     
-    packet.device.device = info.device;
-    memcpy(&packet.device.mac,&info.mac,sizeof(packet.device.mac));
     packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
 
     memcpy(&dst_addr.addr.extAddr,&info.mac,sizeof(dst_addr.addr.extAddr));
@@ -323,13 +323,17 @@ bool MYPROTOCO_H2S_MSG_SEND( MYPROTOCOL_DEVICE_INFO info, packet_func create_pac
  * @note        本函数只能用于存在完整数据包的情况
  *******************************************************************************
  */
-bool MYPROTOCO_H2S_FORWARD_MSG( MYPROTOCOL_FORMAT *packet )
+bool MYPROTOCO_H2S_FORWARD_MSG( void *ctx )
 {
+    MYPROTOCOL_FORMAT format_packet;
     afAddrType_t dst_addr;
     
     memset(&dst_addr,0,sizeof(dst_addr));
+    memset(&format_packet,0,sizeof(MYPROTOCOL_FORMAT));
     
-    memcpy(&dst_addr.addr.extAddr,&packet->device.mac,sizeof(dst_addr.addr.extAddr));
+    memcpy(&format_packet,ctx,sizeof(format_packet));
+    
+    memcpy(&dst_addr.addr.extAddr,&format_packet.device.mac,sizeof(dst_addr.addr.extAddr));
     dst_addr.addrMode = afAddr64Bit;
     dst_addr.endPoint = SmartDevice_EndPoint;
     
@@ -337,7 +341,7 @@ bool MYPROTOCO_H2S_FORWARD_MSG( MYPROTOCOL_FORMAT *packet )
                            &SmartDevice_epDesc,
                            SmartDevice_Comm_ClustersID,
                            sizeof(MYPROTOCOL_FORMAT),
-                           (uint8 *)packet,
+                           (uint8 *)&format_packet,
                            &SmartDevice_TransID,
                            AF_DISCV_ROUTE,
                            AF_DEFAULT_RADIUS);
@@ -416,7 +420,7 @@ bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR dir, MYPROTOCOL_FORMAT *packet, pa
             MYPROTOCOL_PACKET_REPORT((uint8 *)packet);
             break;
         case MYPROTOCOL_FORWORD_W2D:
-            MYPROTOCO_H2S_FORWARD_MSG(packet);
+            MYPROTOCO_H2S_FORWARD_MSG((void*)packet);
             break;
         default:
             return false;
@@ -546,7 +550,7 @@ void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data )
                 {
                     // 转发数据并应答APP
                     MYPROTOCOL_FORWARD_PACKET(MYPROTOCOL_FORWORD_W2D,packet);
-                    MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_w2d_ack_packet,&packet->user_data);
+                    MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_w2d_ack_packet,packet);
                 }
                     break;
             }
@@ -643,12 +647,15 @@ bool create_commend_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
  */
 bool create_w2d_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
 {
-    if( ctx != NULL )
-    {
-        memcpy(&packet->user_data,ctx,sizeof(MYPROTOCOL_USER_DATA));
-    }
+//    if( ctx != NULL )
+//    {
+//        
+//    }
 
+    MYPROTOCOL_FORMAT *last_packet = (MYPROTOCOL_FORMAT *)ctx;
+    
     packet->commtype = MYPROTOCOL_W2D_ACK;
+    memcpy(&packet->device,&last_packet->device,sizeof(packet->device));
     
     return true;
 }

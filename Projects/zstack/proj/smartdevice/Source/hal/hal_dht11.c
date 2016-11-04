@@ -89,7 +89,7 @@ static uint8 Read_Byte_FromDHT11( void )
         // 检测是否存在超时现象
         if( timeout == 0 )
         {
-            return 0xFF;
+            return 0xFE;
         }
         // 等待30us
         DHT11_WORKING_DELAY();
@@ -101,7 +101,7 @@ static uint8 Read_Byte_FromDHT11( void )
         // 检测是否存在超时现象
         if( timeout == 0 )
         {
-            return 0xFF;
+            return 0xFE;
         }
         // 写入当前读取到的位数据
         read_data <<= 1;
@@ -125,7 +125,7 @@ DHT11_DATA_t dht11_rd_data( void )
     uint8 i = 0, j = 0;
     uint8 data_cache[5];
     uint8 check_sum = 0;
-    DHT11_DATA_t dht11_data = {0xFF, 0xFF};
+    DHT11_DATA_t dht11_data = {0xFE, 0xFD};
     
     DHT11_PORT_WrMode();
     
