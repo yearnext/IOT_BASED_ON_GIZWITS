@@ -111,13 +111,13 @@
 
 // LED1 端口信息配置
 #define LED1_BV           BV(0)
-#define LED1_SBIT         P1_0
-#define LED1_DDR          P1DIR
+#define LED1_SBIT         P0_0
+#define LED1_DDR          P0DIR
 #define LED1_POLARITY     ACTIVE_HIGH
 // LED2 端口信息配置
 #define LED2_BV           BV(1)
-#define LED2_SBIT         P1_1
-#define LED2_DDR          P1DIR
+#define LED2_SBIT         P0_1
+#define LED2_DDR          P0DIR
 #define LED2_POLARITY     ACTIVE_HIGH
 
 //#if defined (HAL_BOARD_CC2530EB_REV17)
