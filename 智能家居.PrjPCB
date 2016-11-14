@@ -30,7 +30,7 @@ DItemRevisionGUID=
 ReportSuppressedErrorsInMessages=0
 FSMCodingStyle=eFMSDropDownList_OneProcess
 FSMEncodingStyle=eFMSDropDownList_OneHot
-OutputPath=Project Outputs for 智能家居
+OutputPath=
 LogFolderPath=
 ManagedProjectGUID=
 
@@ -514,10 +514,6 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=BXSCGMOF
 
-[GeneratedDocument1]
-DocumentPath=Project Outputs for 智能开关\Design Rule Check - 智能家居-窗帘.html
-DItemRevisionGUID=
-
 [Configuration1]
 Name=Default Configuration
 ParameterCount=0
@@ -564,7 +560,7 @@ SCH_HasExpandLogicalToPhysicalSheets=-1
 SaveSettingsToOutJob=0
 
 [Generic_EDE]
-OutputDir=Project Outputs for 智能家居
+OutputDir=
 
 [OutputGroup1]
 Name=Netlist Outputs
