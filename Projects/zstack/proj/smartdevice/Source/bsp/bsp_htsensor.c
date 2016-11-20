@@ -33,11 +33,14 @@ typedef DHT11_DATA_t ht_sensor_t;
 
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define HT_SENSOR_TICK_CMD   (0x00)
-#define HT_SENSOR_REPORT_CMD (0x01)
-#define HT_SENSOR_READ_CMD   (0x02)
-
 /* Private typedef -----------------------------------------------------------*/
+// 温湿度传感器控制命令
+typedef enum
+{
+    RP_HT_SENSOR_DATA = 0x10,
+    RD_HT_SENSOR_DATA = 0x11,
+}DEVICE_HT_SENSOR_CMD;
+
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
@@ -69,7 +72,7 @@ void report_ht_sensor_data( void )
 	
 	memcpy(&user_data.data,&ht_sensor_data,sizeof(ht_sensor_data));
 	user_data.len = sizeof(ht_sensor_data);
-	user_data.cmd = HT_SENSOR_REPORT_CMD;
+	user_data.cmd = RP_HT_SENSOR_DATA;
 	
 	MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
 }
@@ -86,15 +89,21 @@ bool ht_sensor_cmd_resolve(MYPROTOCOL_USER_DATA *data)
 {
 	switch(data->cmd)
 	{
-        case HT_SENSOR_READ_CMD:
+        case DEVICE_TICK:
+            break;
+        case DEVICE_RESET:
+            break;
+        case DEVICE_REBOOT:
+            break;
+        case RD_HT_SENSOR_DATA:
             report_ht_sensor_data();
-            return true;
 			break;
 		default:
+            return false;
 			break;
 	}
 	
-	return false;
+	return true;
 }
 
 /** @}*/     /* 温湿度传感器模块 */

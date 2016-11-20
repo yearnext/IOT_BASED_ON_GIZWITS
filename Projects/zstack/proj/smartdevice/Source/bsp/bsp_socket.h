@@ -40,8 +40,8 @@ extern void bsp_socket_init( void );
 extern void set_socket_value( uint8 );
 extern uint8 get_socket_value( void );
 extern void socket_control_handler( uint8 );
-extern void socket_switch_headler( void );
-extern void socket_working_headler( void );
+extern void socket_switch_handler( void );
+extern void socket_working_handler( void );
 extern bool socket_cmd_resolve( MYPROTOCOL_USER_DATA *data );
 
 #endif      /* __SMART_DEVICE_socket_H__ */

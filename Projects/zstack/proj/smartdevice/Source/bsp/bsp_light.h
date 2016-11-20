@@ -41,8 +41,8 @@ extern void bsp_light_init( void );
 extern void set_light_brightness( uint8 );
 extern uint8 get_light_brightness( void );
 extern void light_control_handler( uint8 );
-extern void light_switch_headler( void );
-extern void light_working_headler( void );
+extern void light_switch_handler( void );
+extern void light_working_handler( void );
 extern bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data );
 
 #endif

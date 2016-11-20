@@ -24,7 +24,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
-
 #include "bsp_light.h"
 #include "timer_config.h"
 #include <string.h>
@@ -42,13 +41,17 @@
 
 /* Private typedef -----------------------------------------------------------*/
 // 电灯控制命令
-#define LIGHT_TICK_CMD            (0x00)
-#define LIGHT_R_BRIGHTNESS_CMD    (0x01)
-#define LIGHT_W_BRIGHTNESS_CMD    (0x02)
-#define LIGHT_R_SINGLE_TIMER_CMD  (0x03)
-#define LIGHT_W_SINGLE_TIMER_CMD  (0x04)
-#define LIGHT_R_CIRCUL_TIMER_CMD  (0x05)
-#define LIGHT_W_CIRCUL_TIMER_CMD  (0x06)
+typedef enum
+{
+    RD_LIGHT_BRIGHTNESS   = 0x10,
+    WR_LIGHT_BRIGHTNESS   = 0x11,
+    RD_LIGHT_SINGLE_TIMER = 0x12,
+    WR_LIGHT_SINGLE_TIMER = 0x13,
+    RD_LIGHT_CIRCUL_TIMER = 0x14,
+    WR_LIGHT_CIRCUL_TIMER = 0x15,
+    RD_LIGHT_LOAD_SET     = 0x16,
+    WR_LIGHT_LOAD_SET     = 0x17,
+}DEVICE_LIGHT_CMD;
 
 typedef struct
 {
@@ -73,7 +76,7 @@ static void report_brightness_data( void )
     MYPROTOCOL_USER_DATA user_data;
     memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
     
-    user_data.cmd = LIGHT_R_BRIGHTNESS_CMD;
+    user_data.cmd = RD_LIGHT_BRIGHTNESS;
     user_data.data[0] = light.status.now;
     user_data.len = 1;
     MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
@@ -94,11 +97,11 @@ static void report_timer_data( uint8 timer )
     
     if( timer == 0 )
     {
-        user_data.cmd = LIGHT_R_SINGLE_TIMER_CMD;
+        user_data.cmd = RD_LIGHT_SINGLE_TIMER;
     }
     else if( timer == 1 )
     {
-        user_data.cmd = LIGHT_R_CIRCUL_TIMER_CMD;
+        user_data.cmd = RD_LIGHT_CIRCUL_TIMER;
     }
     else
     {
@@ -208,7 +211,7 @@ void light_control_handler( uint8 brightness )
  * @note        None
  *******************************************************************************
  */
-void light_switch_headler( void )
+void light_switch_handler( void )
 {
     uint8 temp = 0;
     
@@ -260,7 +263,7 @@ void light_switch_headler( void )
  * @note        None
  *******************************************************************************
  */
-void light_working_headler( void )
+void light_working_handler( void )
 {
     uint8 i;
     
@@ -282,41 +285,49 @@ bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data )
 {    
     switch( data->cmd )
     {
-        case LIGHT_TICK_CMD:
+        case DEVICE_TICK:
             break;
-        case LIGHT_R_BRIGHTNESS_CMD:
+        case DEVICE_RESET:
+            break;
+        case DEVICE_REBOOT:
+            break;
+        case RD_LIGHT_BRIGHTNESS:
         {
             report_brightness_data();
             break;
         }
-        case LIGHT_W_BRIGHTNESS_CMD:
+        case WR_LIGHT_BRIGHTNESS:
         {
             light_control_handler(data->data[0]);
             report_brightness_data();
             break;
         }
-        case LIGHT_R_SINGLE_TIMER_CMD:
+        case RD_LIGHT_SINGLE_TIMER:
         {
             report_timer_data(0);
             break;
         }
-        case LIGHT_W_SINGLE_TIMER_CMD:
+        case WR_LIGHT_SINGLE_TIMER:
         {
             memcpy(&light.timer[0],data->data,sizeof(light.timer[0]));
             report_timer_data(0);
             break;
         }
-        case LIGHT_R_CIRCUL_TIMER_CMD:
+        case RD_LIGHT_CIRCUL_TIMER:
         {
             report_timer_data(1);
             break;
         }
-        case LIGHT_W_CIRCUL_TIMER_CMD:
+        case WR_LIGHT_CIRCUL_TIMER:
         {
             memcpy(&light.timer[1],data->data,sizeof(light.timer[1]));
             report_timer_data(1);
             break;
         }
+        case RD_LIGHT_LOAD_SET:
+            break;
+        case WR_LIGHT_LOAD_SET:
+            break;
         default:
             return false;
             break;

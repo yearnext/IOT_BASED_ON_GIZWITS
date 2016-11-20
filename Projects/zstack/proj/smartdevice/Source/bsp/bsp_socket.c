@@ -40,13 +40,17 @@
 
 /* Private typedef -----------------------------------------------------------*/
 // 继电器控制命令
-#define SOCKET_TICK_CMD            (0x00)
-#define SOCKET_R_VALUE_CMD         (0x01)
-#define SOCKET_W_VALUE_CMD         (0x02)
-#define SOCKET_R_SINGLE_TIMER_CMD  (0x03)
-#define SOCKET_W_SINGLE_TIMER_CMD  (0x04)
-#define SOCKET_R_CIRCUL_TIMER_CMD  (0x05)
-#define SOCKET_W_CIRCUL_TIMER_CMD  (0x06)
+typedef enum
+{
+    RD_SOCKET_STATE        = 0x10,
+    WR_SOCKET_STATE        = 0x11,
+    RD_SOCKET_SINGLE_TIMER = 0x12,
+    WR_SOCKET_SINGLE_TIMER = 0x13,
+    RD_SOCKET_CIRCUL_TIMER = 0x14,
+    WR_SOCKET_CIRCUL_TIMER = 0x15,
+    RD_SOCKET_LOAD_SET     = 0x16,
+    WR_SOCKET_LOAD_SET     = 0x17,
+}DEVICE_LIGHT_CMD;
 
 typedef struct
 {
@@ -71,7 +75,7 @@ static void report_socket_value_data( void )
     MYPROTOCOL_USER_DATA user_data;
     memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
     
-    user_data.cmd = SOCKET_R_VALUE_CMD;
+    user_data.cmd = RD_SOCKET_STATE;
     user_data.data[0] = socket.status.now;
     user_data.len = 1;
     MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
@@ -92,11 +96,11 @@ static void report_timer_data( uint8 timer )
     
     if( timer == 0 )
     {
-        user_data.cmd = SOCKET_R_SINGLE_TIMER_CMD;
+        user_data.cmd = RD_SOCKET_SINGLE_TIMER;
     }
     else if( timer == 1 )
     {
-        user_data.cmd = SOCKET_R_CIRCUL_TIMER_CMD;
+        user_data.cmd = RD_SOCKET_CIRCUL_TIMER;
     }
     else
     {
@@ -206,7 +210,7 @@ void socket_control_handler( uint8 value )
  * @note        None
  *******************************************************************************
  */
-void socket_switch_headler( void )
+void socket_switch_handler( void )
 {
     uint8 temp = 0;
     
@@ -258,7 +262,7 @@ void socket_switch_headler( void )
  * @note        None
  *******************************************************************************
  */
-void socket_working_headler( void )
+void socket_working_handler( void )
 {
     uint8 i;
     
@@ -280,41 +284,49 @@ bool socket_cmd_resolve( MYPROTOCOL_USER_DATA *data )
 {    
     switch( data->cmd )
     {
-        case SOCKET_TICK_CMD:
+        case DEVICE_TICK:
             break;
-        case SOCKET_R_VALUE_CMD:
+        case DEVICE_RESET:
+            break;
+        case DEVICE_REBOOT:
+            break;
+        case RD_SOCKET_STATE:
         {
             report_socket_value_data();
             break;
         }
-        case SOCKET_W_VALUE_CMD:
+        case WR_SOCKET_STATE:
         {
             socket_control_handler(data->data[0]);
             report_socket_value_data();
             break;
         }
-        case SOCKET_R_SINGLE_TIMER_CMD:
+        case RD_SOCKET_SINGLE_TIMER:
         {
             report_timer_data(0);
             break;
         }
-        case SOCKET_W_SINGLE_TIMER_CMD:
+        case WR_SOCKET_SINGLE_TIMER:
         {
             memcpy(&socket.timer[0],data->data,sizeof(socket.timer[0]));
             report_timer_data(0);
             break;
         }
-        case SOCKET_R_CIRCUL_TIMER_CMD:
+        case RD_SOCKET_CIRCUL_TIMER:
         {
             report_timer_data(1);
             break;
         }
-        case SOCKET_W_CIRCUL_TIMER_CMD:
+        case WR_SOCKET_CIRCUL_TIMER:
         {
             memcpy(&socket.timer[1],data->data,sizeof(socket.timer[1]));
             report_timer_data(1);
             break;
         }
+        case RD_SOCKET_LOAD_SET:
+            break;
+        case WR_SOCKET_LOAD_SET:
+            break;
         default:
             return false;
             break;
