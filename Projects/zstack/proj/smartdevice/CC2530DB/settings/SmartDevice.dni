@@ -101,12 +101,10 @@ Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\ZMain\TI2530DB\OnBoard.c}.248.3" 1 0 0 0 
 Bp2=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_key.c}.441.3" 0 0 0 0 "" 0 ""
 Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits\gizwits_protocol.c}.779.5" 0 0 0 0 "" 0 ""
 Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits\gizwits_protocol.c}.1280.5" 0 0 0 0 "" 0 ""
-Bp5=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_light.c}.283.5" 0 0 0 0 "" 0 ""
-Bp6=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_htsensor.c}.87.2" 0 0 0 0 "" 0 ""
-Bp7=_ "STD_CODE" "{$PROJ_DIR$\..\Source\myprotocol\myprotocol.c}.471.17" 1 0 0 0 "" 0 ""
-Bp8=_ "STD_CODE" "{$PROJ_DIR$\..\Source\hal\hal_dht11.c}.159.29" 1 0 0 0 "" 0 ""
-Bp9=_ "STD_CODE" "{$PROJ_DIR$\..\Source\hal\hal_dht11.c}.142.9" 0 0 0 0 "" 0 ""
-Count=10
+Bp5=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_light.c}.282.5" 0 0 0 0 "" 0 ""
+Bp6=_ "STD_CODE" "{$PROJ_DIR$\..\Source\hal\hal_dht11.c}.159.29" 1 0 0 0 "" 0 ""
+Bp7=_ "STD_CODE" "{$PROJ_DIR$\..\Source\hal\hal_dht11.c}.142.9" 0 0 0 0 "" 0 ""
+Count=8
 [ChipconEmu]
 Stop timers on halt=0
 Leave target running=1

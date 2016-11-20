@@ -438,7 +438,7 @@ bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR dir, MYPROTOCOL_FORMAT *packet, pa
  * @note        None
  *******************************************************************************
  */
-void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
+void SmartDevice_Message_Handler( afIncomingMSGPacket_t *pkt )
 {
     if( pkt->clusterId != SmartDevice_Comm_ClustersID )
     {
@@ -508,7 +508,7 @@ void SmartDevice_Message_Headler( afIncomingMSGPacket_t *pkt )
  * @note        None
  *******************************************************************************
  */
-void Gizwits_Message_Headler( uint8 *report_data, uint8 *packet_data )
+void Gizwits_Message_Handler( uint8 *report_data, uint8 *packet_data )
 {
     MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)packet_data;
     

@@ -114,7 +114,7 @@ static byte SmartDevice_TaskID;
 static devStates_t SmartDevice_NwkState;
 
 /* functions statement -------------------------------------------------------*/
-void SmartDevice_Key_Headler( uint8 keys, uint8 state );
+void SmartDevice_Key_Handler( uint8 keys, uint8 state );
 void ZDO_STATE_CHANGE_CB( devStates_t status );
 void SmartDevice_CommLED_Control( uint8 state );
 void device_timer_cb( void );
@@ -185,7 +185,7 @@ uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events )
             switch( MSGpkt->hdr.event )
             {
                 case AF_INCOMING_MSG_CMD:
-                    SmartDevice_Message_Headler(MSGpkt);
+                    SmartDevice_Message_Handler(MSGpkt);
                     break;
                 case ZDO_STATE_CHANGE:
                     SmartDevice_NwkState = (devStates_t)(MSGpkt->hdr.status);
@@ -356,9 +356,9 @@ void device_timer_cb( void )
         app_time_update();
         
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
-        light_working_headler();
+        light_working_handler();
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
-        socket_working_headler();
+        socket_working_handler();
 #else
 #endif  
         timer_350ms = 0;
@@ -387,9 +387,9 @@ void key_switch_handler( key_message_t message )
     {
 		case KEY_MESSAGE_PRESS_EDGE:
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
-        light_switch_headler();
+        light_switch_handler();
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
-        socket_switch_headler();
+        socket_switch_handler();
 #endif
 			break;
 		default:
