@@ -30,9 +30,12 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-// 灯的开启关闭亮度
-#define Light_ON_Brightness            ( 255 )
-#define Light_OFF_Brightness           ( 0 )
+// 灯的最大亮度/最小亮度
+#define LIGHT_MAX_BRIGHTNESS           (100)
+#define LIGHT_MIN_BRIGHTNESS           (0)
+// 灯的开启亮度/关闭亮度
+#define LIGHT_ON_BRIGHTNESS            (100)  
+#define LIGHT_OFF_BRIGHTNESS           (0)
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/

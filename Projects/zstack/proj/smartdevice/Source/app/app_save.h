@@ -96,7 +96,7 @@ typedef SIMPLE_DEVICE_SAVE_DATA DEVICE_SOCKET_SAVE_DATA;
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern void Rst_DeviceSaveData( uint8 );
+//extern void Rst_DeviceSaveData( uint8 );
 extern void Device_FirstWriteKey_Init( void );
 extern bool Device_FirstWrite_Check( void );
 
