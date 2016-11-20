@@ -6811,6 +6811,12 @@
     <group>
       <name>bsp</name>
       <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_curtain.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_curtain.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\Source\bsp\bsp_htsensor.c</name>
       </file>
       <file>

@@ -34,70 +34,70 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-/**
- *******************************************************************************
- * @brief       恢复设备数据至出厂数据
- * @param       [in/out]  device_id    设备ID
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-void Rst_DeviceSaveData( uint8 device_id )
-{
-    const uint16 device_save_id = 0x0201;
-    
-    switch( device_id )
-    {
-        case DEVICE_COORD_ID:
-        {
-            uint8 init_data[DEVICE_COORD_DATA_SIZE];
-            
-            memset(init_data,0,sizeof(init_data));
-
-            osal_nv_write(device_save_id, 0, DEVICE_COORD_DATA_SIZE, init_data );
-            break;
-        }
-        case DEVICE_LIGHT_ID:
-        {
-            uint8 init_data[DEVICE_LIGHT_DATA_SIZE];
-            
-            memset(init_data,0,sizeof(init_data));
-            
-            osal_nv_write(device_save_id, 0, DEVICE_LIGHT_DATA_SIZE, init_data );
-            break;
-        }
-        case DEVICE_SOCKET_ID:
-        {
-            uint8 init_data[DEVICE_SOCKET_DATA_SIZE];
-            
-            memset(init_data,0,sizeof(init_data));
-            
-            osal_nv_write(device_save_id, 0, DEVICE_SOCKET_DATA_SIZE, init_data );
-            break;
-        }
-        case  DEVICE_CURTAIN_ID:
-        {
-            uint8 init_data[DEVICE_CURTAIN_DATA_SIZE];
-            
-            memset(init_data,0,sizeof(init_data));
-            
-            osal_nv_write(device_save_id, 0, DEVICE_CURTAIN_DATA_SIZE, init_data );
-            break;
-        }
-        case DEVICE_DEVICE_TEMP_HUM_SENSOR_ID:
-        {
-            uint8 init_data[DEVICE_DEVICE_TEMP_HUM_SENSOR_DATA_SIZE];
-            
-            memset(init_data,0,sizeof(init_data));
-
-            osal_nv_write(device_save_id, 0, DEVICE_DEVICE_TEMP_HUM_SENSOR_DATA_SIZE, init_data );
-            
-            break;
-        }
-        default:
-            break;
-    }
-}
+///**
+// *******************************************************************************
+// * @brief       恢复设备数据至出厂数据
+// * @param       [in/out]  device_id    设备ID
+// * @return      [in/out]  void
+// * @note        None
+// *******************************************************************************
+// */
+//void Rst_DeviceSaveData( uint8 device_id )
+//{
+//    const uint16 device_save_id = 0x0201;
+//    
+//    switch( device_id )
+//    {
+//        case DEVICE_COORD_ID:
+//        {
+//            uint8 init_data[DEVICE_COORD_DATA_SIZE];
+//            
+//            memset(init_data,0,sizeof(init_data));
+//
+//            osal_nv_write(device_save_id, 0, DEVICE_COORD_DATA_SIZE, init_data );
+//            break;
+//        }
+//        case DEVICE_LIGHT_ID:
+//        {
+//            uint8 init_data[DEVICE_LIGHT_DATA_SIZE];
+//            
+//            memset(init_data,0,sizeof(init_data));
+//            
+//            osal_nv_write(device_save_id, 0, DEVICE_LIGHT_DATA_SIZE, init_data );
+//            break;
+//        }
+//        case DEVICE_SOCKET_ID:
+//        {
+//            uint8 init_data[DEVICE_SOCKET_DATA_SIZE];
+//            
+//            memset(init_data,0,sizeof(init_data));
+//            
+//            osal_nv_write(device_save_id, 0, DEVICE_SOCKET_DATA_SIZE, init_data );
+//            break;
+//        }
+//        case  DEVICE_CURTAIN_ID:
+//        {
+//            uint8 init_data[DEVICE_CURTAIN_DATA_SIZE];
+//            
+//            memset(init_data,0,sizeof(init_data));
+//            
+//            osal_nv_write(device_save_id, 0, DEVICE_CURTAIN_DATA_SIZE, init_data );
+//            break;
+//        }
+//        case DEVICE_DEVICE_TEMP_HUM_SENSOR_ID:
+//        {
+//            uint8 init_data[DEVICE_DEVICE_TEMP_HUM_SENSOR_DATA_SIZE];
+//            
+//            memset(init_data,0,sizeof(init_data));
+//
+//            osal_nv_write(device_save_id, 0, DEVICE_DEVICE_TEMP_HUM_SENSOR_DATA_SIZE, init_data );
+//            
+//            break;
+//        }
+//        default:
+//            break;
+//    }
+//}
 
 /**
  *******************************************************************************
