@@ -29,6 +29,7 @@ extern "C"
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
 #include "myprotocol.h"
+#include "bsp_key.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -38,6 +39,11 @@ extern "C"
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 extern void bsp_curtain_init( void );
+
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+extern void key_switch_handler( key_message_t );
+#endif
+
 extern bool curtain_cmd_resolve( MYPROTOCOL_USER_DATA *data );
 
 #ifdef __cplusplus

@@ -26,6 +26,7 @@
 #include "hal_dht11.h"
 #include <string.h>
 #include "bsp_htsensor.h"
+#include "Onboard.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -77,6 +78,21 @@ void report_ht_sensor_data( void )
 	MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
 }
 
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+/**
+ *******************************************************************************
+ * @brief       按键处理
+ * @param       [in]   message    按键信息
+ * @return      [out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void key_switch_handler( key_message_t message )
+{   
+}
+
+#endif
+
 /**
  *******************************************************************************
  * @brief       温湿度传感器模块命令解析
@@ -94,6 +110,7 @@ bool ht_sensor_cmd_resolve(MYPROTOCOL_USER_DATA *data)
         case DEVICE_RESET:
             break;
         case DEVICE_REBOOT:
+            Onboard_soft_reset();
             break;
         case RD_HT_SENSOR_DATA:
             report_ht_sensor_data();

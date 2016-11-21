@@ -28,8 +28,9 @@
 #include <string.h>
 #include "app_save.h"
 #include "app_timer.h"
+#include "bsp_socket.h"
+#include "Onboard.h"
 
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
@@ -52,13 +53,39 @@ typedef enum
     WR_SOCKET_LOAD_SET     = 0x17,
 }DEVICE_LIGHT_CMD;
 
-typedef struct
-{
-    uint8 value;
-}SOCKET_VALUE_CMD_DATA;
+// 灯的开启关闭亮度
+#define SOCKET_ON_CMD        (255)
+#define SOCKET_OFF_CMD       (0)
+
+// 加载掉电前的数据
+#define SOCKET_NO_LOAD_SET   (0x00)
+#define SOCKET_LOAD_SET      (0x01)
+
+// 配置定时器使用数量
+#define SOCKET_USE_TIMER_NUM (2)
 
 /* Private variables ---------------------------------------------------------*/
-static DEVICE_SOCKET_SAVE_DATA socket;
+// 插座存储数据
+static struct _DEVICE_LIGHT_SAVE_DATA_
+{
+    // 状态数据
+    struct
+    {
+        uint8 now;
+        uint8 last;
+    }status;
+    
+    // 定时器数据
+    DEVICE_TIMER timer[SOCKET_USE_TIMER_NUM]; 
+    
+    // 初始化载入数据
+//    enum
+//    {
+//        LIGHT_NO_LOAD_SET = 0x00,
+//        LIGHT_LOAD_SET    = 0x01,
+//    }load_set;
+    uint8 load_set;
+}socket;
 
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
@@ -115,6 +142,89 @@ static void report_timer_data( uint8 timer )
 
 /**
  *******************************************************************************
+ * @brief       上报插座定时器的数据
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+static void report_socket_loadset_data( void )
+{
+    MYPROTOCOL_USER_DATA user_data;
+    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
+    
+    user_data.cmd = RD_SOCKET_LOAD_SET;
+    memcpy(&user_data.data,&socket.load_set,sizeof(socket.load_set));
+    user_data.len = sizeof(socket.load_set);
+    
+    MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
+}
+
+/**
+ *******************************************************************************
+ * @brief       存储定时器数据
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+static bool save_socket_timer_data( uint8 timer, uint8 *data )
+{
+    if( timer >= SOCKET_USE_TIMER_NUM )
+    {
+        return false;
+    }
+    
+    memcpy(&socket.timer[timer],data,sizeof(socket.timer[timer]));
+    
+    osal_nv_write(DEVICE_SOCKET_SAVE_ID,
+                  (uint32)&socket.timer[timer]-(uint32)&socket,
+                  sizeof(socket.timer[timer]),
+                  (void *)&socket.timer[timer]); 
+
+    return true;
+}
+
+                  
+/**
+ *******************************************************************************
+ * @brief       存储上电加载参数数据
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+static bool save_socket_loadset_data( uint8 data )
+{
+    socket.load_set = data;
+    
+    osal_nv_write(DEVICE_LIGHT_SAVE_ID,
+                  (uint32)&socket.load_set-(uint32)&socket,
+                  sizeof(socket.load_set),
+                  (void *)&socket.load_set);     
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       初始化LED设置数据
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+static void socket_rst_set( void )
+{
+    memset(&socket,0,sizeof(socket));
+    socket.status.now = SOCKET_OFF_CMD;
+    socket.status.last = SOCKET_ON_CMD;
+    
+    osal_nv_item_init(DEVICE_SOCKET_SAVE_ID,DEVICE_SOCKET_DATA_SIZE,NULL);
+    osal_nv_write(DEVICE_SOCKET_SAVE_ID,0,DEVICE_SOCKET_DATA_SIZE,(void *)&socket);
+}
+
+/**
+ *******************************************************************************
  * @brief       插座初始化函数
  * @param       [in/out]  void
  * @return      [in/out]  void
@@ -151,7 +261,14 @@ void bsp_socket_init( void )
  */
 void set_socket_value( uint8 value )
 {
-    TIM4_CH0_UpdateDuty( Socket_Value_Conversion(socket.status.now) );
+    if( value == 0 )
+    {
+        TIM4_CH0_UpdateDuty( Socket_Value_Conversion( SOCKET_OFF_CMD ) );
+    }
+    else
+    {
+        TIM4_CH0_UpdateDuty( Socket_Value_Conversion( SOCKET_ON_CMD) );
+    }
 }
 
 /**
@@ -164,7 +281,14 @@ void set_socket_value( uint8 value )
  */
 uint8 get_socket_value( void )
 {
-    return Socket_Value_Conversion( get_socket_value() );
+    if( Socket_Value_Conversion(get_socket_value()) == SOCKET_OFF_CMD )
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
 }
 
 /**
@@ -179,11 +303,6 @@ void socket_control_handler( uint8 value )
 {
     if( value != get_socket_value() )
     {
-        if( socket.status.now == 0xFE )
-        {
-            socket.status.now = 0xFF;
-        }
-        
         socket.status.last = socket.status.now;
         socket.status.now = value;
         
@@ -193,12 +312,6 @@ void socket_control_handler( uint8 value )
                       (uint16)(&((DEVICE_SOCKET_SAVE_DATA *)0)->status),\
                       sizeof(socket.status),\
                       (void *)&socket.status);
-        
-        if( socket.status.now == 0xFF )
-        {
-            socket.status.now = 0xFE;
-        }
-        
     }
 }
 
@@ -213,12 +326,7 @@ void socket_control_handler( uint8 value )
 void socket_switch_handler( void )
 {
     uint8 temp = 0;
-    
-    if( socket.status.now == 0xFE )
-    {
-        socket.status.now = 0xFF;
-    }
-    
+
     if( socket.status.now == SOCKET_OFF_CMD )
     {
         if( socket.status.last != socket.status.now )
@@ -245,14 +353,32 @@ void socket_switch_handler( void )
                  ((uint16)&socket.status - (uint16)&socket),\
                  sizeof(socket.status),\
                  (void *)&socket.status); 
-    
-    if( socket.status.now == 0xFF )
-    {
-        socket.status.now = 0xFE;
-    }
-    
+
     report_socket_value_data();
 }
+
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+/**
+ *******************************************************************************
+ * @brief       按键处理
+ * @param       [in]   message    按键信息
+ * @return      [out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void key_switch_handler( key_message_t message )
+{
+    switch (message)
+    {
+		case KEY_MESSAGE_PRESS_EDGE:
+            socket_switch_handler();
+			break;
+		default:
+			break;
+    }
+}
+
+#endif
 
 /**
  *******************************************************************************
@@ -287,45 +413,37 @@ bool socket_cmd_resolve( MYPROTOCOL_USER_DATA *data )
         case DEVICE_TICK:
             break;
         case DEVICE_RESET:
-            break;
+            socket_rst_set();
         case DEVICE_REBOOT:
+            Onboard_soft_reset();
             break;
         case RD_SOCKET_STATE:
-        {
             report_socket_value_data();
             break;
-        }
         case WR_SOCKET_STATE:
-        {
             socket_control_handler(data->data[0]);
             report_socket_value_data();
             break;
-        }
         case RD_SOCKET_SINGLE_TIMER:
-        {
             report_timer_data(0);
             break;
-        }
         case WR_SOCKET_SINGLE_TIMER:
-        {
-            memcpy(&socket.timer[0],data->data,sizeof(socket.timer[0]));
+            save_socket_timer_data(0,data->data);
             report_timer_data(0);
             break;
-        }
         case RD_SOCKET_CIRCUL_TIMER:
-        {
             report_timer_data(1);
             break;
-        }
         case WR_SOCKET_CIRCUL_TIMER:
-        {
-            memcpy(&socket.timer[1],data->data,sizeof(socket.timer[1]));
+            save_socket_timer_data(1,data->data);
             report_timer_data(1);
             break;
-        }
         case RD_SOCKET_LOAD_SET:
+            report_socket_loadset_data();
             break;
         case WR_SOCKET_LOAD_SET:
+            save_socket_loadset_data(data->data[0]);
+            report_socket_loadset_data();
             break;
         default:
             return false;
@@ -333,8 +451,6 @@ bool socket_cmd_resolve( MYPROTOCOL_USER_DATA *data )
     }
     return true;
 }
-
-#endif
 
 /** @}*/     /* 智能插座模块 */
 

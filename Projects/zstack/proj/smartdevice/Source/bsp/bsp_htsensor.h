@@ -24,6 +24,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
 #include "myprotocol.h"
+#include "bsp_key.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -34,6 +35,9 @@
 /* Exported functions --------------------------------------------------------*/
 extern void ht_sensor_init(void);
 extern void report_ht_sensor_data( void );
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+extern void key_switch_handler( key_message_t );
+#endif
 extern bool ht_sensor_cmd_resolve(MYPROTOCOL_USER_DATA *data);
 
 #endif      /* __SMART_DEVICE_HT_SENSOR_H__ */

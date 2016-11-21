@@ -99,8 +99,17 @@
 #define KEY1_PORT_SEL    P1SEL
 #define KEY1_PORT_DIR    P1DIR
 #define KEY1_PORT_BIT    BV(0)
-#define KEY1_PORT_INIT() st(KEY2_PORT_SEL &= ~KEY2_PORT_BIT; KEY2_PORT_DIR &= ~KEY2_PORT_BIT;)
-#define KEY1_READ()      KEY_ACTIVE_LOW(KEY2_PORT)
+#define KEY1_PORT_INIT() st(KEY1_PORT_SEL &= ~KEY1_PORT_BIT; KEY1_PORT_DIR &= ~KEY1_PORT_BIT;)
+#define KEY1_READ()      KEY_ACTIVE_LOW(KEY1_PORT)
+
+/** KEY2 P0_6 */
+#define KEY2_PORT        P0_6
+#define KEY2_PORT_SEL    P0SEL
+#define KEY2_PORT_DIR    P0DIR
+#define KEY2_PORT_BIT    BV(6)
+#define KEY2_PORT_INIT() st(KEY2_PORT_SEL &= ~KEY2_PORT_BIT; KEY2_PORT_DIR &= ~KEY2_PORT_BIT;)
+#define KEY2_READ()      KEY_ACTIVE_LOW(KEY2_PORT)
+
 // 温湿度传感器按键端口配置
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
 
@@ -134,6 +143,7 @@ typedef enum
 	KEY_VALUE_NOP = 0x00,
 	KEY_VALUE_SWITCH,
 	KEY_VALUE_RESET,
+    KEY_VALUE_RAIN,
 }key_value_t;
 
 /**
@@ -163,7 +173,6 @@ extern void hal_key_init(void);
 extern key_value_t get_key_value(void);
 extern void key_scan(void);
 extern void key_handler(void);
-
 extern void key_switch_handler(key_message_t);
 
 #endif      /* __BSP_KEY_H__ */

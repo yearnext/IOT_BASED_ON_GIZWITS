@@ -18,7 +18,7 @@
  */
 
 /**
- * @defgroup 智能电灯配置模块
+ * @defgroup 电灯配置模块
  * @{
  */
 
@@ -28,7 +28,6 @@
 #include <string.h>
 #include "app_save.h"
 #include "app_timer.h"
-#include "myprotocol.h"
 #include "Onboard.h"
      
 /* Exported macro ------------------------------------------------------------*/
@@ -50,8 +49,8 @@
 #define LIGHT_USE_TIMER_NUM            (2)
     
 // 加载掉电前的数据
-#define LIGHT_NO_LOAD_SET (0x00)
-#define LIGHT_LOAD_SET    (0x01)
+#define LIGHT_NO_LOAD_SET              (0x00)
+#define LIGHT_LOAD_SET                 (0x01)
      
 /* Private typedef -----------------------------------------------------------*/
 // 电灯控制命令
@@ -145,7 +144,7 @@ static void report_light_timer_data( uint8 timer )
 
 /**
  *******************************************************************************
- * @brief       上报电灯定时器的数据
+ * @brief       上报电灯上电加载数据
  * @param       [in/out]  void
  * @return      [in/out]  void
  * @note        None
@@ -171,12 +170,14 @@ static void report_light_loadset_data( void )
  * @note        None
  *******************************************************************************
  */
-static bool save_light_timer_data( uint8 timer )
+static bool save_light_timer_data( uint8 timer, uint8 *data )
 {
     if( timer >= LIGHT_USE_TIMER_NUM )
     {
         return false;
     }
+    
+    memcpy(&light.timer[timer],data,sizeof(light.timer[timer]));
     
     osal_nv_write(DEVICE_LIGHT_SAVE_ID,
                   (uint32)&light.timer[timer]-(uint32)&light,
@@ -349,6 +350,28 @@ void light_switch_handler( void )
     report_light_brightness_data();
 }
 
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+/**
+ *******************************************************************************
+ * @brief       按键处理
+ * @param       [in]   message    按键信息
+ * @return      [out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void key_switch_handler( key_message_t message )
+{
+    switch (message)
+    {
+		case KEY_MESSAGE_PRESS_EDGE:
+            light_switch_handler();
+			break;
+		default:
+			break;
+    }
+}
+
+#endif
 /**
  *******************************************************************************
  * @brief       电灯工作处理函数
@@ -398,16 +421,14 @@ bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data )
             report_light_timer_data(0);
             break;
         case WR_LIGHT_SINGLE_TIMER:
-            memcpy(&light.timer[0],data->data,sizeof(light.timer[0]));
-            save_light_timer_data(1);
+            save_light_timer_data(0,data->data);
             report_light_timer_data(0);
             break;
         case RD_LIGHT_CIRCUL_TIMER:
             report_light_timer_data(1);
             break;
         case WR_LIGHT_CIRCUL_TIMER:
-            memcpy(&light.timer[1],data->data,sizeof(light.timer[1]));
-            save_light_timer_data(1);
+            save_light_timer_data(1,data->data);
             report_light_timer_data(1);
             break;
         case RD_LIGHT_LOAD_SET:
@@ -424,6 +445,6 @@ bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data )
     return true;
 }
 
-/** @}*/     /* 智能电灯配置模块 */
+/** @}*/     /* 电灯配置模块 */
 
 /**********************************END OF FILE*********************************/

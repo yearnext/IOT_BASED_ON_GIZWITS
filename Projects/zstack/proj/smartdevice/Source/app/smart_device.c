@@ -373,30 +373,6 @@ void device_timer_cb( void )
     }
 }
 
-/**
- *******************************************************************************
- * @brief       SmartDevice按键处理
- * @param       [in]   message    按键信息
- * @return      [out]  void
- * @note        None
- *******************************************************************************
- */
-void key_switch_handler( key_message_t message )
-{
-    switch (message)
-    {
-		case KEY_MESSAGE_PRESS_EDGE:
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
-        light_switch_handler();
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
-        socket_switch_handler();
-#endif
-			break;
-		default:
-			break;
-    }
-}
-
 /** @}*/     /* smartlight模块 */
 
 /**********************************END OF FILE*********************************/

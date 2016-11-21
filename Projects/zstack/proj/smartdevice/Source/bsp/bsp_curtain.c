@@ -65,6 +65,28 @@ void bsp_curtain_init(void)
     
 }
 
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+/**
+ *******************************************************************************
+ * @brief       按键处理
+ * @param       [in]   message    按键信息
+ * @return      [out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void key_switch_handler( key_message_t message )
+{
+    switch (message)
+    {
+		case KEY_MESSAGE_PRESS_EDGE:
+			break;
+		default:
+			break;
+    }
+}
+
+#endif
+
 /**
  *******************************************************************************
  * @brief       解析命令数据
