@@ -24,15 +24,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
 #include "myprotocol.h"
+#include "bsp_key.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-// 灯的开启关闭亮度
-#define SOCKET_ON_CMD  ( 255 )
-#define SOCKET_OFF_CMD ( 0 )
-
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
@@ -41,6 +38,9 @@ extern void set_socket_value( uint8 );
 extern uint8 get_socket_value( void );
 extern void socket_control_handler( uint8 );
 extern void socket_switch_handler( void );
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+extern void key_switch_handler( key_message_t );
+#endif
 extern void socket_working_handler( void );
 extern bool socket_cmd_resolve( MYPROTOCOL_USER_DATA *data );
 

@@ -24,6 +24,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
 #include "myprotocol.h"
+#include "bsp_key.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -37,6 +38,9 @@ extern void set_light_brightness( uint8 );
 extern uint8 get_light_brightness( void );
 extern void light_control_handler( uint8 );
 extern void light_switch_handler( void );
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+extern void key_switch_handler( key_message_t );
+#endif
 extern void light_working_handler( void );
 extern bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data );
 
