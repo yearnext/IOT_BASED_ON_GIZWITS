@@ -31,10 +31,10 @@
 #else 
     #define GIZWITS_LOG(n)
 #endif
+// 机智云串口通讯端口
+#define GIZWITS_UART_PORT 0
 
 /**@} */
-#define GIZWITS_UART_PORT 0
-#define GIZWITS_UART_WRITE(data,len)  HalUARTWrite(GIZWITS_UART_PORT,data,len)
 
 /** WiFi模组配置参数*/
 typedef enum
