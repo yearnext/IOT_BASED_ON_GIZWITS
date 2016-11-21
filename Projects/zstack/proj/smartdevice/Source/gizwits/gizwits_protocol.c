@@ -327,6 +327,29 @@ static int8 gizByteOrderExchange(uint8 *buf,uint32 dataLen)
     }
     return 0;
 }
+
+// 串口发送数据
+bool GIZWITS_UART_WRITE( uint8 *data, uint8 len )
+{
+    uint8 i,j;
+    uint8 packet[128];
+    
+    packet[0] = data[0];
+    packet[1] = data[1];
+    
+    for( i=2,j=2; i<len; i++ )
+    {
+        packet[j] = data[i];
+        
+        if( packet[j++] == 0xFF )
+        {
+            packet[j++] = 0x55;
+        }
+    }
+    
+    HalUARTWrite(GIZWITS_UART_PORT,packet,j)
+}
+
 //
 ///**
 //* @brief 数据点跨字节判断
@@ -1027,88 +1050,88 @@ static int32 gizProtocolIssuedDataAck(protocolHead_t *head, uint8 *data, uint32 
     return dataLen;
 }
 
-///**
-//* @brief 上报数据
-//*
-//* @param [in] action            : PO cmd
-//* @param [in] data              : 数据地址
-//* @param [in] len               : 数据长度
-//*
-//* @return : 正确返回有效数据长度;-1，错误返回
-//*/
-//static int32 gizReportData(uint8 action, uint8 *data, uint32 len)
-//{
-//    protocolReport_t protocolReport;
-//
-//    if(NULL == data)
-//    {
-////        GIZWITS_LOG("gizReportData Error , Illegal Param\n");
-//        return -1;
-//    }
-//    gizProtocolHeadInit((protocolHead_t *)&protocolReport);
-//    protocolReport.head.cmd = CMD_REPORT_P0;
-//    protocolReport.head.sn = gizwitsProtocol.sn++;
-//    protocolReport.action = action;
-//    protocolReport.head.len = gizProtocolExchangeBytes(sizeof(protocolReport_t)-4);
-//    memcpy((gizwitsReport_t *)&protocolReport.reportData, (gizwitsReport_t *)data,len);
-//    protocolReport.sum = gizProtocolSum((uint8 *)&protocolReport, sizeof(protocolReport_t));
-//    
-//    GIZWITS_UART_WRITE((uint8 *)&protocolReport, sizeof(protocolReport_t));
-//
-//    gizProtocolWaitAck((uint8 *)&protocolReport, sizeof(protocolReport_t));
-////    gizwitsProtocol.lastReportTime = gizGetTimerCount();
-//
-//    return sizeof(protocolReport_t);
-//}
-
 /**
-* @brief 转发
+* @brief 上报数据
 *
-* @param [in] devstatus         : 数据地址
+* @param [in] action            : PO cmd
+* @param [in] data              : 数据地址
 * @param [in] len               : 数据长度
 *
 * @return : 正确返回有效数据长度;-1，错误返回
 */
-static int32 gizForwardData( uint8 *devstatus, uint8 len )
+static int32 gizReportData(uint8 action, uint8 *data, uint32 len)
 {
-    uint8 packet[ sizeof(protocolReport_t)+sizeof(devStatus_t) ];
-    protocolHead_t *head = (protocolHead_t *)packet;
-    uint8 start = sizeof(protocolHead_t);
-    uint8 i = 0;
-    
-    if( NULL == devstatus )
+    protocolReport_t protocolReport;
+
+    if(NULL == data)
     {
+//        GIZWITS_LOG("gizReportData Error , Illegal Param\n");
         return -1;
     }
+    gizProtocolHeadInit((protocolHead_t *)&protocolReport);
+    protocolReport.head.cmd = CMD_REPORT_P0;
+    protocolReport.head.sn = gizwitsProtocol.sn++;
+    protocolReport.action = action;
+    protocolReport.head.len = gizProtocolExchangeBytes(sizeof(protocolReport_t)-4);
+    memcpy((gizwitsReport_t *)&protocolReport.reportData, (gizwitsReport_t *)data,len);
+    protocolReport.sum = gizProtocolSum((uint8 *)&protocolReport, sizeof(protocolReport_t));
+    
+    GIZWITS_UART_WRITE((uint8 *)&protocolReport, sizeof(protocolReport_t));
 
-    memset(packet,0,sizeof(packet));
-    
-    gizProtocolHeadInit(head);
-    
-    head->cmd = CMD_REPORT_P0;
-    head->sn = gizwitsProtocol.sn++;
-    head->flags[0] = 0x00;
-    head->flags[1] = 0x00;
-    packet[start++] = ACTION_REPORT_DEV_STATUS;
-    
-    for( i=0; i<len; i++ )
-    {
-        packet[start++] = devstatus[i];
-        if( devstatus[i] == 0xFF )
-        {
-           packet[start++] = 0x55; 
-        }
-    }
-    start++;
-    head->len = gizProtocolExchangeBytes(start-4);
-    packet[start-1] = gizProtocolSum(packet, start);
+    gizProtocolWaitAck((uint8 *)&protocolReport, sizeof(protocolReport_t));
+//    gizwitsProtocol.lastReportTime = gizGetTimerCount();
 
-    GIZWITS_UART_WRITE(packet, start);
-    
-    gizProtocolWaitAck(packet, start);
-
-    return len;
+    return sizeof(protocolReport_t);
 }
+
+///**
+//* @brief 转发
+//*
+//* @param [in] devstatus         : 数据地址
+//* @param [in] len               : 数据长度
+//*
+//* @return : 正确返回有效数据长度;-1，错误返回
+//*/
+//static int32 gizForwardData( uint8 *devstatus, uint8 len )
+//{
+//    uint8 packet[ sizeof(protocolReport_t)+sizeof(devStatus_t) ];
+//    protocolHead_t *head = (protocolHead_t *)packet;
+//    uint8 start = sizeof(protocolHead_t);
+//    uint8 i = 0;
+//    
+//    if( NULL == devstatus )
+//    {
+//        return -1;
+//    }
+//
+//    memset(packet,0,sizeof(packet));
+//    
+//    gizProtocolHeadInit(head);
+//    
+//    head->cmd = CMD_REPORT_P0;
+//    head->sn = gizwitsProtocol.sn++;
+//    head->flags[0] = 0x00;
+//    head->flags[1] = 0x00;
+//    packet[start++] = ACTION_REPORT_DEV_STATUS;
+//    
+//    for( i=0; i<len; i++ )
+//    {
+//        packet[start++] = devstatus[i];
+//        if( devstatus[i] == 0xFF )
+//        {
+//           packet[start++] = 0x55; 
+//        }
+//    }
+//    start++;
+//    head->len = gizProtocolExchangeBytes(start-4);
+//    packet[start-1] = gizProtocolSum(packet, start);
+//
+//    GIZWITS_UART_WRITE(packet, start);
+//    
+//    gizProtocolWaitAck(packet, start);
+//
+//    return len;
+//}
 
 /**
 * @brief 接收协议报文并进行相应的协议处理
@@ -1277,8 +1300,8 @@ int32 gizwitsReport( uint8 *packet )
 //    }
     
     gizDataPoints2ReportData((dataPoint_t *)packet,&gizwitsProtocol.reportData.devStatus);
-    gizForwardData((uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
-//    gizReportData(ACTION_REPORT_DEV_STATUS, (uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
+//    gizForwardData((uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
+    gizReportData(ACTION_REPORT_DEV_STATUS, (uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
 //    gizReportData(ACTION_D2W_TRANSPARENT_DATA, (uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
     memcpy((uint8 *)&gizwitsProtocol.gizLastDataPoint, packet, sizeof(dataPoint_t));
         
