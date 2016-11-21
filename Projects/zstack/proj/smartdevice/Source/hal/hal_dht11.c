@@ -33,11 +33,11 @@
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 // 硬件寄存定义
-#define DHT11_PORT     P1_3
-#define DHT11_BV       BV(3)
-#define DHT11_SEL      P1SEL
-#define DHT11_DIR      P1DIR
-#define DHT11_POLARITY ACTIVE_HIGH
+#define DHT11_PORT          P1_0
+#define DHT11_BV            BV(0)
+#define DHT11_SEL           P1SEL
+#define DHT11_DIR           P1DIR
+#define DHT11_POLARITY      ACTIVE_HIGH
 // 硬件功能定义
 #define DHT11_PORT_WrMode() ( DHT11_DIR |=  DHT11_BV )
 #define DHT11_PORT_RdMode() ( DHT11_DIR &= ~DHT11_BV )

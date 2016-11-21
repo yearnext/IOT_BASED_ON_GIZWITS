@@ -33,8 +33,8 @@
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 // SCK端口寄存器定义
-#define DS1302_SCK_PORT     P0_5
-#define DS1302_SCK_BV       BV(5)
+#define DS1302_SCK_PORT     P0_6
+#define DS1302_SCK_BV       BV(6)
 #define DS1302_SCK_SEL      P0SEL
 #define DS1302_SCK_DIR      P0DIR
 #define DS1302_SCK_POLARITY ACTIVE_HIGH
@@ -45,10 +45,10 @@
 #define DS1302_SDA_DIR      P0DIR
 #define DS1302_SDA_POLARITY ACTIVE_HIGH
 // RST端口寄存器定义
-#define DS1302_RST_PORT     P0_6
-#define DS1302_RST_BV       BV(6)
-#define DS1302_RST_SEL      P0SEL
-#define DS1302_RST_DIR      P0DIR
+#define DS1302_RST_PORT     P1_0
+#define DS1302_RST_BV       BV(0)
+#define DS1302_RST_SEL      P1SEL
+#define DS1302_RST_DIR      P1DIR
 #define DS1302_RST_POLARITY ACTIVE_HIGH
 // SCK端口功能配置
 #define DS1302_SCK_WrMode() ( DS1302_SCK_DIR |=  DS1302_SCK_BV )
