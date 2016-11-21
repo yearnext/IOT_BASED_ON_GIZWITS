@@ -19,6 +19,7 @@
 #include "ZComDef.h"
 #include "hal_uart.h"
 #include "MT_UART.h"
+#include "app_time.h"
 
 /**
 * @name 日志打印宏定义
@@ -164,6 +165,9 @@ typedef enum
 
     CMD_BIND_CONFIG                 = 0x15,        ///< 命令字，对应协议：4.7 MCU通知wifi模组进入可绑定模式 中 设备MCU发送
     ACK_BIND_CONFIG                 = 0x16,        ///< 命令字，对应协议：4.7 MCU通知wifi模组进入可绑定模式 中 WiFi模组回复
+
+    CMD_GET_NET_TIME                = 0x17,       ///< 命令字，对应协议：4.7 MCU请求获取网络时间 中 设备MCU发送
+    ACK_GET_NET_TIME                = 0x18,       ///< 命令字，对应协议：4.7 MCU请求获取网络时间 中 WiFi模组回复
 } PROTOCOL_CMDTYPE;
 
 /** 重发机制结构体 */
@@ -198,6 +202,24 @@ typedef struct
     uint8                 devAttr[8];             ///< 设备属性
     uint8                 sum;                    ///< 检验和
 } protocolDeviceInfo_t;
+
+/** 4.1 WiFi模组应答设备请求网络时间 */
+typedef struct
+{
+    protocolHead_t        head;                   ///< 协议标准头结构体
+    struct
+    {
+        uint8 century;
+        uint8 year;
+        uint8 month;
+        uint8 day;
+        uint8 hour;
+        uint8 minute;
+        uint8 second;
+        uint32 ntp;
+    } time;
+    uint8                 sum;                    ///< 检验和
+} ptotocolNetTime_t;
 
 /** 协议通用数据帧(4.2、4.4、4.6、4.9、4.10) 协议结构体 */
 typedef struct
@@ -299,12 +321,12 @@ typedef struct
 {
     uint8 issuedFlag;                             ///< 保存对应的 p0命令类型
     uint8 protocolBuf[MAX_PACKAGE_LEN];           ///< 协议报文存储区
-//    uint8 transparentBuff[MAX_PACKAGE_LEN];       ///< 透传数据存储区
-//    uint32 transparentLen;                        ///< 透传数据长度
+    uint8 transparentBuff[MAX_PACKAGE_LEN];       ///< 透传数据存储区
+    uint32 transparentLen;                        ///< 透传数据长度
     
     uint32 sn;                                    ///< 消息序号
     uint32 timerMsCount;                          ///< 时间计数(Ms)
-//    uint32 lastReportTime;                        ///< 上次上报时间
+    uint32 lastReportTime;                        ///< 上次上报时间
     protocolWaitAck_t waitAck;                      ///< 协议ACK数据结构
     
     eventInfo_t issuedProcessEvent;                 ///< 控制事件
@@ -333,5 +355,7 @@ uint32 gizGetTimerCount(void);
 //int32 gizwitsForward( uint8 *packet );
 bool gizwitsGetAppConntStatus( void );
 int32 gizwitsReport( uint8 *packet );
+
+extern user_time gizwitsGetTime( void );
 
 #endif

@@ -18,7 +18,6 @@
 #include "myprotocol.h"
 #include "devicelist.h"
 
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
 /** 用户区当前设备状态结构体*/
 extern dataPoint_t currentDataPoint;
 
@@ -96,5 +95,3 @@ int8 gizwitsEventProcess(eventInfo_t *info, uint8 *data, uint8 len)
 
   return 0;
 }
-
-#endif

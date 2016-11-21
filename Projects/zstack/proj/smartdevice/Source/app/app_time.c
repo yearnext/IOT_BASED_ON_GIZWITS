@@ -82,6 +82,43 @@ user_time app_get_time( void )
     return now_time;
 }
 
+/**
+ *******************************************************************************
+ * @brief       根据年月日数据计算星期
+ * @param       [in/out]  time   时间数据
+ * @return      [in/out]  uint8  计算出的星期数据
+ * @note        None
+ *******************************************************************************
+ */
+uint8 get_week_data( user_time time )
+{
+    uint8  temp_month = 0;
+	uint16 temp_year = 0;
+	uint16 temp_week = 0;
+
+    if (time.month <= 2)
+	{
+		temp_month = 12 + time.month;
+		temp_year = time.year - 1;
+	}
+	else
+	{
+		temp_month = time.month;
+		temp_year = time.year;
+	}
+
+	temp_week = temp_year%100;
+	temp_week += temp_week / 4;
+	temp_week += temp_year/100 / 4;
+	temp_week -= temp_year/100 * 2;
+	temp_week += time.day - 1;
+	temp_week += 26 * (temp_month + 1) / 10;
+
+	time.week = temp_week % 7;
+    
+    return time.week;
+}
+
 /** @}*/     /* 时间应用模块 */
 
 /**********************************END OF FILE*********************************/

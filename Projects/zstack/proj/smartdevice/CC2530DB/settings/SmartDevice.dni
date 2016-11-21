@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=-2057976884
+Checksum=-2001156912
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -60,14 +60,16 @@ Freq=50000000
 [struct_types]
 Fmt0=DHT11_DATA_t-hum	3	0
 Fmt1=DHT11_DATA_t-temp	3	0
-Fmt2=osal_event_hdr_t-event	4	0
-Fmt3=user_time-day	4	0
-Fmt4=user_time-hour	4	0
-Fmt5=user_time-minute	4	0
-Fmt6=user_time-month	4	0
-Fmt7=user_time-second	4	0
-Fmt8=user_time-week	4	0
-Fmt9=user_time-year	4	0
+Fmt2=ht_sensor_t-hum	3	0
+Fmt3=ht_sensor_t-temp	3	0
+Fmt4=osal_event_hdr_t-event	4	0
+Fmt5=user_time-day	3	0
+Fmt6=user_time-hour	3	0
+Fmt7=user_time-minute	3	0
+Fmt8=user_time-month	3	0
+Fmt9=user_time-second	3	0
+Fmt10=user_time-week	3	0
+Fmt11=user_time-year	3	0
 [array_types]
 Fmt0=byte [8]	4	0
 Fmt1=uint8 [128]	4	0
@@ -99,12 +101,9 @@ Category=_ 0
 Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_key.c}.411.3" 0 0 0 0 "" 0 ""
 Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\ZMain\TI2530DB\OnBoard.c}.248.3" 1 0 0 0 "" 0 ""
 Bp2=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_key.c}.441.3" 0 0 0 0 "" 0 ""
-Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits\gizwits_protocol.c}.779.5" 0 0 0 0 "" 0 ""
-Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits\gizwits_protocol.c}.1280.5" 0 0 0 0 "" 0 ""
-Bp5=_ "STD_CODE" "{$PROJ_DIR$\..\Source\hal\hal_dht11.c}.159.29" 1 0 0 0 "" 0 ""
-Count=6
+Count=3
 [ChipconEmu]
-Stop timers on halt=0
+Stop timers on halt=1
 Leave target running=1
 [Aliases]
 Count=0

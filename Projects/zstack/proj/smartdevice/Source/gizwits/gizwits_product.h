@@ -21,7 +21,6 @@
 #include "gizwits_protocol.h"
 #include "myprotocol.h"
 
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
 #define GIZWITS_BUFF_CHANGED (0)
 #define GIZWITS_BUFF_NORMAL  (1)
 #define GIZWITS_BUFF_ERROR   (2)
@@ -56,7 +55,5 @@
 */
 int8 gizwitsEventProcess(eventInfo_t *info, uint8 *data, uint8 len);
 /**@} */
-
-#endif
 
 #endif

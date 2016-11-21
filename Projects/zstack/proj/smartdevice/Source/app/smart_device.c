@@ -99,7 +99,8 @@ dataPoint_t currentDataPoint;
 #define TIMER_50MS_COUNT  (5)
 #define TIMER_100MS_COUNT (10)
 #define TIMER_350MS_COUNT (30)
-#define TIMER_1MIN_COUNT  (600)
+//#define TIMER_1MIN_COUNT  (600)
+#define TIMER_1MIN_COUNT  (10)
 
 /** Smart Device 通讯状态指示灯 */
 #define SMARTDEVICE_LED_DISCONNED_STATE (0x00)
@@ -353,11 +354,11 @@ void device_timer_cb( void )
     
     if( ++timer_350ms >= TIMER_350MS_COUNT )
     {
-        app_time_update();
-        
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+        app_time_update();
         light_working_handler();
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+        app_time_update();
         socket_working_handler();
 #else
 #endif  

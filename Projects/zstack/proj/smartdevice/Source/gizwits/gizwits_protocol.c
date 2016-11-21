@@ -19,14 +19,16 @@
 #include "gizwits_protocol.h"
 #include "Onboard.h"
 
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
 /** 协议全局变量 **/
-gizwitsProtocol_t gizwitsProtocol;
+static gizwitsProtocol_t gizwitsProtocol;
+
+// 设备时间数据
+static user_time device_time;
 
 /**@name 串口接收环形缓冲区实现
 * @{
 */
-static rb_t pRb;                                               ///< 环形缓冲区结构体变量
+static rb_t pRb;                                      ///< 环形缓冲区结构体变量
 static uint8 rbBuf[RB_MAX_LEN];                       ///< 环形缓冲区数据缓存区
 
 static void rbCreate(rb_t* rb)
@@ -347,7 +349,9 @@ bool GIZWITS_UART_WRITE( uint8 *data, uint8 len )
         }
     }
     
-    HalUARTWrite(GIZWITS_UART_PORT,packet,j)
+    HalUARTWrite(GIZWITS_UART_PORT,packet,j);
+    
+    return true;
 }
 
 //
@@ -1208,7 +1212,15 @@ void gizwitsInit(void)
     pRb.rbCapacity = RB_MAX_LEN;
     pRb.rbBuff = rbBuf;
     rbCreate(&pRb);
-        
+
+    device_time.year = 16;
+    device_time.month = 1;
+    device_time.day = 1;
+    device_time.week = get_week_data(device_time);
+    device_time.hour = 0;
+    device_time.minute = 0;
+    device_time.second = 0;
+    
 //  gizwitsSetMode(0);
         
     memset((uint8 *)&gizwitsProtocol, 0, sizeof(gizwitsProtocol_t));
@@ -1281,6 +1293,70 @@ int32 gizwitsSetBind( void )
         
     return ret;
 }
+
+/**
+* @brief MCU请求获取网络时间
+
+* 用户可以调用该接口获取网络时间
+
+* @param[in] mode void
+* @return 错误命令码
+*/
+int32 gizwitsGetNetTime( void )
+{
+    int32 ret = 0;
+    protocolCommon_t packet;
+    
+    gizProtocolHeadInit((protocolHead_t *)&packet);
+    
+    packet.head.cmd   = CMD_GET_NET_TIME;
+    packet.head.len   = gizProtocolExchangeBytes(sizeof(protocolCommon_t)-4);
+    packet.head.sn    = gizwitsProtocol.sn++;
+    packet.sum        = gizProtocolSum((uint8 *)&packet, sizeof(protocolCommon_t));
+    
+    GIZWITS_UART_WRITE((uint8 *)&packet, sizeof(protocolCommon_t));
+
+    gizProtocolWaitAck((uint8 *)&packet, sizeof(protocolCommon_t));
+        
+    gizwitsProtocol.lastReportTime = gizGetTimerCount();
+    
+    return ret;
+}
+
+/**
+* @brief 刷新本地时间数据
+
+* 用户可以调用该接口刷新本地时间
+
+* @param[in] mode void
+* @return 错误命令码
+*/
+bool updateDeviceTime( ptotocolNetTime_t *packet )
+{
+    device_time.year = packet->time.year;
+    device_time.month = packet->time.month;
+    device_time.day = packet->time.day;
+    device_time.hour = packet->time.hour;
+    device_time.minute = packet->time.minute;
+    device_time.second = packet->time.second;
+    device_time.week = get_week_data(device_time);
+    
+    return true;
+}
+
+/**
+* @brief 获取网络时间
+
+* 用户可以调用该接口刷新本地时间
+
+* @param[in] mode void
+* @return 时间数据
+*/
+user_time gizwitsGetTime( void )
+{
+    return device_time;
+}
+
 
 /**
 * @brief 机智云上报函数
@@ -1413,6 +1489,9 @@ int32 gizwitsHandle(dataPoint_t *currentData)
             case CMD_ERROR_PACKAGE:
                 GIZWITS_LOG("I SEND ERROR PACKET TO GIZWITS!\n");
                 break;
+            case ACK_GET_NET_TIME:
+                updateDeviceTime((ptotocolNetTime_t *)gizwitsProtocol.protocolBuf);
+                break;
             default:
                 gizProtocolErrorCmd(recvHead,ERROR_CMD);
                 GIZWITS_LOG("ERROR: cmd code error!\n");
@@ -1452,15 +1531,12 @@ int32 gizwitsHandle(dataPoint_t *currentData)
 //        gizwitsReport((uint8 *)currentData);
 //    }
     
-//    if(600000 <= (gizGetTimerCount() - gizwitsProtocol.lastReportTime))
-//    {
-//        GIZWITS_LOG("Info: 600S report data\n");
-//        gizwitsReport((uint8 *)currentData);
-//    }
+    if(60000 <= (gizGetTimerCount() - gizwitsProtocol.lastReportTime))
+    {
+        gizwitsGetNetTime();
+    }
 
     return 0;
 }
 
 /**@} */
-
-#endif
