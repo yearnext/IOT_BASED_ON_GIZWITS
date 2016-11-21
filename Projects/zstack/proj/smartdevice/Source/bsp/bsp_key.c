@@ -89,6 +89,7 @@ static key_t key;
 static struct
 {
 	key_timer_t press_long;
+    key_timer_t press_multi;
 }press_detect;
 
 /* Private functions ---------------------------------------------------------*/
@@ -102,28 +103,45 @@ static struct
  */
 static bool key_press_timer_handler(key_value_t value)
 {
-	if (press_detect.press_long.status)
+    // 按键多击检测
+    if (press_detect.press_multi.status)
 	{
-		if (key_message_send(value, KEY_MESSAGE_LONG_PRESS) == true)
+		if (key_message_send(value, KEY_MESSAGE_MULTI_PRESS) == true)
 		{
-			press_detect.press_long.status = 0;			
+			press_detect.press_multi.status = 0;			
 		}
 		
 		return true;
 	} 
 	else
 	{
-		if (++press_detect.press_long.count >= KEY_LONG_RRESS_TIME)
+		if (++press_detect.press_multi.count >= KEY_MULTI_RRESS_TIME)
 		{
-			press_detect.press_long.count = 0;
+			press_detect.press_multi.count = 0;
 			
-			if (key_message_send(value, KEY_MESSAGE_LONG_PRESS) == false)
+			if (key_message_send(value, KEY_MESSAGE_MULTI_PRESS) == false)
 			{
-				press_detect.press_long.status = 1;	
+				press_detect.press_multi.status = 1;	
 			}
 			
 			return true;
 		}
+	}
+    
+    // 按键长按检测
+	if (press_detect.press_long.status)
+	{
+		key_message_send(value, KEY_MESSAGE_LONG_PRESS);
+		return true;
+	} 
+	else
+	{
+		if (++press_detect.press_long.count >= KEY_LONG_RRESS_TIME)
+        {
+            press_detect.press_long.status = 1;	
+            key_message_send(value, KEY_MESSAGE_LONG_PRESS);
+            return true;
+        }
 	}
 
 	return false;
