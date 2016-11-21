@@ -1,10 +1,10 @@
 /**
  ******************************************************************************
-  * @file       bsp_light.h
+  * @file       bsp_curtain.h
   * @author     yearnext
   * @version    1.0.0
   * @date       2016年9月17日
-  * @brief      智能电灯配置头文件
+  * @brief      窗帘配置 头文件
   * @par        工作平台                                  
   *                  CC2530
   * @par        工作频率                                  
@@ -18,8 +18,13 @@
  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __SMART_DEVICE_LIGHT_H__
-#define __SMART_DEVICE_LIGHT_H__
+#ifndef __SMART_DEVICE_CURTAIN_H__
+#define __SMART_DEVICE_CURTAIN_H__
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
@@ -32,14 +37,13 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern void bsp_light_init( void );
-extern void set_light_brightness( uint8 );
-extern uint8 get_light_brightness( void );
-extern void light_control_handler( uint8 );
-extern void light_switch_handler( void );
-extern void light_working_handler( void );
-extern bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data );
+extern void bsp_curtain_init( void );
+extern bool curtain_cmd_resolve( MYPROTOCOL_USER_DATA *data );
 
-#endif      /* __SMART_DEVICE_LIGHT_H__ */
+#ifdef __cplusplus
+}
+#endif
+
+#endif      /* __SMART_DEVICE_CURTAIN_H__ */
 
 /**********************************END OF FILE*********************************/

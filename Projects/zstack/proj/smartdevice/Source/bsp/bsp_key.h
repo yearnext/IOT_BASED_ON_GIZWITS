@@ -44,21 +44,83 @@
 #define KEY_ACTIVE_LOW  !
 #define KEY_ACTIVE_HIGH !!
 
-// °´¼ü¶Ë¿ÚÅäÖÃ
-/** KEY1 P0_0 */
-#define KEY1_PORT        P0_0
+// Íø¹Ø°´¼ü¶Ë¿ÚÅäÖÃ
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+/** KEY1 P0_4 */
+#define KEY1_PORT        P0_4
 #define KEY1_PORT_SEL    P0SEL
 #define KEY1_PORT_DIR    P0DIR
-#define KEY1_PORT_BIT    BV(0)
+#define KEY1_PORT_BIT    BV(4)
 #define KEY1_PORT_INIT() st(KEY1_PORT_SEL &= ~KEY1_PORT_BIT; KEY1_PORT_DIR &= ~KEY1_PORT_BIT;)
 #define KEY1_READ()      KEY_ACTIVE_LOW(KEY1_PORT)
-/** KEY2 P1_2 */
-#define KEY2_PORT        P1_2
-#define KEY2_PORT_SEL    P1SEL
-#define KEY2_PORT_DIR    P1DIR
-#define KEY2_PORT_BIT    BV(2)
+/** KEY2 P0_5 */
+#define KEY2_PORT        P0_5
+#define KEY2_PORT_SEL    P0SEL
+#define KEY2_PORT_DIR    P0DIR
+#define KEY2_PORT_BIT    BV(5)
 #define KEY2_PORT_INIT() st(KEY2_PORT_SEL &= ~KEY2_PORT_BIT; KEY2_PORT_DIR &= ~KEY2_PORT_BIT;)
 #define KEY2_READ()      KEY_ACTIVE_LOW(KEY2_PORT)
+// µçµÆµÆ°´¼ü¶Ë¿ÚÅäÖÃ
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+/** KEY1 P0_4 */
+#define KEY1_PORT        P0_4
+#define KEY1_PORT_SEL    P0SEL
+#define KEY1_PORT_DIR    P0DIR
+#define KEY1_PORT_BIT    BV(4)
+#define KEY1_PORT_INIT() st(KEY1_PORT_SEL &= ~KEY1_PORT_BIT; KEY1_PORT_DIR &= ~KEY1_PORT_BIT;)
+#define KEY1_READ()      KEY_ACTIVE_LOW(KEY1_PORT)
+/** KEY2 P0_5 */
+#define KEY2_PORT        P0_5
+#define KEY2_PORT_SEL    P0SEL
+#define KEY2_PORT_DIR    P0DIR
+#define KEY2_PORT_BIT    BV(5)
+#define KEY2_PORT_INIT() st(KEY2_PORT_SEL &= ~KEY2_PORT_BIT; KEY2_PORT_DIR &= ~KEY2_PORT_BIT;)
+#define KEY2_READ()      KEY_ACTIVE_LOW(KEY2_PORT)
+// ²å×ù°´¼ü¶Ë¿ÚÅäÖÃ
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+/** KEY1 P0_4 */
+#define KEY1_PORT        P0_4
+#define KEY1_PORT_SEL    P0SEL
+#define KEY1_PORT_DIR    P0DIR
+#define KEY1_PORT_BIT    BV(4)
+#define KEY1_PORT_INIT() st(KEY1_PORT_SEL &= ~KEY1_PORT_BIT; KEY1_PORT_DIR &= ~KEY1_PORT_BIT;)
+#define KEY1_READ()      KEY_ACTIVE_LOW(KEY1_PORT)
+/** KEY2 P0_5 */
+#define KEY2_PORT        P0_5
+#define KEY2_PORT_SEL    P0SEL
+#define KEY2_PORT_DIR    P0DIR
+#define KEY2_PORT_BIT    BV(5)
+#define KEY2_PORT_INIT() st(KEY2_PORT_SEL &= ~KEY2_PORT_BIT; KEY2_PORT_DIR &= ~KEY2_PORT_BIT;)
+#define KEY2_READ()      KEY_ACTIVE_LOW(KEY2_PORT)
+// ´°Á±°´¼ü¶Ë¿ÚÅäÖÃ
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+/** KEY1 P1_0 */
+#define KEY1_PORT        P1_0
+#define KEY1_PORT_SEL    P1SEL
+#define KEY1_PORT_DIR    P1DIR
+#define KEY1_PORT_BIT    BV(0)
+#define KEY1_PORT_INIT() st(KEY2_PORT_SEL &= ~KEY2_PORT_BIT; KEY2_PORT_DIR &= ~KEY2_PORT_BIT;)
+#define KEY1_READ()      KEY_ACTIVE_LOW(KEY2_PORT)
+// ÎÂÊª¶È´«¸ÐÆ÷°´¼ü¶Ë¿ÚÅäÖÃ
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+
+#else
+/** KEY1 */
+#define KEY1_PORT        
+#define KEY1_PORT_SEL    
+#define KEY1_PORT_DIR    
+#define KEY1_PORT_BIT    
+#define KEY1_PORT_INIT() 
+#define KEY1_READ()     
+/** KEY2 */
+#define KEY2_PORT       
+#define KEY2_PORT_SEL    
+#define KEY2_PORT_DIR   
+#define KEY2_PORT_BIT    
+#define KEY2_PORT_INIT()
+#define KEY2_READ()      
+
+#endif
 
 /* Exported types ------------------------------------------------------------*/
 /**

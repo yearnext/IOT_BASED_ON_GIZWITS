@@ -30,9 +30,7 @@
 #include "app_timer.h"
 #include "myprotocol.h"
 #include "Onboard.h"
-
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
-
+     
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
@@ -41,9 +39,20 @@
 #define Light_Brightness_Conversion(n) ( 0xFF - (n) )
 #define Get_Light_Brightness()         ( Get_TIM4_CH0_Duty() )
 
+// 灯的最大亮度/最小亮度
+#define LIGHT_MAX_BRIGHTNESS           (100)
+#define LIGHT_MIN_BRIGHTNESS           (0)
+// 灯的开启亮度/关闭亮度
+#define LIGHT_ON_BRIGHTNESS            (100)  
+#define LIGHT_OFF_BRIGHTNESS           (0)
+     
 // 配置定时器使用数量
-#define LIGHT_USE_TIMER_NUM (2)
-
+#define LIGHT_USE_TIMER_NUM            (2)
+    
+// 加载掉电前的数据
+#define LIGHT_NO_LOAD_SET (0x00)
+#define LIGHT_LOAD_SET    (0x01)
+     
 /* Private typedef -----------------------------------------------------------*/
 // 电灯控制命令
 typedef enum
@@ -78,8 +87,6 @@ static struct _DEVICE_LIGHT_SAVE_DATA_
 //        LIGHT_NO_LOAD_SET = 0x00,
 //        LIGHT_LOAD_SET    = 0x01,
 //    }load_set;
-#define LIGHT_NO_LOAD_SET (0x00)
-#define LIGHT_LOAD_SET    (0x01)
     uint8 load_set;
 }light;
 
@@ -218,33 +225,6 @@ static void light_rst_set( void )
 
 /**
  *******************************************************************************
- * @brief       电灯初始化函数
- * @param       [in/out]  void
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-void bsp_light_init( void )
-{
-    Timer4_PWM_Init( TIM4_CH0_PORT_P2_0 );
-    set_light_brightness(LIGHT_OFF_BRIGHTNESS);
-    
-    // FLASH 数据初始化
-    if( Device_FirstWrite_Check() == false \
-        || osal_nv_read(DEVICE_LIGHT_SAVE_ID,0,DEVICE_LIGHT_DATA_SIZE,(void *)&light) != SUCCESS )
-    {
-        light_rst_set();
-    }
-    
-    // 载入掉点前的状态
-    if( light.load_set == LIGHT_LOAD_SET )
-    {
-        set_light_brightness(light.status.now);
-    }
-}
-
-/**
- *******************************************************************************
  * @brief       电灯亮度设置函数
  * @param       [in/out]  uint8    电灯的亮度
  * @return      [in/out]  void
@@ -274,6 +254,33 @@ uint8 get_light_brightness( void )
     brightness_data *= 10;
     brightness_data >>= 8;
     return (uint8)(brightness_data);
+}
+
+/**
+ *******************************************************************************
+ * @brief       电灯初始化函数
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void bsp_light_init( void )
+{
+    Timer4_PWM_Init( TIM4_CH0_PORT_P2_0 );
+    set_light_brightness(LIGHT_OFF_BRIGHTNESS);
+    
+    // FLASH 数据初始化
+    if( Device_FirstWrite_Check() == false \
+        || osal_nv_read(DEVICE_LIGHT_SAVE_ID,0,DEVICE_LIGHT_DATA_SIZE,(void *)&light) != SUCCESS )
+    {
+        light_rst_set();
+    }
+    
+    // 载入掉点前的状态
+    if( light.load_set == LIGHT_LOAD_SET )
+    {
+        set_light_brightness(light.status.now);
+    }
 }
 
 /**
@@ -416,8 +423,6 @@ bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data )
     }
     return true;
 }
-
-#endif
 
 /** @}*/     /* 智能电灯配置模块 */
 
