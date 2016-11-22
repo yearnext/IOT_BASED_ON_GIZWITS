@@ -38,6 +38,8 @@
 #define Light_Brightness_Conversion(n) ( 0xFF - (n) )
 #define Get_Light_Brightness()         ( Get_TIM4_CH0_Duty() )
 
+#define DEVICE_LIGHT_DATA_SIZE         (Cal_DataSize(light))
+
 // 灯的最大亮度/最小亮度
 #define LIGHT_MAX_BRIGHTNESS           (100)
 #define LIGHT_MIN_BRIGHTNESS           (0)
@@ -208,7 +210,7 @@ static bool save_light_loadset_data( uint8 data )
 
 /**
  *******************************************************************************
- * @brief       初始化LED设置数据
+ * @brief       初始化电灯设置数据
  * @param       [in/out]  void
  * @return      [in/out]  void
  * @note        None
@@ -271,11 +273,7 @@ void bsp_light_init( void )
     set_light_brightness(LIGHT_OFF_BRIGHTNESS);
     
     // FLASH 数据初始化
-    if( Device_FirstWrite_Check() == false \
-        || osal_nv_read(DEVICE_LIGHT_SAVE_ID,0,DEVICE_LIGHT_DATA_SIZE,(void *)&light) != SUCCESS )
-    {
-        light_rst_set();
-    }
+    Device_Load_LastData(DEVICE_LIGHT_SAVE_ID,DEVICE_LIGHT_DATA_SIZE,(void *)&light,light_rst_set);
     
     // 载入掉点前的状态
     if( light.load_set == LIGHT_LOAD_SET )
@@ -302,7 +300,7 @@ void light_control_handler( uint8 brightness )
         set_light_brightness( light.status.now );
         
         osal_nv_write(DEVICE_LIGHT_SAVE_ID,\
-                      (uint16)(&((DEVICE_LIGHT_SAVE_DATA *)0)->status),\
+                      (uint16)&light.status-(uint16)&light,\
                       sizeof(light.status),\
                       (void *)&light.status);
     }
@@ -359,12 +357,32 @@ void light_switch_handler( void )
  * @note        None
  *******************************************************************************
  */
-void key_switch_handler( key_message_t message )
+void light_switch_key_handler( key_message_t message )
 {
     switch (message)
     {
 		case KEY_MESSAGE_PRESS_EDGE:
             light_switch_handler();
+			break;
+		default:
+			break;
+    }
+}
+
+/**
+ *******************************************************************************
+ * @brief       按键处理
+ * @param       [in]   message    按键信息
+ * @return      [out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void light_reset_key_handler( key_message_t message )
+{
+    switch (message)
+    {
+		case KEY_MESSAGE_PRESS_EDGE:
+            //light_switch_handler();
 			break;
 		default:
 			break;

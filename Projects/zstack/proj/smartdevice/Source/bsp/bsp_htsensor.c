@@ -79,17 +79,17 @@ void report_ht_sensor_data( void )
 }
 
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
-/**
- *******************************************************************************
- * @brief       按键处理
- * @param       [in]   message    按键信息
- * @return      [out]  void
- * @note        None
- *******************************************************************************
- */
-void key_switch_handler( key_message_t message )
-{   
-}
+///**
+// *******************************************************************************
+// * @brief       按键处理
+// * @param       [in]   message    按键信息
+// * @return      [out]  void
+// * @note        None
+// *******************************************************************************
+// */
+//void htsensor_key_handler( key_message_t message )
+//{   
+//}
 
 #endif
 

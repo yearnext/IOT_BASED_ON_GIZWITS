@@ -36,7 +36,9 @@
 extern void ht_sensor_init(void);
 extern void report_ht_sensor_data( void );
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
-extern void key_switch_handler( key_message_t );
+//#define htsensor_key_handler key1_handler
+//
+//extern void htsensor_key_handler( key_message_t );
 #endif
 extern bool ht_sensor_cmd_resolve(MYPROTOCOL_USER_DATA *data);
 

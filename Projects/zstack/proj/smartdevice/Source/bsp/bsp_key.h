@@ -142,9 +142,8 @@
 typedef enum
 {
 	KEY_VALUE_NOP = 0x00,
-	KEY_VALUE_SWITCH,
-	KEY_VALUE_RESET,
-    KEY_VALUE_RAIN,
+	KEY_VALUE_K1,
+	KEY_VALUE_K2,
 }key_value_t;
 
 /**
@@ -175,7 +174,30 @@ extern void hal_key_init(void);
 extern key_value_t get_key_value(void);
 extern void key_scan(void);
 extern void key_handler(void);
-extern void key_switch_handler(key_message_t);
+
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+extern void key1_handler(message.message);
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+extern void key1_handler(message.message);
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+extern void key1_handler(message.message);
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+extern void key1_handler(message.message);
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+#else
+#endif
+
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+extern void key2_handler(message.message);
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+extern void key2_handler(message.message);
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+extern void key2_handler(message.message);
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+extern void key2_handler(message.message);
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+#else
+#endif
 
 #endif      /* __BSP_KEY_H__ */
 

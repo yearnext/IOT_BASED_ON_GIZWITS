@@ -38,9 +38,15 @@ extern void set_socket_value( uint8 );
 extern uint8 get_socket_value( void );
 extern void socket_control_handler( uint8 );
 extern void socket_switch_handler( void );
+
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
-extern void key_switch_handler( key_message_t );
+#define key_switch_key_handler key1_handler
+#define key_reset_key_handler  key2_handler
+
+extern void key_switch_key_handler( key_message_t );
+extern void key_reset_key_handler( key_message_t );
 #endif
+
 extern void socket_working_handler( void );
 extern bool socket_cmd_resolve( MYPROTOCOL_USER_DATA *data );
 

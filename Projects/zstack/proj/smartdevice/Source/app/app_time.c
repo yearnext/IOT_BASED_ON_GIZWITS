@@ -90,7 +90,7 @@ user_time app_get_time( void )
  * @note        None
  *******************************************************************************
  */
-uint8 get_week_data( user_time time )
+uint8 app_cal_week( user_time time )
 {
     uint8  temp_month = 0;
 	uint16 temp_year = 0;

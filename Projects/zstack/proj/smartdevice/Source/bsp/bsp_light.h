@@ -38,9 +38,16 @@ extern void set_light_brightness( uint8 );
 extern uint8 get_light_brightness( void );
 extern void light_control_handler( uint8 );
 extern void light_switch_handler( void );
+
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+#define light_switch_key_handler key1_handler
+#define light_reset_key_handler  key2_handler
+
 extern void key_switch_handler( key_message_t );
+extern void key_switch_handler( key_message_t );
+
 #endif
+
 extern void light_working_handler( void );
 extern bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data );
 

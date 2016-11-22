@@ -41,7 +41,12 @@ extern "C"
 extern void bsp_curtain_init( void );
 
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
-extern void key_switch_handler( key_message_t );
+#define curtain_switch_handler key1_handler
+#define curtain_rain_handler   key2_handler
+
+extern void curtain_switch_handler( key_message_t );
+extern void curtain_rain_handler( key_message_t );
+
 #endif
 
 extern bool curtain_cmd_resolve( MYPROTOCOL_USER_DATA *data );

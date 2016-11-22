@@ -52,7 +52,7 @@ typedef struct
 extern void app_time_init( void );
 extern void app_time_update( void );
 extern user_time app_get_time( void );
-extern uint8 get_week_data( user_time );
+extern uint8 app_cal_week( user_time );
 
 #endif      /* __APP_USER_TIME_H__ */
 

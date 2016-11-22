@@ -36,17 +36,14 @@
 #define DEVICE_DEVICE_TEMP_HUM_SENSOR_SAVE_ID   (0x0210)
 //设备占用存储空间大小
 #define Cal_DataSize(data)                      ( sizeof(data) / sizeof(unsigned char) )
-#define DEVICE_COORD_DATA_SIZE                  (Cal_DataSize(DEVICE_COORD_SAVE_DATA))
-#define DEVICE_LIGHT_DATA_SIZE                  (Cal_DataSize(DEVICE_LIGHT_SAVE_DATA))
-#define DEVICE_SOCKET_DATA_SIZE                 (Cal_DataSize(DEVICE_SOCKET_SAVE_DATA))
-#define DEVICE_CURTAIN_DATA_SIZE                (Cal_DataSize(DEVICE_CURTAIN_SAVE_DATA))
-#define DEVICE_DEVICE_TEMP_HUM_SENSOR_DATA_SIZE (Cal_DataSize(DEVICE_TEMP_HUM_SENSOR_SAVE_DATA))
+//#define DEVICE_COORD_DATA_SIZE                  (Cal_DataSize(DEVICE_COORD_SAVE_DATA))
+//#define DEVICE_DEVICE_TEMP_HUM_SENSOR_DATA_SIZE (Cal_DataSize(DEVICE_TEMP_HUM_SENSOR_SAVE_DATA))
 //设备ID
-#define DEVICE_COORD_ID                         (0x00)
-#define DEVICE_LIGHT_ID                         (0x01)
-#define DEVICE_SOCKET_ID                        (0x02)
-#define DEVICE_CURTAIN_ID                       (0x03)
-#define DEVICE_DEVICE_TEMP_HUM_SENSOR_ID        (0x04)
+//#define DEVICE_COORD_ID                         (0x00)
+//#define DEVICE_LIGHT_ID                         (0x01)
+//#define DEVICE_SOCKET_ID                        (0x02)
+//#define DEVICE_CURTAIN_ID                       (0x03)
+//#define DEVICE_DEVICE_TEMP_HUM_SENSOR_ID        (0x04)
 // 初次写入数据密钥
 #define DEVICE_FIRST_WRIYE_KEY (0x5A)
 // 配置智能设备的定时器数量
@@ -86,10 +83,12 @@ typedef struct
 }DEVICE_CURTAIN_SAVE_DATA;
 
 //设备储存类型 
-typedef DEVICE_BASE_SAVE_DATA   DEVICE_COORD_SAVE_DATA;
-typedef DEVICE_BASE_SAVE_DATA   DEVICE_TEMP_HUM_SENSOR_SAVE_DATA;
-typedef SIMPLE_DEVICE_SAVE_DATA DEVICE_LIGHT_SAVE_DATA;
-typedef SIMPLE_DEVICE_SAVE_DATA DEVICE_SOCKET_SAVE_DATA;
+//typedef DEVICE_BASE_SAVE_DATA   DEVICE_COORD_SAVE_DATA;
+//typedef DEVICE_BASE_SAVE_DATA   DEVICE_TEMP_HUM_SENSOR_SAVE_DATA;
+//typedef SIMPLE_DEVICE_SAVE_DATA DEVICE_LIGHT_SAVE_DATA;
+//typedef SIMPLE_DEVICE_SAVE_DATA DEVICE_SOCKET_SAVE_DATA;
+
+typedef void (*load_flase_handler)(void);
 
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -98,7 +97,8 @@ typedef SIMPLE_DEVICE_SAVE_DATA DEVICE_SOCKET_SAVE_DATA;
 /* Exported functions --------------------------------------------------------*/
 //extern void Rst_DeviceSaveData( uint8 );
 extern void Device_FirstWriteKey_Init( void );
-extern bool Device_FirstWrite_Check( void );
+extern bool Device_FirstWrite_Check( uint16 id, uint16 size );
+extern bool Device_Load_LastData( uint16, uint16, void*, load_flase_handler );
 
 #endif      /* __CC2530_FLASH_SAVE_H__ */
 
