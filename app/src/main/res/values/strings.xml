@@ -23,4 +23,16 @@
     <string name="toolbar1">智能设备</string>
     <string name="empty">n/a</string>
 
+    <string name="app_id">d5f2fb27495340fe81efa0682cc37ce6</string>
+    <string name="product_key">c46a192ef791475e9d6c991a6b11106d</string>
+    <string name="data_name">Packet</string>
+
+
+    <string name="offline_broadcast">com.example.xzy.myhome.FORCE_OFFLINE</string>
+    <string name="offline_alert_dialog_message">设备已掉线，请检查WIFI或检查硬件设备网络状态</string>
+    <string name="offline_alert_dialog_title">提示</string>
+    <string name="offline_alert_dialog_positive">重新连接</string>
+    <string name="offline_alert_dialog_negative">重新登录</string>
+
+
 </resources>

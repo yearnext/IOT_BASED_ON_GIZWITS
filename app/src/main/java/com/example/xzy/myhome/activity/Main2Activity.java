@@ -17,7 +17,6 @@ import android.view.Window;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import com.example.xzy.myhome.Config;
 import com.example.xzy.myhome.R;
 import com.example.xzy.myhome.adapter.DeviceItemRecycerViewAdapter;
 import com.example.xzy.myhome.bean.Device;
@@ -74,19 +73,29 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
         ButterKnife.bind(this);
-        AlertDialog.Builder builder = new AlertDialog.Builder(Main2Activity.this,R.style.MyAlertDialog);
-        alertDialog = builder.setView(R.layout.logining)
-                .setCancelable(false)
-                .create();
-        alertDialog.show();
         Intent intent = getIntent();
         mDevice = intent.getParcelableExtra("mDevice");
         mDevice.setListener(mDeviceListener);
         mDevice.getDeviceStatus();
         deviceList = new ArrayList<Device>();
+
+        if (mDevice.getNetStatus() == GizWifiDeviceNetStatus.GizDeviceOnline) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(Main2Activity.this,R.style.MyAlertDialog);
+            alertDialog = builder.setView(R.layout.logining)
+                    .setCancelable(false)
+                    .create();
+            alertDialog.show();
+        }
         //initData();
         initView();
         setResult(RESULT_OK);
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mDevice.setSubscribe(false);
 
     }
 
@@ -106,8 +115,6 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
     @Override
     protected void onPause() {
         super.onPause();
-        alertDialog.cancel();
-
     }
 
     private void initView() {
@@ -151,11 +158,10 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
             if (dataMap.get("data") != null) {
                 Log.d(TAG, "mDidReceiveData:有data");
                 ConcurrentHashMap<String, Object> map = (ConcurrentHashMap<String, Object>) dataMap.get("data");
-                byte[] bytes = (byte[]) map.get(Config.DATA_NAME);
+                byte[] bytes = (byte[]) map.get(getApplication().getString(R.string.data_name));
                 if (bytes == null ) {
                     Log.i(TAG, "mDidReceiveData: " + "bytes为空");
                 } else if (Arrays.equals(bytes,emptyacket)) {
-                    //bytesToHex(bytes).equals(emptyacket)
                     Log.d(TAG, "mDidReceiveData: " + "全为0数据一条");
                 } else {
                     updateLogcat(bytes);
@@ -469,13 +475,18 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
     protected void mDidUpdateNetStatus(GizWifiDevice device, GizWifiDeviceNetStatus netStatus) {
         switch (netStatus) {
             case GizDeviceOnline:
-                ToastUtil.showToast(Main2Activity.this, device.getProductName() +"设备状态变为:在线");
+                ToastUtil.showToast(Main2Activity.this, device.getProductName() +"设备上线");
                 break;
             case GizDeviceOffline:
+                Intent intent = new Intent("com.example.xzy.myhome.FORCE_OFFLINE");
+                sendBroadcast(intent);
                 ToastUtil.showToast(Main2Activity.this, device.getProductName() +"设备状态变为:离线" );
                 break;
             case GizDeviceControlled:
-                alertDialog.cancel();
+                if (alertDialog!=null) {
+                    alertDialog.cancel();
+
+                }
                 controlled = true;
                 ParsePacket parsePacket = new ParsePacket();
                 parsePacket.setType(ParsePacket.TYPE.APP_REQUEST);

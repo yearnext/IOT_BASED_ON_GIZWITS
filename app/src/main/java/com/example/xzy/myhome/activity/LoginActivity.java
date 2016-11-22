@@ -77,7 +77,9 @@ public class LoginActivity extends BaseActivity {
                 break;
 
             case R.id.register_start:
-                startActivity(new Intent(LoginActivity.this, Main2Activity.class));
+                Intent intent = new Intent(getApplication().getString(R.string.offline_broadcast));
+                sendBroadcast(intent);
+                ////startActivity(new Intent(LoginActivity.this, Main2Activity.class));
                 break;
         }
     }
@@ -97,6 +99,7 @@ public class LoginActivity extends BaseActivity {
         } else {
             // 登录失败
             ad.dismiss();
+            Log.e(TAG, "mDidUserLogin: "+result );
             ToastUtil.showToast(LoginActivity.this, "登录失败");
         }
     }

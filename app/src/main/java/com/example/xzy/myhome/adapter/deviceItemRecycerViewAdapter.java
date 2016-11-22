@@ -22,6 +22,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static android.content.ContentValues.TAG;
 import static com.example.xzy.myhome.R.drawable.curtain;
 import static com.example.xzy.myhome.R.drawable.lamp;
 import static com.example.xzy.myhome.R.drawable.socket;
@@ -37,6 +38,7 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
     DeviceSetListener deviceSetListener;
     byte switchState ;
     byte lampLuminance;
+    protected static final char[] hexArray = "0123456789ABCDEF".toCharArray();
 
 
     public DeviceItemRecycerViewAdapter(List<Device> devices) {
@@ -143,8 +145,9 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
                     deviceSetListener.onSwtichClick(position,seekBar,lampLuminance);
                 }
             });
-            //// TODO: 2016/11/3 灯的亮度 
-            lampHolder.seekBarLamp.setProgress(deviceState);
+            //// TODO: 2016/11/3 灯的亮度
+            lampHolder.seekBarLamp.setProgress(deviceState& 0xFF);
+            Log.i(TAG, "onBindViewHolder: "+deviceState);
             lampHolder.tvDeviceItemNameLamp.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -266,6 +269,9 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
 
 
     }
+
+
+
 
 
 }

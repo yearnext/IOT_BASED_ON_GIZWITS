@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/text"
     tools:context="com.example.xzy.myhome.activity.MainActivity">
     <android.support.v7.widget.Toolbar
         android:layout_width="match_parent"
@@ -21,13 +22,13 @@
         android:visibility="gone">
     </android.support.v7.widget.RecyclerView>
     <TextView
-        android:layout_marginTop="56dp"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="没有已绑定设备"
-        android:textSize="30dp"
-        android:id="@+id/empty_list"
-        android:gravity="center"/>
+    android:layout_marginTop="56dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:text="没有已绑定设备"
+    android:textSize="30dp"
+    android:id="@+id/empty_list"
+    android:gravity="center"/>
 
 
 </FrameLayout>

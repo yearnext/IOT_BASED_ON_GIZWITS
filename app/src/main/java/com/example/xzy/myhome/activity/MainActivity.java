@@ -14,7 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.example.xzy.myhome.Config;
+
 import com.example.xzy.myhome.R;
 import com.example.xzy.myhome.adapter.IotRecyckerViewAdapter;
 import com.example.xzy.myhome.bean.IotDevice;
@@ -22,6 +22,7 @@ import com.example.xzy.myhome.util.BooleanTranslateUtil;
 import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
 import com.gizwits.gizwifisdk.api.GizWifiSDK;
+import com.gizwits.gizwifisdk.enumration.GizWifiDeviceNetStatus;
 import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
 
 import java.util.ArrayList;
@@ -41,9 +42,7 @@ public class MainActivity extends BaseActivity {
 
     List<GizWifiDevice> devices = GizWifiSDK.sharedInstance().getDeviceList();
     String mUid;
-    String mToken;
-    int mPosition;
-    List<IotDevice> iotDeviceList;
+    String mToken;List<IotDevice> iotDeviceList;
     IotRecyckerViewAdapter iotAdapter;
 
     @Override
@@ -55,7 +54,7 @@ public class MainActivity extends BaseActivity {
         mUid = intent.getStringExtra("mUid");
         mToken = intent.getStringExtra("mToken");
         List<String> pks = new ArrayList<String>();
-        pks.add(Config.PRODUCT_KEY);
+        pks.add(getApplication().getString(R.string.product_key));
         GizWifiSDK.sharedInstance().getBoundDevices(mUid, mToken, pks);
         iotDeviceList = new ArrayList<IotDevice>();
         initView();
@@ -100,13 +99,17 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onItemClick(View view, int position) {
                 mDevice = devices.get(position);
-                mDevice.setListener(mDeviceListener);
-                mDevice.setSubscribe(true);
-                Intent intent = new Intent(MainActivity.this, Main2Activity.class);
-                Bundle bundle = new Bundle();
-                bundle.putParcelable("mDevice", mDevice);
-                intent.putExtras(bundle);
-                startActivityForResult(intent,0);
+            if (mDevice.getNetStatus() != GizWifiDeviceNetStatus.GizDeviceOffline) {
+                    mDevice.setListener(mDeviceListener);
+                    mDevice.setSubscribe(true);
+                    Intent intent = new Intent(MainActivity.this, Main2Activity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putParcelable("mDevice", mDevice);
+                    intent.putExtras(bundle);
+                    startActivityForResult(intent, 0);
+                } else {
+                    ToastUtil.showToast(MainActivity.this,"当前设备处于离线状态");
+                }
             }
         });
     }

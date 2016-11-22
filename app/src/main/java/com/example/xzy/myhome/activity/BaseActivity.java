@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.xzy.myhome.util.ActivityCollector;
 import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
 import com.gizwits.gizwifisdk.api.GizWifiSDK;
@@ -23,13 +24,18 @@ public abstract class BaseActivity extends AppCompatActivity {
 
 
     protected final String TAG = getClass().getSimpleName();
-    // 使用缓存的设备列表刷新UI
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ActivityCollector.addActivity(this);
         GizWifiSDK.sharedInstance().setListener(mListener);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ActivityCollector.removeActivity(this);
     }
 
     GizWifiSDKListener mListener = new GizWifiSDKListener() {
@@ -165,19 +171,17 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void mDidReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn) {
     }
 
-    ;
 
 
     //登录回调
     protected void mDidUserLogin(GizWifiErrorCode result, String uid, String token) {
     }
 
-    ;
 
     //注册回调
     protected void MDidRegisterUser(GizWifiErrorCode result) {    }
 
-    ;
+
 
     //WIFI配置回调
     protected void mDidSetDeviceOnboarding(GizWifiErrorCode result, String mac, String did, String productKey) {

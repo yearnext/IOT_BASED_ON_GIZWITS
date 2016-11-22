@@ -7,7 +7,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.example.xzy.myhome.Config;
+
 import com.example.xzy.myhome.R;
 import com.example.xzy.myhome.util.ExceptionUtil;
 import com.example.xzy.myhome.util.ToastUtil;
@@ -24,7 +24,7 @@ public class StartActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        GizWifiSDK.sharedInstance().startWithAppID(getApplicationContext(), Config.APP_ID);
+        GizWifiSDK.sharedInstance().startWithAppID(getApplicationContext(), getApplication().getString(R.string.app_id));
         GizWifiSDK.sharedInstance().setLogLevel(GizLogPrintLevel.GizLogPrintI);
         }
 
