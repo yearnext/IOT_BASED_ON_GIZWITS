@@ -1216,7 +1216,7 @@ void gizwitsInit(void)
     device_time.year = 16;
     device_time.month = 1;
     device_time.day = 1;
-    device_time.week = get_week_data(device_time);
+    device_time.week = app_cal_week(device_time);
     device_time.hour = 0;
     device_time.minute = 0;
     device_time.second = 0;
@@ -1339,7 +1339,7 @@ bool updateDeviceTime( ptotocolNetTime_t *packet )
     device_time.hour = packet->time.hour;
     device_time.minute = packet->time.minute;
     device_time.second = packet->time.second;
-    device_time.week = get_week_data(device_time);
+    device_time.week = app_cal_week(device_time);
     
     return true;
 }

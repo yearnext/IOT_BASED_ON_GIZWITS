@@ -39,6 +39,8 @@
 #define Socket_Value_Conversion(n) ( 0xFF - (n) )
 #define Get_Socket_Value()         ( Get_TIM4_CH0_Duty() )
 
+#define DEVICE_SOCKET_DATA_SIZE    (Cal_DataSize(socket))
+
 /* Private typedef -----------------------------------------------------------*/
 // 继电器控制命令
 typedef enum
@@ -66,7 +68,7 @@ typedef enum
 
 /* Private variables ---------------------------------------------------------*/
 // 插座存储数据
-static struct _DEVICE_LIGHT_SAVE_DATA_
+static struct _DEVICE_SOCKET_SAVE_DATA_
 {
     // 状态数据
     struct
@@ -207,7 +209,7 @@ static bool save_socket_loadset_data( uint8 data )
 
 /**
  *******************************************************************************
- * @brief       初始化LED设置数据
+ * @brief       初始化插座设置数据
  * @param       [in/out]  void
  * @return      [in/out]  void
  * @note        None
@@ -237,16 +239,7 @@ void bsp_socket_init( void )
     set_socket_value(SOCKET_OFF_CMD);
     
     // FLASH 数据初始化
-    if( Device_FirstWrite_Check() == false \
-        || osal_nv_read(DEVICE_SOCKET_SAVE_ID,0,DEVICE_SOCKET_DATA_SIZE,(void *)&socket) != SUCCESS )
-    {
-        memset(&socket,0,sizeof(socket));
-        socket.status.now = SOCKET_OFF_CMD;
-        socket.status.last = SOCKET_ON_CMD;
-        
-        osal_nv_item_init(DEVICE_SOCKET_SAVE_ID,DEVICE_SOCKET_DATA_SIZE,NULL);
-        osal_nv_write(DEVICE_SOCKET_SAVE_ID,0,DEVICE_SOCKET_DATA_SIZE,(void *)&socket);
-    }
+    Device_Load_LastData(DEVICE_SOCKET_SAVE_ID,DEVICE_SOCKET_DATA_SIZE,(void *)&socket,socket_rst_set);
     
     set_socket_value(socket.status.now);
 }
@@ -309,7 +302,7 @@ void socket_control_handler( uint8 value )
         set_socket_value( socket.status.now );
         
         osal_nv_write(DEVICE_SOCKET_SAVE_ID,\
-                      (uint16)(&((DEVICE_SOCKET_SAVE_DATA *)0)->status),\
+                      (uint16)&socket.status-(uint16)&socket,\
                       sizeof(socket.status),\
                       (void *)&socket.status);
     }
@@ -366,12 +359,31 @@ void socket_switch_handler( void )
  * @note        None
  *******************************************************************************
  */
-void key_switch_handler( key_message_t message )
+void key_switch_key_handler( key_message_t message )
 {
     switch (message)
     {
 		case KEY_MESSAGE_PRESS_EDGE:
             socket_switch_handler();
+			break;
+		default:
+			break;
+    }
+}
+
+/**
+ *******************************************************************************
+ * @brief       按键处理
+ * @param       [in]   message    按键信息
+ * @return      [out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void key_reset_key_handler( key_message_t message )
+{
+    switch (message)
+    {
+		case KEY_MESSAGE_PRESS_EDGE:
 			break;
 		default:
 			break;

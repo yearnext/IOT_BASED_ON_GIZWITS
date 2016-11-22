@@ -272,49 +272,49 @@ key_value_t get_key_value(void)
     /** KEY1 P0_4 */
 	if (KEY1_READ())
 	{
-		return KEY_VALUE_SWITCH;
+		return KEY_VALUE_K1;
 	}
     
     /** KEY2 P0_5 */
 	if (KEY2_READ())
 	{
-		return KEY_VALUE_RESET;
+		return KEY_VALUE_K2;
 	}
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
     /** KEY1 P0_4 */
 	if (KEY1_READ())
 	{
-		return KEY_VALUE_SWITCH;
+		return KEY_VALUE_K1;
 	}
     
     /** KEY2 P0_5 */
 	if (KEY2_READ())
 	{
-		return KEY_VALUE_RESET;
+		return KEY_VALUE_K2;
 	}  
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
     /** KEY1 P0_4 */
 	if (KEY1_READ())
 	{
-		return KEY_VALUE_SWITCH;
+		return KEY_VALUE_K1;
 	}
     
     /** KEY2 P0_5 */
 	if (KEY2_READ())
 	{
-		return KEY_VALUE_RESET;
+		return KEY_VALUE_K2;
 	}
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
     /** KEY1 P0_4 */
 	if (KEY1_READ())
 	{
-		return KEY_VALUE_SWITCH;
+		return KEY_VALUE_K1;
 	}
     
     /** KEY1 P0_6 */
 	if (KEY2_READ())
 	{
-		return KEY_VALUE_RAIN;
+		return KEY_VALUE_K2
 	}
     
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
@@ -410,11 +410,31 @@ void key_handler(void)
 	{
 		switch (message.value)
 		{
-			case KEY_VALUE_SWITCH:
-				key_switch_handler(message.message);
+			case KEY_VALUE_K1:
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+                key1_handler(message.message);
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+                key1_handler(message.message);
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+                key1_handler(message.message);
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+                key1_handler(message.message);
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+#else
+#endif
 				break;
-			case KEY_VALUE_RESET:
-				//key_reset_handler(message.message);
+			case KEY_VALUE_K2:
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+                key2_handler(message.message);
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+                key2_handler(message.message);
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+                key2_handler(message.message);
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+                key2_handler(message.message);
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+#else
+#endif
 				break;
 			default:
 				break;
