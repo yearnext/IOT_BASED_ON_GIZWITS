@@ -33,6 +33,10 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
+/**
+ * @defgroup 电动窗帘硬件抽象层定义
+ * @{
+ */
 // 窗帘正转端口寄存器定义
 #define CURTAIN_FORWARD_PORT     P1_2
 #define CURTAIN_FORWARD_BV       BV(2)
@@ -47,12 +51,30 @@
 #define CURTAIN_REVERSE_DIR      P1DIR
 #define CURTAIN_REVERSE_POLARITY ACTIVE_LOW
 
+// 转速输入端口1
+#define CURTAIN_SPD_CH1_PORT     P0_4
+#define CURTAIN_SPD_CH1_BV       BV(4)
+#define CURTAIN_SPD_CH1_SEL      P0SEL
+#define CURTAIN_SPD_CH1_DIR      P0DIR
+#define CURTAIN_SPD_CH1_POLARITY ACTIVE_LOW
+
+// 转速输入端口2
+#define CURTAIN_SPD_CH2_PORT     P0_5
+#define CURTAIN_SPD_CH2_BV       BV(5)
+#define CURTAIN_SPD_CH2_SEL      P0SEL
+#define CURTAIN_SPD_CH2_DIR      P0DIR
+#define CURTAIN_SPD_CH2_POLARITY ACTIVE_LOW
+
+// 光照强度检测端口
+
+
 // 窗帘正转端口功能配置
 #define CURTAIN_FORWARD_WrMode() ( CURTAIN_FORWARD_DIR |=  CURTAIN_FORWARD_BV )
 #define CURTAIN_FORWARD_RdMode() ( CURTAIN_FORWARD_DIR &= ~CURTAIN_FORWARD_BV )
 #define SET_CURTAIN_FORWARD()    ( CURTAIN_FORWARD_PORT = CURTAIN_FORWARD_POLARITY(1) )
 #define CLR_CURTAIN_FORWARD()    ( CURTAIN_FORWARD_PORT = CURTAIN_FORWARD_POLARITY(0) )
 #define RD_CURTAIN_FORWARD()     ( CURTAIN_FORWARD_POLARITY(CURTAIN_FORWARD_PORT) )
+
 // 窗帘反转端口功能配置
 #define CURTAIN_REVERSE_WrMode() ( CURTAIN_REVERSE_DIR |=  CURTAIN_REVERSE_BV )
 #define CURTAIN_REVERSE_RdMode() ( CURTAIN_REVERSE_DIR &= ~CURTAIN_REVERSE_BV )
@@ -60,9 +82,46 @@
 #define CLR_CURTAIN_REVERSE()    ( CURTAIN_REVERSE_PORT = CURTAIN_REVERSE_POLARITY(0) )
 #define RD_CURTAIN_REVERSE()     ( CURTAIN_REVERSE_POLARITY(CURTAIN_REVERSE_PORT) )
 
+// 转速输入端口1
+#define CURTAIN_SPD_CH1_WrMode() ( CURTAIN_SPD_CH1_DIR |=  CURTAIN_SPD_CH1_BV )
+#define CURTAIN_SPD_CH1_RdMode() ( CURTAIN_SPD_CH1_DIR &= ~CURTAIN_SPD_CH1_BV )
+#define SET_SPD_CH1_REVERSE()    ( CURTAIN_SPD_CH1_PORT = CURTAIN_SPD_CH1_POLARITY(1) )
+#define CLR_SPD_CH1_REVERSE()    ( CURTAIN_SPD_CH1_PORT = CURTAIN_SPD_CH1_POLARITY(0) )
+#define RD_SPD_CH1_REVERSE()     ( CURTAIN_SPD_CH1_POLARITY(CURTAIN_SPD_CH1_PORT) )
+
+// 转速输入端口2
+#define CURTAIN_SPD_CH2_WrMode() ( CURTAIN_SPD_CH2_DIR |=  CURTAIN_SPD_CH2_BV )
+#define CURTAIN_SPD_CH2_RdMode() ( CURTAIN_SPD_CH2_DIR &= ~CURTAIN_SPD_CH2_BV )
+#define SET_SPD_CH2_REVERSE()    ( CURTAIN_SPD_CH2_PORT = CURTAIN_SPD_CH2_POLARITY(1) )
+#define CLR_SPD_CH2_REVERSE()    ( CURTAIN_SPD_CH2_PORT = CURTAIN_SPD_CH2_POLARITY(0) )
+#define RD_SPD_CH2_REVERSE()     ( CURTAIN_SPD_CH2_POLARITY(CURTAIN_SPD_CH2_PORT) )
+
+/** @}*/     /* 电动窗帘硬件抽象层定义 */
+
+// 电动窗帘使用定时器数量 
 #define CURTAIN_USE_TIMER_NUM    (2)
 
+// 电动窗帘占用FLASH大小
 #define DEVICE_CURTAIN_DATA_SIZE (Cal_DataSize(curtain))
+
+// 电动窗帘工作状态
+#define CURTAIN_INIT_STATE        (0x00)
+#define CURTAIN_OPEN_STATE        (0x01)
+#define CURTAIN_OPEN_END_STATE    (0x02)
+#define CURTAIN_OPEN_ALL_STATE    (0x03)
+#define CURTAIN_CLOSE_STATE       (0x04)
+#define CURTAIN_CLOSE_END_STATE   (0x05)
+#define CURTAIN_CLOSE_ALL_STATE   (0x06)
+
+// 电动窗帘控制命令
+#define CURTAIN_CMD_KEEP          (0x00)
+#define CURTAIN_CMD_OPEN          (0x01)
+#define CURTAIN_CMD_CLOSE         (0x02)
+
+// 电动窗帘上电加载状态
+#define CURTAIN_LOAD_KEEP         (0x00)
+#define CURTAIN_LOAD_CLOSE        (0x01)
+#define CURTAIN_LOAD_OPEN         (0x02)
 
 /* Private typedef -----------------------------------------------------------*/
 // 窗帘控制命令
@@ -78,30 +137,39 @@ typedef enum
     WR_CURTAIN_RUN_MODE     = 0x17,
     RD_CURTAIN_RAIN_WARNING = 0x18,
     RD_CURTAIN_BRIGHTNESS   = 0x19,
+    RD_CURTAIN_LOAD_MODE    = 0x1A,
+    WR_CURTAIN_LOAD_MODE    = 0x1B,
 }DEVICE_CURTAIN_CMD;
 
 /* Private variables ---------------------------------------------------------*/
-// 电灯存储数据
+// 电动窗帘存储数据
 static struct _DEVICE_CURTAIN_SAVE_DATA_
 {
     // 状态数据
-    struct
-    {
-        uint8 now;
-        uint8 last;
-    }status;
+    uint8 status;
     
     // 定时器数据
     DEVICE_TIMER timer[CURTAIN_USE_TIMER_NUM]; 
     
-    // 初始化载入数据
-//    enum
-//    {
-//        LIGHT_NO_LOAD_SET = 0x00,
-//        LIGHT_LOAD_SET    = 0x01,
-//    }load_set;
+    // 窗帘智能工作模式
+    struct
+    {
+        uint8 state;
+        uint8 brightness;
+    }run_mode;
+    
+    // 下雨警报
+    uint8 rain_warning;
+    
+    // 室内亮度
+    uint8 brightness;
+    
     uint8 load_set;
 }curtain;
+
+// 下雨标志
+bool flg_rain = false;
+uint8 curtain_cmd = CURTAIN_CMD_KEEP;
 
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
@@ -115,7 +183,10 @@ static struct _DEVICE_CURTAIN_SAVE_DATA_
  */
 static void curtain_rst_set( void )
 {
+    memset(&curtain,0,sizeof(curtain));
     
+    osal_nv_item_init(DEVICE_CURTAIN_SAVE_ID,DEVICE_CURTAIN_DATA_SIZE,NULL);
+    osal_nv_write(DEVICE_CURTAIN_SAVE_ID,0,DEVICE_CURTAIN_DATA_SIZE,(void *)&curtain);
 }
 
 /**
@@ -137,6 +208,35 @@ void bsp_curtain_init(void)
     
     // FLASH 数据初始化
     Device_Load_LastData(DEVICE_CURTAIN_SAVE_ID,DEVICE_CURTAIN_DATA_SIZE,(void *)&curtain,curtain_rst_set);
+}
+ 
+/**
+ *******************************************************************************
+ * @brief       电动窗帘控制命令
+ * @param       [in/out]  cmd     控制命令
+ * @return      [in/out]  bool    执行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool bsp_curtain_cmd( uint8 cmd )
+{
+    if( cmd == CURTAIN_CMD_OPEN )
+    {
+        SET_CURTAIN_FORWARD();
+        CLR_CURTAIN_REVERSE();
+    }
+    else if( cmd == CURTAIN_CMD_CLOSE )
+    {
+        CLR_CURTAIN_REVERSE();
+        SET_CURTAIN_FORWARD(); 
+    }
+    else
+    {
+        CLR_CURTAIN_REVERSE();
+        CLR_CURTAIN_REVERSE();
+    }
+    
+    return true;
 }
 
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
@@ -171,7 +271,8 @@ void curtain_rain_handler( key_message_t message )
 {
     switch (message)
     {
-		case KEY_MESSAGE_PRESS_EDGE:
+		case KEY_MESSAGE_LONG_PRESS:
+            flg_rain = true;
 			break;
 		default:
 			break;

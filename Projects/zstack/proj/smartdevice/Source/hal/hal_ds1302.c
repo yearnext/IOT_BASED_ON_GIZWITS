@@ -32,24 +32,7 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-// SCK端口寄存器定义
-#define DS1302_SCK_PORT     P0_6
-#define DS1302_SCK_BV       BV(6)
-#define DS1302_SCK_SEL      P0SEL
-#define DS1302_SCK_DIR      P0DIR
-#define DS1302_SCK_POLARITY ACTIVE_HIGH
-// SDA端口寄存器定义
-#define DS1302_SDA_PORT     P0_7
-#define DS1302_SDA_BV       BV(7)
-#define DS1302_SDA_SEL      P0SEL
-#define DS1302_SDA_DIR      P0DIR
-#define DS1302_SDA_POLARITY ACTIVE_HIGH
-// RST端口寄存器定义
-#define DS1302_RST_PORT     P1_0
-#define DS1302_RST_BV       BV(0)
-#define DS1302_RST_SEL      P1SEL
-#define DS1302_RST_DIR      P1DIR
-#define DS1302_RST_POLARITY ACTIVE_HIGH
+#if USE_HAL_DS1302
 // SCK端口功能配置
 #define DS1302_SCK_WrMode() ( DS1302_SCK_DIR |=  DS1302_SCK_BV )
 #define DS1302_SCK_RdMode() ( DS1302_SCK_DIR &= ~DS1302_SCK_BV )
@@ -68,6 +51,7 @@
 #define SET_DS1302_RST()    ( DS1302_RST_PORT = DS1302_RST_POLARITY(1) )
 #define RST_DS1302_RST()    ( DS1302_RST_PORT = DS1302_RST_POLARITY(0) )
 #define Read_DS1302_RST()   ( DS1302_RST_POLARITY(DS1302_RST_PORT) )
+
 // 延时功能定义
 #define DS1302_DELAY()      Onboard_wait(1)
 
@@ -81,11 +65,13 @@
 // DS1302 BCD与HEX互相转换
 #define DS1302_HEX2BCD(hex)   ((uint8)(((((hex)/10)<<4) | ((hex)%10))))
 #define DS1302_BCD2HEX(bcd)   ((uint8)((((bcd)>>4)*10) + ((bcd)&0x0F)))
-     
+
+#endif
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
+#if USE_HAL_DS1302
 /**
  *******************************************************************************
  * @brief       DS1302初始化程函数
@@ -292,6 +278,8 @@ void ds1302_wr_time( void *time )
     
     DS1302_ENABLE_WP();
 }
+
+#endif
 
 /** @}*/     /* ds1302驱动模块 */
 

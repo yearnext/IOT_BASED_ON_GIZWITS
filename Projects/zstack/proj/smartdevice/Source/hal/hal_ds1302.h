@@ -23,6 +23,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
+#include "myprotocol.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -39,6 +40,58 @@ typedef struct
 
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT) || (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+// SCK端口寄存器定义
+#define DS1302_SCK_PORT     P0_6
+#define DS1302_SCK_BV       BV(6)
+#define DS1302_SCK_SEL      P0SEL
+#define DS1302_SCK_DIR      P0DIR
+#define DS1302_SCK_POLARITY ACTIVE_HIGH
+// SDA端口寄存器定义
+#define DS1302_SDA_PORT     P0_7
+#define DS1302_SDA_BV       BV(7)
+#define DS1302_SDA_SEL      P0SEL
+#define DS1302_SDA_DIR      P0DIR
+#define DS1302_SDA_POLARITY ACTIVE_HIGH
+// RST端口寄存器定义
+#define DS1302_RST_PORT     P1_0
+#define DS1302_RST_BV       BV(0)
+#define DS1302_RST_SEL      P1SEL
+#define DS1302_RST_DIR      P1DIR
+#define DS1302_RST_POLARITY ACTIVE_HIGH
+// 启用DS1302
+#define USE_HAL_DS1302      (1)
+
+#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+// SCK端口寄存器定义
+#define DS1302_SCK_PORT     P2_0
+#define DS1302_SCK_BV       BV(0)
+#define DS1302_SCK_SEL      P2SEL
+#define DS1302_SCK_DIR      P2DIR
+#define DS1302_SCK_POLARITY ACTIVE_HIGH
+// SDA端口寄存器定义
+#define DS1302_SDA_PORT     P1_7
+#define DS1302_SDA_BV       BV(7)
+#define DS1302_SDA_SEL      P1SEL
+#define DS1302_SDA_DIR      P1DIR
+#define DS1302_SDA_POLARITY ACTIVE_HIGH
+// RST端口寄存器定义
+#define DS1302_RST_PORT     P1_6
+#define DS1302_RST_BV       BV(6)
+#define DS1302_RST_SEL      P1SEL
+#define DS1302_RST_DIR      P1DIR
+#define DS1302_RST_POLARITY ACTIVE_HIGH
+
+// 启用DS1302
+#define USE_HAL_DS1302      (1)
+
+#else
+// 禁用DS1302
+#define USE_HAL_DS1302      (0)
+
+#endif
+
+// 寄存器地址
 #define DS1302_RD_TIME_ADDR     (0x00)
 #define DS1302_SEC_REG_ADDR     (0x00)
 #define DS1302_MIN_REG_ADDR     (0x01)
@@ -55,11 +108,21 @@ typedef struct
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
+#if USE_HAL_DS1302
 extern void hal_ds1302_init( void );
 extern void ds1302_wr_data( uint8 wr_addr, uint8 wr_data );
 extern uint8 ds1302_rd_data( uint8 rd_addr );
 extern void ds1302_rd_time( void *time );
 extern void ds1302_wr_time( void *time );
+
+#else
+#define hal_ds1302_init() 
+#define ds1302_wr_data( a, b ) 
+#define ds1302_rd_data( a ) 
+#define ds1302_rd_time( a ) 
+#define ds1302_wr_time( a ) 
+
+#endif
 
 #endif      /* __HAL_DS1302_H__ */
 
