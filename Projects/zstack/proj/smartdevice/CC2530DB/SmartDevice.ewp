@@ -7989,16 +7989,16 @@
         <name>$PROJ_DIR$\..\Source\hal\hal_ds1302.h</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\hal\hal_hlw8012.c</name>
+        <name>$PROJ_DIR$\..\Source\hal\mcu_adc.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\hal\hal_hlw8012.h</name>
+        <name>$PROJ_DIR$\..\Source\hal\mcu_adc.h</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\hal\timer_config.c</name>
+        <name>$PROJ_DIR$\..\Source\hal\mcu_timer.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\hal\timer_config.h</name>
+        <name>$PROJ_DIR$\..\Source\hal\mcu_timer.h</name>
       </file>
     </group>
     <group>
