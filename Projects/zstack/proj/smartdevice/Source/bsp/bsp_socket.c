@@ -24,7 +24,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "bsp_socket.h"
-#include "timer_config.h"
+#include "mcu_timer.h"
 #include <string.h>
 #include "app_save.h"
 #include "app_timer.h"
