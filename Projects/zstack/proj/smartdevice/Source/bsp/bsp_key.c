@@ -412,7 +412,7 @@ void key_handler(void)
 		{
 			case KEY_VALUE_K1:
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-                key1_handler(message.message);
+//                key1_handler(message.message);
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
                 key1_handler(message.message);
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
@@ -425,7 +425,7 @@ void key_handler(void)
 				break;
 			case KEY_VALUE_K2:
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-                key2_handler(message.message);
+//                key2_handler(message.message);
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
                 key2_handler(message.message);
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)

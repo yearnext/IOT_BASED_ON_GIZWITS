@@ -28,6 +28,7 @@
 #include "app_save.h"
 #include "app_timer.h"
 #include "hal_board_cfg.h"
+#include "mcu_adc.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -66,7 +67,7 @@
 #define CURTAIN_SPD_CH2_POLARITY ACTIVE_LOW
 
 // 光照强度检测端口
-
+#define CURTAIN_BRIGHTNESS_ADC_CH ADC_CONVERT_CH7 
 
 // 窗帘正转端口功能配置
 #define CURTAIN_FORWARD_WrMode() ( CURTAIN_FORWARD_DIR |=  CURTAIN_FORWARD_BV )
@@ -96,6 +97,9 @@
 #define CLR_SPD_CH2_REVERSE()    ( CURTAIN_SPD_CH2_PORT = CURTAIN_SPD_CH2_POLARITY(0) )
 #define RD_SPD_CH2_REVERSE()     ( CURTAIN_SPD_CH2_POLARITY(CURTAIN_SPD_CH2_PORT) )
 
+// 亮度检测端口
+#define Curtain_Brightness_Init() MCU_ADC_CH_Init(CURTAIN_BRIGHTNESS_ADC_CH)
+
 /** @}*/     /* 电动窗帘硬件抽象层定义 */
 
 // 电动窗帘使用定时器数量 
@@ -118,10 +122,10 @@
 #define CURTAIN_CMD_OPEN          (0x01)
 #define CURTAIN_CMD_CLOSE         (0x02)
 
-// 电动窗帘上电加载状态
-#define CURTAIN_LOAD_KEEP         (0x00)
-#define CURTAIN_LOAD_CLOSE        (0x01)
-#define CURTAIN_LOAD_OPEN         (0x02)
+// 电动窗帘状态
+#define CURTAIN_STATE_KEEP        (0x00)
+#define CURTAIN_STATE_CLOSE       (0x01)
+#define CURTAIN_STATE_OPEN        (0x02)
 
 /* Private typedef -----------------------------------------------------------*/
 // 窗帘控制命令
@@ -175,6 +179,57 @@ uint8 curtain_cmd = CURTAIN_CMD_KEEP;
 /* Exported functions --------------------------------------------------------*/
 /**
  *******************************************************************************
+ * @brief       电动窗帘测速端口初始化
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        测速端口状态： CH1、CH2为低电平
+ * @note                       CH1、CH2为正弦脉冲                    
+ *******************************************************************************
+ */
+static void Curtain_Speed_Port_Init( void )
+{
+	CURTAIN_SPD_CH1_RdMode();
+	CURTAIN_SPD_CH2_RdMode();	
+}
+
+/**
+ *******************************************************************************
+ * @brief       电动窗帘状态检测
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None                  
+ *******************************************************************************
+ */
+static uint8 Curtain_Speed_Scan( void )
+{
+	static enum
+    {
+        CURTAIN_WORKING_STATE_LOW,
+        CURTAIN_WORKING_STATE_PULSE,
+    }CH1_STATE, CH2_STATE; 
+	
+	return CURTAIN_STATE_KEEP;
+}
+
+/**
+ *******************************************************************************
+ * @brief       电动窗帘电机控制端口初始化
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        电机正反转控制                  
+ *******************************************************************************
+ */
+static void Curtain_Metor_Port_Init( void )
+{
+	CURTAIN_FORWARD_WrMode();
+    CLR_CURTAIN_FORWARD();
+    
+    CURTAIN_REVERSE_WrMode();
+    CLR_CURTAIN_REVERSE();
+}
+
+/**
+ *******************************************************************************
  * @brief       初始化窗帘设置数据
  * @param       [in/out]  void
  * @return      [in/out]  void
@@ -199,13 +254,15 @@ static void curtain_rst_set( void )
  */
 void bsp_curtain_init(void)
 {
-    // 初始化端口输出模块
-    CURTAIN_FORWARD_WrMode();
-    CLR_CURTAIN_FORWARD();
-    
-    CURTAIN_REVERSE_WrMode();
-    CLR_CURTAIN_REVERSE();
-    
+    // 电动窗帘驱动模块初始化
+	Curtain_Metor_Port_Init();
+	
+	// 电动窗帘测速模块初始化
+	Curtain_Speed_Port_Init();
+	
+	// 亮度检测端口初始化
+    Curtain_Brightness_Init();
+	
     // FLASH 数据初始化
     Device_Load_LastData(DEVICE_CURTAIN_SAVE_ID,DEVICE_CURTAIN_DATA_SIZE,(void *)&curtain,curtain_rst_set);
 }
