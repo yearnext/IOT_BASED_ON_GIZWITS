@@ -116,7 +116,7 @@ typedef enum
 
 /* Exported variables --------------------------------------------------------*/
 // 设备类型
-#define SMART_DEVICE_TYPE MYPROTOCOL_DEVICE_HT_SENSOR
+#define SMART_DEVICE_TYPE MYPROTOCOL_DEVICE_COORD
 
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/

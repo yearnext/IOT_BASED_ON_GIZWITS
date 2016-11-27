@@ -42,48 +42,6 @@
 // AD中断标志
 #define adc_isr_flag        (TCON & 0x20)
 
-// AD参考电压配置
-#define ADC_SREF_VREF       (0x00)
-#define ADC_SREF_AIN7       (0x01)
-#define ADC_SREF_AVDD       (0x02)
-#define ADC_SREF_AIN6_AIN7  (0x03)
-
-// AD转换精度
-#define ADC_CONVERT_7BIT    (0x00)
-#define ADC_CONVERT_9BIT    (0x10)
-#define ADC_CONVERT_10BIT   (0x20)
-#define ADC_CONVERT_12BIT   (0x30)
-
-// AD转换通道
-#define ADC_CONVERT_CH0     (0x00)
-#define ADC_CONVERT_CH1     (0x01)
-#define ADC_CONVERT_CH2     (0x02)
-#define ADC_CONVERT_CH3     (0x03)
-#define ADC_CONVERT_CH4     (0x04)
-#define ADC_CONVERT_CH5     (0x05)
-#define ADC_CONVERT_CH6     (0x06)
-#define ADC_CONVERT_CH7     (0x07)
-// AD转换差分输入信号
-#define ADC_CONVERT_CH0_CH1 (0x08)
-#define ADC_CONVERT_CH2_CH3 (0x09)
-#define ADC_CONVERT_CH4_CH5 (0x0A)
-#define ADC_CONVERT_CH6_CH7 (0x0B)
-// AD转换其它信号
-#define ADC_CONVERT_GND     (0x0C)
-#define ADC_CONVERT_VREF    (0x0D)
-#define ADC_CONVERT_TEMP    (0x0E)
-#define ADC_CONVERT_VDD_3   (0x0F)
-
-// 使能GPIO
-#define USE_P0_0_AS_ADC_CH0 (0x01)
-#define USE_P0_1_AS_ADC_CH1 (0x02)
-#define USE_P0_2_AS_ADC_CH2 (0x04)
-#define USE_P0_3_AS_ADC_CH3 (0x08)
-#define USE_P0_4_AS_ADC_CH4 (0x10)
-#define USE_P0_5_AS_ADC_CH5 (0x20)
-#define USE_P0_6_AS_ADC_CH6 (0x40)
-#define USE_P0_7_AS_ADC_CH7 (0x80)
-
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -143,7 +101,7 @@ bool Rd_ADC_Data( uint16 *data, uint8 convert_bit )
  * @note        None
  *******************************************************************************
  */
-void bsp_adc_init( uint8 channel )
+void MCU_ADC_CH_Init( uint8 channel )
 {
     APCFG |= channel;
     P0SEL |= channel;
@@ -159,7 +117,7 @@ void bsp_adc_init( uint8 channel )
  * @note        None
  *******************************************************************************
  */
-void bsp_adc_deinit( uint8 channel )
+void MCU_ADC_CH_Deinit( uint8 channel )
 {
     APCFG &= ~channel;
     P0SEL &= ~channel;
@@ -175,29 +133,29 @@ void bsp_adc_deinit( uint8 channel )
  * @note        None
  *******************************************************************************
  */
-void bsp_adc_signal_start( uint8 adc_ref, uint8 channel, uint8 convert_bit )
+void MCU_ADC_SIGNAL_START( uint8 adc_ref, uint8 channel, uint8 convert_bit )
 {
     ADCCON3 = adc_ref | channel | convert_bit;
     enable_adc_isr();
     MCU_ADC_START();
 }
 
-/**
- *******************************************************************************
- * @brief       ADC中断服务函数
- * @param       [in/out]  void
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-HAL_ISR_FUNCTION(ADC_ISR_HANDLER, ADC_VECTOR)
-{
-    uint16 brightness;
+// /**
+ // *******************************************************************************
+ // * @brief       ADC中断服务函数
+ // * @param       [in/out]  void
+ // * @return      [in/out]  void
+ // * @note        None
+ // *******************************************************************************
+ // */
+// HAL_ISR_FUNCTION(ADC_ISR_HANDLER, ADC_VECTOR)
+// {
+    // uint16 brightness;
     
-    disable_adc_isr();
-    clr_adc_isr_flag();
-    Rd_ADC_Data(&brightness, ADC_CONVERT_7BIT);
-}
+    // disable_adc_isr();
+    // clr_adc_isr_flag();
+    // Rd_ADC_Data(&brightness, ADC_CONVERT_7BIT);
+// }
   
 /** @}*/     /* CC2530 ADC配置模块 */
 
