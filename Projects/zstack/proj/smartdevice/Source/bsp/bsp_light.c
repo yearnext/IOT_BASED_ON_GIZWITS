@@ -35,16 +35,17 @@
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 // 灯的亮度与PWM占空比之间转换
-#define Light_Brightness_Conversion(n) ( 0xFF - (n) )
+//#define Light_Brightness_Conversion(n) ( 0xFF - (n) )
+#define Light_Brightness_Conversion(n) ( n )
 #define Get_Light_Brightness()         ( Get_TIM4_CH0_Duty() )
 
 #define DEVICE_LIGHT_DATA_SIZE         (Cal_DataSize(light))
 
 // 灯的最大亮度/最小亮度
-#define LIGHT_MAX_BRIGHTNESS           (100)
+#define LIGHT_MAX_BRIGHTNESS           (90)
 #define LIGHT_MIN_BRIGHTNESS           (0)
 // 灯的开启亮度/关闭亮度
-#define LIGHT_ON_BRIGHTNESS            (100)  
+#define LIGHT_ON_BRIGHTNESS            (90)  
 #define LIGHT_OFF_BRIGHTNESS           (0)
      
 // 配置定时器使用数量
@@ -238,7 +239,13 @@ void set_light_brightness( uint8 brightness )
 {
     uint16 brightness_data = brightness;
     brightness_data <<= 8;
-    brightness_data /= 10;
+    
+    if( brightness_data )
+    {
+        brightness_data -= 100;    
+    }
+    
+    brightness_data /= 100;
     
     TIM4_CH0_UpdateDuty( Light_Brightness_Conversion(brightness_data) );
 }
@@ -254,8 +261,15 @@ void set_light_brightness( uint8 brightness )
 uint8 get_light_brightness( void )
 {
     uint16 brightness_data = Light_Brightness_Conversion(Get_Light_Brightness());
-    brightness_data *= 10;
+    brightness_data *= 100;
+    
+    if( brightness_data )
+    {
+        brightness_data += 100;
+    }
+    
     brightness_data >>= 8;
+
     return (uint8)(brightness_data);
 }
 

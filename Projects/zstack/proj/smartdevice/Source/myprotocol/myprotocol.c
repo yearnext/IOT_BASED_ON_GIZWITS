@@ -482,7 +482,27 @@ void SmartDevice_Message_Handler( afIncomingMSGPacket_t *pkt )
             }
 
             MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_H2S,packet,create_acktick_packet,&device_info.device);
-            //MYPROTOCOL_LOG("Coord get one device tick!\n");
+            
+            if( device_info.device.device == MYPROTOCOL_DEVICE_LIGHT )
+            {
+                MYPROTOCOL_LOG("Coord get light tick!\n");
+            }
+            else if( device_info.device.device == MYPROTOCOL_DEVICE_SOCKET )
+            {
+                MYPROTOCOL_LOG("Coord get socket tick!\n");
+            }
+            else if( device_info.device.device == MYPROTOCOL_DEVICE_CURTAIN )
+            {
+                MYPROTOCOL_LOG("Coord get curtain tick!\n");
+            }
+            else if( device_info.device.device == MYPROTOCOL_DEVICE_HT_SENSOR )
+            {
+                MYPROTOCOL_LOG("Coord get ht_sensor tick!\n");
+            }
+            else
+            {
+                MYPROTOCOL_LOG("Coord get one device tick!\n");
+            }
 #endif
                 break;
             }
