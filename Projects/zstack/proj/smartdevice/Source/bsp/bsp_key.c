@@ -314,7 +314,7 @@ key_value_t get_key_value(void)
     /** KEY1 P0_6 */
 	if (KEY2_READ())
 	{
-		return KEY_VALUE_K2
+		return KEY_VALUE_K2;
 	}
     
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)

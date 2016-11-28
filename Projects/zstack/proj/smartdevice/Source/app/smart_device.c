@@ -82,9 +82,9 @@ dataPoint_t currentDataPoint;
      
 /** 设备定时时间 */
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-    #define DEVICE_LIST_TIME            (30000)
+    #define DEVICE_LIST_TIME            (15000)
 #else
-    #define DEVICE_LIST_TIME            (3000)
+    #define DEVICE_LIST_TIME            (15000)
 #endif
 /** 设备定时事件 */
 #define DEVICE_LIST_TIMER_EVEN          (0x0002)
@@ -100,7 +100,7 @@ dataPoint_t currentDataPoint;
 #define TIMER_100MS_COUNT (10)
 #define TIMER_350MS_COUNT (30)
 //#define TIMER_1MIN_COUNT  (600)
-#define TIMER_1MIN_COUNT  (10)
+#define TIMER_1MIN_COUNT  (6000)
 
 /** Smart Device 通讯状态指示灯 */
 #define SMARTDEVICE_LED_DISCONNED_STATE (0x00)

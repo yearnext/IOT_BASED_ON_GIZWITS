@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=-351785420
+Checksum=971059184
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -84,12 +84,13 @@ Fmt8=uint8 [8]	4	0
 Fmt0={W}0:activeTaskID	4	0
 Fmt1={W}0:events	4	0
 Fmt2={W}1:a	3	0
-Fmt3={W}1:check_sum	3	0
-Fmt4={W}1:duty	3	0
-Fmt5={W}1:events	4	0
-Fmt6={W}1:gizwits_uart_status	4	0
-Fmt7={W}1:size	3	0
-Fmt8={W}1:start	3	0
+Fmt3={W}1:brightness_data	3	0
+Fmt4={W}1:check_sum	3	0
+Fmt5={W}1:duty	3	0
+Fmt6={W}1:events	4	0
+Fmt7={W}1:gizwits_uart_status	4	0
+Fmt8={W}1:size	3	0
+Fmt9={W}1:start	3	0
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -101,9 +102,12 @@ LogFile=_ ""
 Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_key.c}.411.3" 0 0 0 0 "" 0 ""
 Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\ZMain\TI2530DB\OnBoard.c}.248.3" 1 0 0 0 "" 0 ""
 Bp2=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_key.c}.441.3" 0 0 0 0 "" 0 ""
-Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\Source\app\smart_device.c}.301.9" 1 0 0 0 "" 0 ""
-Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\Source\app\smart_device.c}.306.9" 1 0 0 0 "" 0 ""
-Count=5
+Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_curtain.c}.533.13" 0 0 0 0 "" 0 ""
+Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_light.c}.396.5" 0 0 0 0 "" 0 ""
+Bp5=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_light.c}.240.12" 0 0 0 0 "" 0 ""
+Bp6=_ "STD_CODE" "{$PROJ_DIR$\..\Source\myprotocol\myprotocol.c}.820.5" 0 0 0 0 "" 0 ""
+Bp7=_ "STD_CODE" "{$PROJ_DIR$\..\Source\myprotocol\myprotocol.c}.510.17" 1 0 0 0 "" 0 ""
+Count=8
 [ChipconEmu]
 Stop timers on halt=1
 Leave target running=1
