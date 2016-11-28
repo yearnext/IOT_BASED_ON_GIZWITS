@@ -24,20 +24,6 @@ public abstract class BaseActivity extends AppCompatActivity {
 
 
     protected final String TAG = getClass().getSimpleName();
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        ActivityCollector.addActivity(this);
-        GizWifiSDK.sharedInstance().setListener(mListener);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        ActivityCollector.removeActivity(this);
-    }
-
     GizWifiSDKListener mListener = new GizWifiSDKListener() {
 
 
@@ -49,10 +35,12 @@ public abstract class BaseActivity extends AppCompatActivity {
             } else if (eventType == GizEventType.GizEventDevice) {
                 // 设备连接断开时可能产生的通知
                 GizWifiDevice mDevice = (GizWifiDevice) eventSource;
-                Log.i("GizWifiSDK", "device mac: " + mDevice.getMacAddress() + " disconnect caused by eventID: " + eventID + ", eventMessage: " + eventMessage);
+                Log.i("GizWifiSDK", "device mac: " + mDevice.getMacAddress() +
+                        " disconnect caused by eventID: " + eventID + ", eventMessage: " + eventMessage);
             } else if (eventType == GizEventType.GizEventM2MService) {
                 // M2M服务返回的异常通知
-                Log.i("GizWifiSDK", "M2M domain " + eventSource + " exception happened, eventID: " + eventID + ", eventMessage: " + eventMessage);
+                Log.i("GizWifiSDK", "M2M domain " + eventSource + " exception happened, eventID: "
+                        + eventID + ", eventMessage: " + eventMessage);
             } else if (eventType == GizEventType.GizEventToken) {
                 // token失效通知
                 Log.i("GizWifiSDK", "token " + eventSource + " expired: " + eventMessage);
@@ -113,16 +101,12 @@ public abstract class BaseActivity extends AppCompatActivity {
             }
         }
     };
-
-
     GizWifiDeviceListener mDeviceListener = new GizWifiDeviceListener() {
         @Override
         public void didSetSubscribe(GizWifiErrorCode result, GizWifiDevice device, boolean isSubscribed) {
             if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
                 Toast.makeText(BaseActivity.this, "订阅成功", Toast.LENGTH_SHORT).show();
                 Log.i(TAG, "didSetSubscribe: 订阅成功");
-
-                // 订阅或解除订阅成功
             } else {
                 // 失败
                 Toast.makeText(BaseActivity.this, "订阅失败", Toast.LENGTH_SHORT).show();
@@ -130,6 +114,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
             }
         }
+
         //数据点更新
         @Override
         public void didReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn) {
@@ -137,40 +122,53 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
 
         @Override
-        public void didUpdateNetStatus(GizWifiDevice device, GizWifiDeviceNetStatus netStatus){
-            mDidUpdateNetStatus(device,netStatus);
+        public void didUpdateNetStatus(GizWifiDevice device, GizWifiDeviceNetStatus netStatus) {
+            mDidUpdateNetStatus(device, netStatus);
             Toast.makeText(BaseActivity.this, "设备状态变为:" + netStatus, Toast.LENGTH_SHORT).show();
         }
     };
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        ActivityCollector.addActivity(this);
+        GizWifiSDK.sharedInstance().setListener(mListener);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ActivityCollector.removeActivity(this);
+    }
+
     /**
      * 该回调主动上报设备状态回调备的网络状态变化，当设备重上电、断电或可控时会触发该回调
-     * @param device 回调的GizWifiDevice对象
+     *
+     * @param device    回调的GizWifiDevice对象
      * @param netStatus 设备的状态
-     * */
+     */
     protected void mDidUpdateNetStatus(GizWifiDevice device, GizWifiDeviceNetStatus netStatus) {
         Toast.makeText(this, "设备状态变为:" + netStatus, Toast.LENGTH_SHORT).show();
         switch (netStatus) {
             case GizDeviceOnline:
-                ToastUtil.showToast(BaseActivity.this, device.getProductName() +"设备状态变为:在线");
+                ToastUtil.showToast(BaseActivity.this, device.getProductName() + "设备状态变为:在线");
                 break;
             case GizDeviceOffline:
-                ToastUtil.showToast(BaseActivity.this, device.getProductName() +"设备状态变为:离线" );
+                ToastUtil.showToast(BaseActivity.this, device.getProductName() + "设备状态变为:离线");
                 break;
             case GizDeviceControlled:
-                ToastUtil.showToast(BaseActivity.this, device.getProductName() +"设备状态变为:可控");
+                ToastUtil.showToast(BaseActivity.this, device.getProductName() + "设备状态变为:可控");
                 break;
             case GizDeviceUnavailable:
-                ToastUtil.showToast(BaseActivity.this, device.getProductName() +"设备状态变为:难以获得的");
+                ToastUtil.showToast(BaseActivity.this, device.getProductName() + "设备状态变为:难以获得的");
                 break;
         }
-        Log.i(TAG, "设备状态回调:"+device.getProductName() + "   " + netStatus);
+        Log.i(TAG, "设备状态回调:" + device.getProductName() + "   " + netStatus);
     }
 
     //数据点更新
     protected void mDidReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn) {
     }
-
 
 
     //登录回调
@@ -179,8 +177,8 @@ public abstract class BaseActivity extends AppCompatActivity {
 
 
     //注册回调
-    protected void MDidRegisterUser(GizWifiErrorCode result) {    }
-
+    protected void MDidRegisterUser(GizWifiErrorCode result) {
+    }
 
 
     //WIFI配置回调

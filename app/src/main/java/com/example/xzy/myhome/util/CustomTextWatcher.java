@@ -30,8 +30,7 @@ public class CustomTextWatcher implements TextWatcher {
     /**
      * Creates an instance of <code>CustomTextWatcher</code>.
      *
-     * @param editText
-     *        the editText to edit text.
+     * @param editText the editText to edit text.
      */
     public CustomTextWatcher(EditText editText) {
 

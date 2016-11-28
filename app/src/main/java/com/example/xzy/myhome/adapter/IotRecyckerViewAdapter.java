@@ -20,6 +20,7 @@ import butterknife.ButterKnife;
 
 public class IotRecyckerViewAdapter extends RecyclerView.Adapter<IotRecyckerViewAdapter.MyViewHodler> {
     List<IotDevice> iotDeviceList;
+    private OnItemClickLitener mOnItemClickLitener;
 
     public IotRecyckerViewAdapter(List<IotDevice> iotDeviceList) {
         this.iotDeviceList = iotDeviceList;
@@ -57,9 +58,17 @@ public class IotRecyckerViewAdapter extends RecyclerView.Adapter<IotRecyckerView
 
     @Override
     public int getItemCount() {
-        if (iotDeviceList==null)
-        return 0;
+        if (iotDeviceList == null)
+            return 0;
         return iotDeviceList.size();
+    }
+
+    public void setOnItemClickLitener(OnItemClickLitener mOnItemClickLitener) {
+        this.mOnItemClickLitener = mOnItemClickLitener;
+    }
+
+    public interface OnItemClickLitener {
+        void onItemClick(View view, int position);
     }
 
     public static class MyViewHodler extends RecyclerView.ViewHolder {
@@ -81,19 +90,7 @@ public class IotRecyckerViewAdapter extends RecyclerView.Adapter<IotRecyckerView
 
         public MyViewHodler(View itemView) {
             super(itemView);
-            ButterKnife.bind(this,itemView);
+            ButterKnife.bind(this, itemView);
         }
-    }
-
-    public interface OnItemClickLitener
-    {
-        void onItemClick(View view, int position);
-    }
-
-    private OnItemClickLitener mOnItemClickLitener;
-
-    public void setOnItemClickLitener(OnItemClickLitener mOnItemClickLitener)
-    {
-        this.mOnItemClickLitener = mOnItemClickLitener;
     }
 }

@@ -7,10 +7,11 @@ package com.example.xzy.myhome.util;
 public class BooleanTranslateUtil {
     private static String transLateTrue = "是";
     private static String transLateFalse = "否";
+
     public static String translateString(boolean i) {
         if (i == true) {
             return transLateTrue;
-        }else {
+        } else {
             return transLateFalse;
         }
     }

@@ -33,12 +33,12 @@ import static com.example.xzy.myhome.R.drawable.socket;
  */
 
 public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    protected static final char[] hexArray = "0123456789ABCDEF".toCharArray();
     List<Device> devices;
     Context context;
     DeviceSetListener deviceSetListener;
-    byte switchState ;
+    byte switchState;
     byte lampLuminance;
-    protected static final char[] hexArray = "0123456789ABCDEF".toCharArray();
 
 
     public DeviceItemRecycerViewAdapter(List<Device> devices) {
@@ -57,8 +57,8 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
             View lampView = inflater.inflate(R.layout.item_temperature, parent, false);
             return new TemperatureHolder(lampView);
         }
-            View deviceView = inflater.inflate(R.layout.item_devicet, parent, false);
-            return new MyViewHolder(deviceView);
+        View deviceView = inflater.inflate(R.layout.item_devicet, parent, false);
+        return new MyViewHolder(deviceView);
 
 
     }
@@ -73,12 +73,11 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
             MyViewHolder holder1 = (MyViewHolder) holder;
 
 
-                if (deviceState == 0)
+            if (deviceState == 0)
 
-                    holder1.switchDeviceItem.setChecked(false);
-                else
-                    holder1.switchDeviceItem.setChecked(true);
-
+                holder1.switchDeviceItem.setChecked(false);
+            else
+                holder1.switchDeviceItem.setChecked(true);
 
 
             if (deviceType == ParsePacket.DEVICE_TYPE.SOCKET)
@@ -142,12 +141,12 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    deviceSetListener.onSwtichClick(position,seekBar,lampLuminance);
+                    deviceSetListener.onSwtichClick(position, seekBar, lampLuminance);
                 }
             });
             //// TODO: 2016/11/3 灯的亮度
-            lampHolder.seekBarLamp.setProgress(deviceState& 0xFF);
-            Log.i(TAG, "onBindViewHolder: "+deviceState);
+            lampHolder.seekBarLamp.setProgress(deviceState & 0xFF);
+            Log.i(TAG, "onBindViewHolder: " + deviceState);
             lampHolder.tvDeviceItemNameLamp.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -174,11 +173,11 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
             temperatureHolder.buttonTemperatureRefresh.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    deviceSetListener.onSwtichClick(position,null,(byte) 0);
+                    deviceSetListener.onSwtichClick(position, null, (byte) 0);
                 }
             });
-            temperatureHolder.tvHumidity.setText(device.getHumidity()+"");
-            temperatureHolder.tvTemperature.setText(device.getTemperture()+"");
+            temperatureHolder.tvHumidity.setText(device.getHumidity() + "");
+            temperatureHolder.tvTemperature.setText(device.getTemperture() + "");
 
         }
     }
@@ -195,6 +194,23 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
         return devices.get(position).getDeviceType();
     }
 
+    public void setDeviceSetListener(DeviceSetListener deviceSetListener) {
+        this.deviceSetListener = deviceSetListener;
+    }
+
+    public interface DeviceSetListener {
+        int a = 0;
+
+        void onCountdownClick(int position);
+
+        void onTimingClick(int position);
+
+        void onNameClick(int position, View view);
+
+        void onSwtichClick(int position, View view, byte switchState);
+
+
+    }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.tv_device_item_name)
@@ -248,30 +264,6 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
             ButterKnife.bind(this, itemView);
         }
     }
-
-
-
-    public void setDeviceSetListener(DeviceSetListener deviceSetListener) {
-        this.deviceSetListener = deviceSetListener;
-    }
-
-
-    public interface DeviceSetListener {
-        int a = 0;
-
-        void onCountdownClick(int position);
-
-        void onTimingClick(int position);
-
-        void onNameClick(int position, View view);
-
-        void onSwtichClick(int position, View view, byte switchState);
-
-
-    }
-
-
-
 
 
 }

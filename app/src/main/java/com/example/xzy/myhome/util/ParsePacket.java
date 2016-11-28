@@ -15,67 +15,20 @@ import static com.mxchip.helper.ProbeReqData.bytesToHex;
  */
 
 public class ParsePacket implements Serializable {
-    public ParsePacket() {
-
-    }
-
     static ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
-
+    byte checkSum;
     private byte[] packet = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     private byte type;
     private byte eventNumber;
     private byte deviceType;
     private byte[] mac = {0, 0, 0, 0, 0, 0, 0, 0};
-    private  byte dataLength;
-    private  byte command;
-    private  byte[] data = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    private byte dataLength;
+    private byte command;
+    private byte[] data = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    public interface TYPE {
-        byte APP_REQUEST = 1;
-        byte DEVICE_RESPONSE = 2;
-        byte DEVICE_REQUEST = 3;
-        byte APP_RESPONSE = 4;
-    }
-
-    public interface DEVICE_TYPE {
-        byte GATEWAY = 0;
-        byte LAMP = 1;
-        byte SOCKET = 2;
-        byte CURTAIN = 3;
-        byte SENSOR_TEMPERATURE = 4;
-    }
-
-    public interface MAC {
+    public ParsePacket() {
 
     }
-
-    public interface COMMAND {
-        byte RESPONSE = 0;
-        byte STATE_READ = 1;
-        byte STATE_WRITE = 2;
-        byte TIMING_READ = 5;
-        byte TIMING_WRITE = 6;
-        byte COUNTDOWN_READ = 3;
-        byte COUNTDOWN_WRITE = 4;
-        byte CURTAIN_STATE_READ = 7;
-        byte CURTAIN_STATE_WRITE = 8;
-        byte DEVICE_RESPONSE_APP_COUNT = 0;
-        byte UPDATE_DEVICE_COUNT = 1;
-        byte UPDATE_DEVICE_MESSAGE = 2;
-
-
-    }
-
-    public interface DATA_LENGTH {
-
-    }
-
-    public interface DATA {
-
-    }
-
-
-
 
     public ParsePacket(byte[] packet) {
         type = packet[0];
@@ -96,17 +49,13 @@ public class ParsePacket implements Serializable {
         checkSum = packet[31];
     }
 
-
-    byte checkSum;
-
-
     public void sendPacket(GizWifiDevice mDevice) {
         packet[0] = type;
         packet[1] = eventNumber;
         packet[2] = deviceType;
 
         for (int i = 0; i < 8; i++) {
-            Log.e("", "sendPacket: "+i );
+            Log.e("", "sendPacket: " + i);
             packet[3 + i] = mac[i];
         }
         Log.e("Main2Activity", "sendPacket: " + bytesToHex(mac));
@@ -139,7 +88,7 @@ public class ParsePacket implements Serializable {
 
     //各种get set方法
     public byte[] getDataMac() {
-        byte[] a=new byte[8];
+        byte[] a = new byte[8];
         for (int i = 2; i < 10; i++) {
             a[i - 2] = data[i];
         }
@@ -149,15 +98,16 @@ public class ParsePacket implements Serializable {
     public byte getDataDeviceType() {
         return data[1];
     }
+
     public byte getDataDeviceCount() {
         return data[0];
     }
-
 
     public byte getDataState() {
         return data[0];
 
     }
+
     public ParsePacket setDataState(byte dataState) {
         data[0] = dataState;
         return this;
@@ -165,31 +115,27 @@ public class ParsePacket implements Serializable {
     }
 
     public ParsePacket setDataCountdown(int hour, int minute) {
-        long time =System.currentTimeMillis();
+        long time = System.currentTimeMillis();
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(time);
         int startHour = calendar.get(Calendar.HOUR_OF_DAY);
         int startMinute = calendar.get(Calendar.MINUTE);
         int endMinute = (startMinute + minute) % 60;
-        int endHour = (startHour + hour+(startMinute + minute)/60)%24;
+        int endHour = (startHour + hour + (startMinute + minute) / 60) % 24;
         data[0] = 1;
         data[2] = (byte) startHour;
         data[3] = (byte) startMinute;
         data[4] = (byte) endHour;
         data[5] = (byte) endMinute;
         data[7] = (byte) 0;
-        //// TODO: 2016/10/30 7  灯状态记录 
+        //// TODO: 2016/10/30 7  灯状态记录
         return this;
     }
+
     public ParsePacket setDataTimeState(byte state) {
         data[6] = state;
         return this;
     }
-
-
-
-
-
 
     public byte getType() {
         return type;
@@ -225,8 +171,8 @@ public class ParsePacket implements Serializable {
     }
 
     public ParsePacket setMac(byte[] mac) {
-        if (mac!=null)
-        this.mac = mac;
+        if (mac != null)
+            this.mac = mac;
         return this;
 
     }
@@ -250,7 +196,6 @@ public class ParsePacket implements Serializable {
         return (byte) sum;
     }
 
-
     public byte[] getData() {
         return data;
     }
@@ -269,23 +214,69 @@ public class ParsePacket implements Serializable {
         this.deviceType = deviceType;
         return this;
     }
+
     public ParsePacket setDataTiming(byte[] data) {
         for (int i = 0; i < 8; i++) {
-            if (i==6) i++;
+            if (i == 6) i++;
             this.data[i] = data[i];
         }
         return this;
 
     }
+
     public byte getDataTemperature() {
         return data[0];
 
     }
+
     public byte getDataHumidity() {
         return data[1];
 
     }
 
+    public interface TYPE {
+        byte APP_REQUEST = 1;
+        byte DEVICE_RESPONSE = 2;
+        byte DEVICE_REQUEST = 3;
+        byte APP_RESPONSE = 4;
+    }
+
+    public interface DEVICE_TYPE {
+        byte GATEWAY = 0;
+        byte LAMP = 1;
+        byte SOCKET = 2;
+        byte CURTAIN = 3;
+        byte SENSOR_TEMPERATURE = 4;
+    }
+
+    public interface MAC {
+
+    }
+
+    public interface COMMAND {
+        byte RESPONSE = 0;
+        byte STATE_READ = 0x10;
+        byte STATE_WRITE = 0x11;
+        byte TIMING_READ = 0x14;
+        byte TIMING_WRITE = 0x15;
+        byte COUNTDOWN_READ = 0x12;
+        byte COUNTDOWN_WRITE = 0x13;
+        byte CURTAIN_STATE_READ = 0x7;
+        byte CURTAIN_STATE_WRITE = 0x8;
+        byte DEVICE_RESPONSE_APP_COUNT = 0x10;
+        byte UPDATE_DEVICE_COUNT = 0x11;
+        byte UPDATE_DEVICE_MESSAGE = 0x12;
+
+
+    }
+
+    public interface DATA_LENGTH {
+
+    }
+
+    public interface DATA {
+
+    }
 
 
 }

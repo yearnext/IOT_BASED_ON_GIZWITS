@@ -14,7 +14,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-
 import com.example.xzy.myhome.R;
 import com.example.xzy.myhome.adapter.IotRecyckerViewAdapter;
 import com.example.xzy.myhome.bean.IotDevice;
@@ -40,10 +39,12 @@ public class MainActivity extends BaseActivity {
     @BindView(R.id.empty_list)
     TextView emptyList;
 
+    private String mUid;
+    private String mToken;
+    private List<IotDevice> iotDeviceList;
+    private IotRecyckerViewAdapter mIotAdapter;
+
     List<GizWifiDevice> devices = GizWifiSDK.sharedInstance().getDeviceList();
-    String mUid;
-    String mToken;List<IotDevice> iotDeviceList;
-    IotRecyckerViewAdapter iotAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -80,7 +81,7 @@ public class MainActivity extends BaseActivity {
                         break;
 
                     case R.id.delete_item:
-                        if (devices.size()!= 0) {
+                        if (devices.size() != 0) {
                             GizWifiSDK.sharedInstance().unbindDevice(mUid, mToken, devices.get(0).getDid());
                         }
                         break;
@@ -91,15 +92,15 @@ public class MainActivity extends BaseActivity {
         });
 
         //recyclerView
-        iotAdapter = new IotRecyckerViewAdapter(iotDeviceList);
+        mIotAdapter = new IotRecyckerViewAdapter(iotDeviceList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         rvDeviceList.setLayoutManager(linearLayoutManager);
-        rvDeviceList.setAdapter(iotAdapter);
-        iotAdapter.setOnItemClickLitener(new IotRecyckerViewAdapter.OnItemClickLitener() {
+        rvDeviceList.setAdapter(mIotAdapter);
+        mIotAdapter.setOnItemClickLitener(new IotRecyckerViewAdapter.OnItemClickLitener() {
             @Override
             public void onItemClick(View view, int position) {
                 mDevice = devices.get(position);
-            if (mDevice.getNetStatus() != GizWifiDeviceNetStatus.GizDeviceOffline) {
+                if (mDevice.getNetStatus() != GizWifiDeviceNetStatus.GizDeviceOffline) {
                     mDevice.setListener(mDeviceListener);
                     mDevice.setSubscribe(true);
                     Intent intent = new Intent(MainActivity.this, Main2Activity.class);
@@ -108,14 +109,15 @@ public class MainActivity extends BaseActivity {
                     intent.putExtras(bundle);
                     startActivityForResult(intent, 0);
                 } else {
-                    ToastUtil.showToast(MainActivity.this,"当前设备处于离线状态");
+                    ToastUtil.showToast(MainActivity.this, "当前设备处于离线状态");
                 }
             }
         });
     }
+
     protected void refresh() {
-        Log.i(TAG, "refresh: "+devices.size());
-        if (devices.size() != 0||iotDeviceList!=null) {
+        Log.i(TAG, "refresh: " + devices.size());
+        if (devices.size() != 0 || iotDeviceList != null) {
             iotDeviceList.removeAll(iotDeviceList);
             for (GizWifiDevice device : devices) {
                 IotDevice iotDevice = new IotDevice();
@@ -128,8 +130,8 @@ public class MainActivity extends BaseActivity {
                         .setNetStatus(device.getNetStatus().toString())
                         .setSubscribed(BooleanTranslateUtil.translateString(device.isSubscribed()));
                 iotDeviceList.add(iotDevice);
-                Log.i(TAG, "列表数量"+iotDeviceList.size());
-                iotAdapter.notifyDataSetChanged();
+                Log.i(TAG, "列表数量" + iotDeviceList.size());
+                mIotAdapter.notifyDataSetChanged();
             }
             emptyList.setVisibility(View.GONE);
             rvDeviceList.setVisibility(View.VISIBLE);
@@ -145,39 +147,39 @@ public class MainActivity extends BaseActivity {
         // 显示变化后的设备列表
         Log.d("", "discovered deviceList: " + deviceList);
         devices = deviceList;
-            refresh();
+        refresh();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RESULT_OK) {
-        ToastUtil.showToast(MainActivity.this,"云端设备未响应，请稍后再试");
-        Snackbar.make(tbDeviceList, "云端设备未响应", Snackbar.LENGTH_LONG)
-                .setAction("查看帮助", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                        builder.setTitle("云端设备未响应解决方法")
-                                .setMessage("1 检查WIFI网络状况" + "\n" +
-                                "2 确认网关设备已成功连接网络" + "\n" +
-                                "3 尝试再次连接")
-                                .setPositiveButton("再次连接", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        mDevice.setListener(mDeviceListener);
-                                        mDevice.setSubscribe(true);
-                                        Intent intent = new Intent(MainActivity.this, Main2Activity.class);
-                                        Bundle bundle = new Bundle();
-                                        bundle.putParcelable("mDevice", mDevice);
-                                        intent.putExtras(bundle);
-                                        startActivityForResult(intent,0);
-                                    }
-                                })
-                                .show();
+            ToastUtil.showToast(MainActivity.this, "云端设备未响应，请稍后再试");
+            Snackbar.make(tbDeviceList, "云端设备未响应", Snackbar.LENGTH_LONG)
+                    .setAction("查看帮助", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                            builder.setTitle("云端设备未响应解决方法")
+                                    .setMessage("1 检查WIFI网络状况" + "\n" +
+                                            "2 确认网关设备已成功连接网络" + "\n" +
+                                            "3 尝试再次连接")
+                                    .setPositiveButton("再次连接", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            mDevice.setListener(mDeviceListener);
+                                            mDevice.setSubscribe(true);
+                                            Intent intent = new Intent(MainActivity.this, Main2Activity.class);
+                                            Bundle bundle = new Bundle();
+                                            bundle.putParcelable("mDevice", mDevice);
+                                            intent.putExtras(bundle);
+                                            startActivityForResult(intent, 0);
+                                        }
+                                    })
+                                    .show();
 
-                    }
-                }).show();
+                        }
+                    }).show();
 
 
         }

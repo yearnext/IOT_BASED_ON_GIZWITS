@@ -32,7 +32,7 @@
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:id="@+id/seekBar_lamp"
-            android:max="254"
+            android:max="100"
             android:layout_marginLeft="12dp"
             android:layout_alignBottom="@id/image_item_lamp"
             android:layout_toEndOf="@id/tv_item_name_lamp"

@@ -50,8 +50,8 @@ public class AlarmActivity extends AppCompatActivity {
     CheckBox checkboxSun;
 
     byte[] timeData = {3, 0, 0, 0, 0, 0, 0, 0};
-    ParsePacket parsePacket;
-    GizWifiDevice mDevice;
+    private ParsePacket mParsePacket;
+    private GizWifiDevice mDevice;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +60,7 @@ public class AlarmActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         Intent intent = getIntent();
-        parsePacket = (ParsePacket) intent.getSerializableExtra("parsePacket");
+        mParsePacket = (ParsePacket) intent.getSerializableExtra("mParsePacket");
         mDevice = intent.getParcelableExtra("mDevice");
         toolbarAlarm.setTitle("定时设置");
         toolbarAlarm.setTitleTextColor(Color.WHITE);
@@ -68,7 +68,8 @@ public class AlarmActivity extends AppCompatActivity {
         toolbarAlarm.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(AlarmActivity.this, R.style.AlertDialog_AppCompat_TimePicker);
+                AlertDialog.Builder builder = new AlertDialog.Builder(AlarmActivity.this,
+                        R.style.AlertDialog_AppCompat_TimePicker);
                 builder.setMessage("要舍弃更改么")
                         .setNegativeButton("取消", new DialogInterface.OnClickListener() {
                             @Override
@@ -92,25 +93,27 @@ public class AlarmActivity extends AppCompatActivity {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.start_time_button:
-                TimePickerDialog start = new TimePickerDialog(AlarmActivity.this, R.style.AlertDialog_AppCompat_mTime,
+                TimePickerDialog start = new TimePickerDialog(AlarmActivity.this,
+                        R.style.AlertDialog_AppCompat_mTime,
                         new TimePickerDialog.OnTimeSetListener() {
                             @Override
                             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                                 timeData[2] = (byte) hourOfDay;
                                 timeData[3] = (byte) minute;
-                                startTimeButton.setText(hourOfDay+":"+minute);
+                                startTimeButton.setText(hourOfDay + ":" + minute);
                             }
                         }, 0, 0, true);
                 start.show();
                 start.onClick(start, 1);
                 break;
             case R.id.close_time_button:
-                TimePickerDialog close = new TimePickerDialog(AlarmActivity.this, R.style.AlertDialog_AppCompat_mTime, new TimePickerDialog.OnTimeSetListener() {
+                TimePickerDialog close = new TimePickerDialog(AlarmActivity.this,
+                        R.style.AlertDialog_AppCompat_mTime, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         timeData[4] = (byte) hourOfDay;
                         timeData[5] = (byte) minute;
-                        closeTimeButton.setText(hourOfDay+":"+minute);
+                        closeTimeButton.setText(hourOfDay + ":" + minute);
 
                     }
                 }, 0, 0, true);
@@ -124,13 +127,13 @@ public class AlarmActivity extends AppCompatActivity {
                 if (checkboxFri.isChecked()) timeData[1] += 16;
                 if (checkboxSat.isChecked()) timeData[1] += 32;
                 if (checkboxSun.isChecked()) timeData[1] += 64;
-                parsePacket.setDataTiming(timeData);
-                parsePacket.sendPacket(mDevice);
+                mParsePacket.setDataTiming(timeData);
+                mParsePacket.sendPacket(mDevice);
                 finish();
                 break;
-                }
-
         }
+
     }
+}
 
 

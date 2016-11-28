@@ -43,8 +43,8 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
 
     private static final int ON = 0;
     private static final int OFF = 1;
-    private static  String MAC;
-    private boolean controlled=false;
+    static ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
+    private static String MAC;
     @BindView(R.id.tb_device_list1)
     Toolbar tbDeviceList;
 
@@ -55,18 +55,18 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
     RecyclerView rvDeviceItem;
 
 
-    GizWifiDevice mDevice;
-    byte eventNumber = 0;
-    String logcat;
-    int i = 0;
-    private byte[] emptyacket = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    List<Device> deviceList;
-    DeviceItemRecycerViewAdapter deviceRVAdapter;
-    static ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
-    byte count = 0;
-    byte lampuminance = (byte) 150;
+    private GizWifiDevice mDevice;
+    private byte mEventNumber = 0;
+    private String logcat;
+    private int i = 0;
+    private List<Device> deviceList;
+    private DeviceItemRecycerViewAdapter deviceRVAdapter;
+    private byte count = 0;
+    private byte lampuminance = (byte) 150;
     AlertDialog alertDialog;
-
+    private boolean controlled = false;
+    //长度为32的byte数组
+    private byte[] emptyacket = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -80,7 +80,7 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
         deviceList = new ArrayList<Device>();
 
         if (mDevice.getNetStatus() == GizWifiDeviceNetStatus.GizDeviceOnline) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(Main2Activity.this,R.style.MyAlertDialog);
+            AlertDialog.Builder builder = new AlertDialog.Builder(Main2Activity.this, R.style.MyAlertDialog);
             alertDialog = builder.setView(R.layout.logining)
                     .setCancelable(false)
                     .create();
@@ -109,7 +109,7 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
                     finish();
                 }
             }
-        },20000);
+        }, 20000);
     }
 
     @Override
@@ -159,9 +159,9 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
                 Log.d(TAG, "mDidReceiveData:有data");
                 ConcurrentHashMap<String, Object> map = (ConcurrentHashMap<String, Object>) dataMap.get("data");
                 byte[] bytes = (byte[]) map.get(getApplication().getString(R.string.data_name));
-                if (bytes == null ) {
+                if (bytes == null) {
                     Log.i(TAG, "mDidReceiveData: " + "bytes为空");
-                } else if (Arrays.equals(bytes,emptyacket)) {
+                } else if (Arrays.equals(bytes, emptyacket)) {
                     Log.d(TAG, "mDidReceiveData: " + "全为0数据一条");
                 } else {
                     updateLogcat(bytes);
@@ -191,7 +191,7 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
         String a = bytesToHex(data);
         //// TODO: 2016/10/29 以后用 StringBuff 优化
         StringBuffer s = new StringBuffer();
-        Log.i(TAG, "原始数据包"+bytesToHex(data));
+        Log.i(TAG, "原始数据包" + bytesToHex(data));
         Log.w(TAG, "第" + i + "次:" +
                 "通讯类型：=" + a.substring(0, 2) + "；" +
                 "事件序号：=" + a.substring(2, 4) + "；" +
@@ -219,7 +219,7 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
         //// TODO: 2016/10/25 接收数据解析 
         ParsePacket parsePacket = new ParsePacket(b);
         if ((parsePacket.getType() == ParsePacket.TYPE.DEVICE_RESPONSE &&
-                parsePacket.getDeviceType() == ParsePacket.DEVICE_TYPE.GATEWAY)||
+                parsePacket.getDeviceType() == ParsePacket.DEVICE_TYPE.GATEWAY) ||
                 (parsePacket.getType() == ParsePacket.TYPE.DEVICE_REQUEST &&
                         parsePacket.getDeviceType() == ParsePacket.DEVICE_TYPE.GATEWAY)) {
             Log.d(TAG, "assessDataType: 收到网关数据，准备更新设备列表");
@@ -257,14 +257,14 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
     }
 
     private int getListIndex(byte[] mac) {
-        for (int a = 0;a<deviceList.size(); a++) {
-            Log.i(TAG, "判断位  "+"deviceList.size():"+deviceList.size()+"\n"+
-                    "deviceList.get(a).getMac()"+bytesToHex(deviceList.get(a).getMac())+"\n"+
-                    "mac"+bytesToHex(mac)+"\n"+
-                    "Arrays.equals(deviceList.get(a).getMac(),mac)"+Arrays.equals(deviceList.get(a).getMac(),mac)
+        for (int a = 0; a < deviceList.size(); a++) {
+            Log.i(TAG, "判断位  " + "deviceList.size():" + deviceList.size() + "\n" +
+                    "deviceList.get(a).getMac()" + bytesToHex(deviceList.get(a).getMac()) + "\n" +
+                    "mac" + bytesToHex(mac) + "\n" +
+                    "Arrays.equals(deviceList.get(a).getMac(),mac)" + Arrays.equals(deviceList.get(a).getMac(), mac)
             );
 
-            if (Arrays.equals(deviceList.get(a).getMac(),mac))
+            if (Arrays.equals(deviceList.get(a).getMac(), mac))
                 return a;
 
         }
@@ -274,7 +274,7 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
     private void updateDeviceList(ParsePacket parsePacket) {
         //// TODO: 控制命令
         //请求设备数
-        if (parsePacket.getCommand() == ParsePacket.COMMAND.UPDATE_DEVICE_COUNT||
+        if (parsePacket.getCommand() == ParsePacket.COMMAND.UPDATE_DEVICE_COUNT ||
                 parsePacket.getCommand() == ParsePacket.COMMAND.DEVICE_RESPONSE_APP_COUNT) {
             count = 0;
             byte[] data = parsePacket.getData();
@@ -286,9 +286,9 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
             }
             //获取设备信息
         } else if (parsePacket.getCommand() == ParsePacket.COMMAND.UPDATE_DEVICE_MESSAGE) {
-            Device device= new Device();
-            int index=getListIndex(parsePacket.getDataMac());
-            Log.w(TAG, "index:"+index );
+            Device device = new Device();
+            int index = getListIndex(parsePacket.getDataMac());
+            Log.w(TAG, "index:" + index);
             if (index != -1) {
                 device = deviceList.get(index);
                 device.setMac(parsePacket.getDataMac());
@@ -301,14 +301,13 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
 
             Log.i(TAG, "获取到的设备MAC：" + bytesToHex(parsePacket.getDataMac()) +
                     "类型" + parsePacket.getDataDeviceType());
-                deviceRVAdapter.notifyDataSetChanged();
+            deviceRVAdapter.notifyDataSetChanged();
 
         }
     }
 
 
-
-    private void showCountdownDialog( final ParsePacket parsePacket) {
+    private void showCountdownDialog(final ParsePacket parsePacket) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(Main2Activity.this);
         DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
             @Override
@@ -370,7 +369,7 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
             }
         };
 
-            builder.setItems(R.array.countdown_data_off, clickListener).show();
+        builder.setItems(R.array.countdown_data_off, clickListener).show();
 
 
     }
@@ -389,7 +388,6 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
                 break;
         }
     }
-
 
 
     @Override
@@ -425,7 +423,7 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
             parsePacket.setDataTimeState((byte) 1);
         }
         Intent intent = new Intent(this, AlarmActivity.class);
-        intent.putExtra("parsePacket", parsePacket);
+        intent.putExtra("mParsePacket", parsePacket);
         startActivity(intent);
     }
 
@@ -451,39 +449,39 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
     private void initData() {
         Device device1 = new Device();
         device1.setDeviceType(ParsePacket.DEVICE_TYPE.SENSOR_TEMPERATURE);
-        device1.setMac(new byte[]{0,0,0,0,0,0,0,1});
+        device1.setMac(new byte[]{0, 0, 0, 0, 0, 0, 0, 1});
         Device device2 = new Device();
         device2.setDeviceType(ParsePacket.DEVICE_TYPE.LAMP);
-        device2.setMac(new byte[]{0,0,0,0,0,0,0,2});
+        device2.setMac(new byte[]{0, 0, 0, 0, 0, 0, 0, 2});
 
         Device device3 = new Device();
         device3.setDeviceType(ParsePacket.DEVICE_TYPE.CURTAIN);
-        device3.setMac(new byte[]{0,0,0,0,0,0,0,3});
+        device3.setMac(new byte[]{0, 0, 0, 0, 0, 0, 0, 3});
 
         Device device4 = new Device();
         device4.setDeviceType(ParsePacket.DEVICE_TYPE.SOCKET);
-        device4.setMac(new byte[]{0,0,0,0,0,0,0,4});
+        device4.setMac(new byte[]{0, 0, 0, 0, 0, 0, 0, 4});
 
         Device device5 = new Device();
         device5.setDeviceType(ParsePacket.DEVICE_TYPE.SOCKET);
-        device5.setMac(new byte[]{0,0,0,0,0,0,0,5});
+        device5.setMac(new byte[]{0, 0, 0, 0, 0, 0, 0, 5});
 
-        Collections.addAll(deviceList, device1,device2,device3,device4, device5);
+        Collections.addAll(deviceList, device1, device2, device3, device4, device5);
     }
 
     @Override
     protected void mDidUpdateNetStatus(GizWifiDevice device, GizWifiDeviceNetStatus netStatus) {
         switch (netStatus) {
             case GizDeviceOnline:
-                ToastUtil.showToast(Main2Activity.this, device.getProductName() +"设备上线");
+                ToastUtil.showToast(Main2Activity.this, device.getProductName() + "设备上线");
                 break;
             case GizDeviceOffline:
                 Intent intent = new Intent("com.example.xzy.myhome.FORCE_OFFLINE");
                 sendBroadcast(intent);
-                ToastUtil.showToast(Main2Activity.this, device.getProductName() +"设备状态变为:离线" );
+                ToastUtil.showToast(Main2Activity.this, device.getProductName() + "设备状态变为:离线");
                 break;
             case GizDeviceControlled:
-                if (alertDialog!=null) {
+                if (alertDialog != null) {
                     alertDialog.cancel();
 
                 }
@@ -492,10 +490,10 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
                 parsePacket.setType(ParsePacket.TYPE.APP_REQUEST);
                 parsePacket.setCommand(UPDATE_DEVICE_COUNT);
                 parsePacket.sendPacket(mDevice);
-                ToastUtil.showToast(Main2Activity.this, device.getProductName() +"设备状态变为:可控");
+                ToastUtil.showToast(Main2Activity.this, device.getProductName() + "设备状态变为:可控");
                 break;
             case GizDeviceUnavailable:
-                ToastUtil.showToast(Main2Activity.this, device.getProductName() +"设备状态变为:难以获得的");
+                ToastUtil.showToast(Main2Activity.this, device.getProductName() + "设备状态变为:难以获得的");
                 break;
         }
 

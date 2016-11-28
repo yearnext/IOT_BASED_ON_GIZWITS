@@ -36,29 +36,28 @@ public class WIFIActivity extends BaseActivity {
     AlertDialog alertDialog;
     @BindView(R.id.textView1)
     TextView textView1;
-    private SharedPreferences preferences;
-    private SharedPreferences.Editor editor;
-    String ssid;
-
-    String wifiSSD;
-    String wifiPassword;
     List<GizWifiGAgentType> types;
     AlertDialog.Builder builder;
+    private String mSsid;
+    private String mWifiSSD;
+    private String mWifiPassword;
+    private SharedPreferences mPreferences;
+    private SharedPreferences.Editor mEditor;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wifi);
         ButterKnife.bind(this);
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-        ssid = wifiInfo.getSSID().replaceAll("\"", "");
-        String wifiPassword = preferences.getString(ssid, null);
-        if (!ssid.equals("<unknown ssid>")) {
-            editTextWifiSsd.setText(ssid);
-            editTextWifiSsd.setSelection(ssid.length());
+        mSsid = wifiInfo.getSSID().replaceAll("\"", "");
+        String wifiPassword = mPreferences.getString(mSsid, null);
+        if (!mSsid.equals("<unknown mSsid>")) {
+            editTextWifiSsd.setText(mSsid);
+            editTextWifiSsd.setSelection(mSsid.length());
         }
 
 
@@ -71,19 +70,19 @@ public class WIFIActivity extends BaseActivity {
 
   /*  @OnClick(R.id.button_wifi_login)
     public void onClick() {
-        String wifiSSD = editTextWifiSsd.getText().toString();
-        String wifiPassword = editTextWifiPassword.getText().toString();
+        String mWifiSSD = editTextWifiSsd.getText().toString();
+        String mWifiPassword = editTextWifiPassword.getText().toString();
         List<GizWifiGAgentType> types = new ArrayList<GizWifiGAgentType>();
         types.add(GizWifiGAgentType.GizGAgentESP);
-        GizWifiSDK.sharedInstance().setDeviceOnboarding(wifiSSD, wifiPassword, GizWifiConfigureMode.GizWifiAirLink, null, 30, types);
-        //GizWifiSDK.sharedInstance().setDeviceOnboarding(wifiSSD, wifiPassword, GizWifiConfigureMode.GizWifiSoftAP, "XPG-GAgent-", 60, null);
+        GizWifiSDK.sharedInstance().setDeviceOnboarding(mWifiSSD, mWifiPassword, GizWifiConfigureMode.GizWifiAirLink, null, 30, types);
+        //GizWifiSDK.sharedInstance().setDeviceOnboarding(mWifiSSD, mWifiPassword, GizWifiConfigureMode.GizWifiSoftAP, "XPG-GAgent-", 60, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         alertDialog = builder.setTitle(R.string.AirLinkTitle)
                 .setMessage(R.string.AirLinkMessage)
                 .setCancelable(false).show();
-        editor = preferences.edit();
-        editor.putString(ssid, wifiPassword);
-        editor.commit();
+        mEditor = mPreferences.edit();
+        mEditor.putString(mSsid, mWifiPassword);
+        mEditor.commit();
 
     }*/
 
@@ -107,34 +106,34 @@ public class WIFIActivity extends BaseActivity {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.button_wifi_login:
-               String wifiSSD = editTextWifiSsd.getText().toString();
-               String wifiPassword = editTextWifiPassword.getText().toString();
+                String wifiSSD = editTextWifiSsd.getText().toString();
+                String wifiPassword = editTextWifiPassword.getText().toString();
                 List<GizWifiGAgentType> types = new ArrayList<GizWifiGAgentType>();
                 types.add(GizWifiGAgentType.GizGAgentESP);
                 GizWifiSDK.sharedInstance().setDeviceOnboarding(wifiSSD, wifiPassword, GizWifiConfigureMode.GizWifiAirLink, null, 30, types);
-                //GizWifiSDK.sharedInstance().setDeviceOnboarding(wifiSSD, wifiPassword, GizWifiConfigureMode.GizWifiSoftAP, "XPG-GAgent-", 60, null);
+                //GizWifiSDK.sharedInstance().setDeviceOnboarding(mWifiSSD, mWifiPassword, GizWifiConfigureMode.GizWifiSoftAP, "XPG-GAgent-", 60, null);
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 alertDialog = builder.setTitle(R.string.AirLinkTitle)
                         .setMessage(R.string.AirLinkMessage)
                         .setCancelable(false).show();
-                editor = preferences.edit();
-                editor.putString(ssid, wifiPassword);
-                editor.commit();
+                mEditor = mPreferences.edit();
+                mEditor.putString(mSsid, wifiPassword);
+                mEditor.commit();
                 break;
             case R.id.button_wifi_login1:
                 wifiSSD = editTextWifiSsd.getText().toString();
                 wifiPassword = editTextWifiPassword.getText().toString();
                 types = new ArrayList<GizWifiGAgentType>();
                 types.add(GizWifiGAgentType.GizGAgentESP);
-                //GizWifiSDK.sharedInstance().setDeviceOnboarding(wifiSSD, wifiPassword, GizWifiConfigureMode.GizWifiAirLink, null, 30, types);
+                //GizWifiSDK.sharedInstance().setDeviceOnboarding(mWifiSSD, mWifiPassword, GizWifiConfigureMode.GizWifiAirLink, null, 30, types);
                 GizWifiSDK.sharedInstance().setDeviceOnboarding(wifiSSD, wifiPassword, GizWifiConfigureMode.GizWifiSoftAP, "XPG-GAgent-", 60, null);
                 builder = new AlertDialog.Builder(this);
                 alertDialog = builder.setTitle(R.string.AirLinkTitle)
                         .setMessage(R.string.AirLinkMessage)
                         .setCancelable(false).show();
-                editor = preferences.edit();
-                editor.putString(ssid, wifiPassword);
-                editor.commit();
+                mEditor = mPreferences.edit();
+                mEditor.putString(mSsid, wifiPassword);
+                mEditor.commit();
                 break;
         }
     }
