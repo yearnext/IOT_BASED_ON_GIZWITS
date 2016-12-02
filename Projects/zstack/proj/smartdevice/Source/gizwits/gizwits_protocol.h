@@ -337,6 +337,7 @@ typedef struct
     gizwitsReport_t reportData;                     ///< 协议上报实际数据
     moduleStatusInfo_t wifiStatusData;              ///< WIFI 状态信息(信号强度)
     bool app_connt_status;
+    bool m2m_connt_status;
 }gizwitsProtocol_t;
 
 /**@name Gizwits 用户API接口
@@ -350,11 +351,12 @@ int32 gizwitsSetBind( void );
 void gizTimer50Ms(void);
 void gizTimerMs(void);
 int32 gizPutData(uint8 *buf, uint32 len);
-uint32 gizGetTimerCount(void);
+extern uint32 gizGetTimerCount(void);
 
 //int32 gizwitsForward( uint8 *packet );
-bool gizwitsGetAppConntStatus( void );
-int32 gizwitsReport( uint8 *packet );
+extern bool getGizwitsAPPStatus( void );
+extern bool getGizwitsM2MStatus( void );
+extern int32 gizwitsReport( uint8 *packet );
 
 extern user_time gizwitsGetTime( void );
 
