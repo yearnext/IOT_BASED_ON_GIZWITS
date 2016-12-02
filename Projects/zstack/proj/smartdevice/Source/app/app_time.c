@@ -26,6 +26,7 @@
 #include "app_time.h"
 #include <string.h>
 #include "hal_ds1302.h"
+#include "gizwits_protocol.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -67,6 +68,11 @@ void app_time_init( void )
 void app_time_update( void )
 {
     hal_time_read(&now_time);
+    
+    if( getGizwitsM2MStatus() == true )
+    {
+        hal_time_set(gizwitsGetTime()); 
+    }
 }
 
 /**

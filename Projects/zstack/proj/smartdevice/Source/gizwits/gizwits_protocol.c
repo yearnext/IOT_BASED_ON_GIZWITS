@@ -953,12 +953,14 @@ static int8 gizProtocolModuleStatus(protocolWifiStatus_t *status)
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_CON_M2M;
         gizwitsProtocol.wifiStatusEvent.num++;
+        gizwitsProtocol.m2m_connt_status = true;
         GIZWITS_LOG("connected m2m \n");
     }
     else
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_DISCON_M2M;
         gizwitsProtocol.wifiStatusEvent.num++;
+        gizwitsProtocol.m2m_connt_status = false;
         GIZWITS_LOG("disconnected m2m \n");
     }
 
@@ -1324,6 +1326,32 @@ int32 gizwitsGetNetTime( void )
 }
 
 /**
+* @brief 获取APP连接状态
+
+* 用户可以调用检测WIFI模块与APP之间的连接状态
+
+* @param[in] void
+* @return bool
+*/
+bool getGizwitsAPPStatus( void )
+{
+    return gizwitsProtocol.app_connt_status;
+}
+
+/**
+* @brief 获取M2M连接状态
+
+* 用户可以调用检测WIFI模块与云端之间的连接状态
+
+* @param[in] void
+* @return bool
+*/
+bool getGizwitsM2MStatus( void )
+{
+    return gizwitsProtocol.m2m_connt_status;
+}
+
+/**
 * @brief 刷新本地时间数据
 
 * 用户可以调用该接口刷新本地时间
@@ -1357,7 +1385,6 @@ user_time gizwitsGetTime( void )
     return device_time;
 }
 
-
 /**
 * @brief 机智云上报函数
 
@@ -1382,19 +1409,6 @@ int32 gizwitsReport( uint8 *packet )
     memcpy((uint8 *)&gizwitsProtocol.gizLastDataPoint, packet, sizeof(dataPoint_t));
         
     return ret;
-}
-
-/**
-* @brief 获取APP连接状态
-
-* 用户可以调用检测WIFI模块与APP之间的连接状态
-
-* @param[in] void
-* @return bool
-*/
-bool gizwitsGetAppConntStatus( void )
-{
-    return gizwitsProtocol.app_connt_status;
 }
 
 ///**
@@ -1531,7 +1545,7 @@ int32 gizwitsHandle(dataPoint_t *currentData)
 //        gizwitsReport((uint8 *)currentData);
 //    }
     
-    if(60000 <= (gizGetTimerCount() - gizwitsProtocol.lastReportTime))
+    if(30000 <= (gizGetTimerCount() - gizwitsProtocol.lastReportTime))
     {
         gizwitsGetNetTime();
     }

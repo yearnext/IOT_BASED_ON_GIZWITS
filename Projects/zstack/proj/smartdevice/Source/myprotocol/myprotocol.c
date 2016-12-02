@@ -364,7 +364,7 @@ bool MYPROTOCOL_FORWARD_PACKET( MYPROTOCOL_DATA_DIR dir, MYPROTOCOL_FORMAT *pack
             break;
         case MYPROTOCOL_FORWORD_D2W:
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-            if( gizwitsGetAppConntStatus() == false )
+            if( getGizwitsAPPStatus() == false )
             {
                 return false;
             }
@@ -397,7 +397,7 @@ bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR dir, MYPROTOCOL_FORMAT *packet, pa
     {
         case MYPROTOCOL_DIR_D2W:
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-            if( gizwitsGetAppConntStatus() == false )
+            if( getGizwitsAPPStatus() == false )
             {
                 return false;
             }
@@ -412,7 +412,7 @@ bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR dir, MYPROTOCOL_FORMAT *packet, pa
             break;
         case MYPROTOCOL_FORWORD_D2W:
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-            if( gizwitsGetAppConntStatus() == false )
+            if( getGizwitsAPPStatus() == false )
             {
                 return false;
             }
