@@ -15,8 +15,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.example.xzy.myhome.R;
-import com.example.xzy.myhome.adapter.IotRecyckerViewAdapter;
-import com.example.xzy.myhome.bean.IotDevice;
+import com.example.xzy.myhome.adapter.IotRecyclerAdapter;
+import com.example.xzy.myhome.model.bean.IotDevice;
 import com.example.xzy.myhome.util.BooleanTranslateUtil;
 import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
@@ -41,8 +41,8 @@ public class MainActivity extends BaseActivity {
 
     private String mUid;
     private String mToken;
-    private List<IotDevice> iotDeviceList;
-    private IotRecyckerViewAdapter mIotAdapter;
+    private List<IotDevice> iotDeviceList= new ArrayList<>();
+    private IotRecyclerAdapter mIotAdapter;
 
     List<GizWifiDevice> devices = GizWifiSDK.sharedInstance().getDeviceList();
 
@@ -54,49 +54,20 @@ public class MainActivity extends BaseActivity {
         Intent intent = getIntent();
         mUid = intent.getStringExtra("mUid");
         mToken = intent.getStringExtra("mToken");
-        List<String> pks = new ArrayList<String>();
+        List<String> pks = new ArrayList<>();
         pks.add(getApplication().getString(R.string.product_key));
         GizWifiSDK.sharedInstance().getBoundDevices(mUid, mToken, pks);
-        iotDeviceList = new ArrayList<IotDevice>();
-        initView();
+        initToolbar();
+        initRecyclerView();
     }
 
-    private void initView() {
-        //toolbarList
-        tbDeviceList.setTitle(R.string.toolbar);
-        tbDeviceList.setTitleTextColor(Color.WHITE);
-        tbDeviceList.inflateMenu(R.menu.devicelist_toolbar_menu);
-        tbDeviceList.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                int itemId = item.getItemId();
-                switch (itemId) {
-                    case R.id.add_item:
-                        Intent intent = new Intent(MainActivity.this, WIFIActivity.class);
-                        startActivity(intent);
-                        break;
 
-                    case R.id.refresh_item:
-                        refresh();
-                        break;
-
-                    case R.id.delete_item:
-                        if (devices.size() != 0) {
-                            GizWifiSDK.sharedInstance().unbindDevice(mUid, mToken, devices.get(0).getDid());
-                        }
-                        break;
-                }
-                return true;
-
-            }
-        });
-
-        //recyclerView
-        mIotAdapter = new IotRecyckerViewAdapter(iotDeviceList);
+    private void initRecyclerView() {
+        mIotAdapter = new IotRecyclerAdapter(iotDeviceList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         rvDeviceList.setLayoutManager(linearLayoutManager);
         rvDeviceList.setAdapter(mIotAdapter);
-        mIotAdapter.setOnItemClickLitener(new IotRecyckerViewAdapter.OnItemClickLitener() {
+        mIotAdapter.setOnItemClickLitener(new IotRecyclerAdapter.OnItemClickLitener() {
             @Override
             public void onItemClick(View view, int position) {
                 mDevice = devices.get(position);
@@ -111,6 +82,34 @@ public class MainActivity extends BaseActivity {
                 } else {
                     ToastUtil.showToast(MainActivity.this, "当前设备处于离线状态");
                 }
+            }
+        });
+    }
+
+    private void initToolbar() {
+        tbDeviceList.setTitle(R.string.toolbar);
+        tbDeviceList.setTitleTextColor(Color.WHITE);
+        tbDeviceList.inflateMenu(R.menu.devicelist_toolbar_menu);
+        tbDeviceList.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                int itemId = item.getItemId();
+                switch (itemId) {
+                    case R.id.add_item:
+                        Intent intent = new Intent(MainActivity.this, WIFIActivity.class);
+                        startActivity(intent);
+                        break;
+                    case R.id.refresh_item:
+                        refresh();
+                        break;
+                    case R.id.delete_item:
+                        if (devices.size() != 0) {
+                            GizWifiSDK.sharedInstance().unbindDevice(mUid, mToken, devices.get(0).getDid());
+                        }
+                        break;
+                }
+                return true;
+
             }
         });
     }
@@ -140,12 +139,9 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void mDidDiscovered(GizWifiErrorCode result, List<GizWifiDevice> deviceList) {
-        // 提示错误原因
         if (result != GizWifiErrorCode.GIZ_SDK_SUCCESS) {
             Log.e("", "result: " + result.name());
         }
-        // 显示变化后的设备列表
-        Log.d("", "discovered deviceList: " + deviceList);
         devices = deviceList;
         refresh();
     }
@@ -159,31 +155,32 @@ public class MainActivity extends BaseActivity {
                     .setAction("查看帮助", new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                            builder.setTitle("云端设备未响应解决方法")
-                                    .setMessage("1 检查WIFI网络状况" + "\n" +
-                                            "2 确认网关设备已成功连接网络" + "\n" +
-                                            "3 尝试再次连接")
-                                    .setPositiveButton("再次连接", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            mDevice.setListener(mDeviceListener);
-                                            mDevice.setSubscribe(true);
-                                            Intent intent = new Intent(MainActivity.this, Main2Activity.class);
-                                            Bundle bundle = new Bundle();
-                                            bundle.putParcelable("mDevice", mDevice);
-                                            intent.putExtras(bundle);
-                                            startActivityForResult(intent, 0);
-                                        }
-                                    })
-                                    .show();
-
+                            showHelp();
                         }
                     }).show();
-
-
         }
 
+    }
+
+    private void showHelp() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setTitle("云端设备未响应解决方法")
+                .setMessage("1 检查WIFI网络状况" + "\n" +
+                        "2 确认网关设备已成功连接网络" + "\n" +
+                        "3 尝试再次连接")
+                .setPositiveButton("再次连接", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDevice.setListener(mDeviceListener);
+                        mDevice.setSubscribe(true);
+                        Intent intent = new Intent(MainActivity.this, Main2Activity.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putParcelable("mDevice", mDevice);
+                        intent.putExtras(bundle);
+                        startActivityForResult(intent, 0);
+                    }
+                })
+                .show();
     }
 }
 

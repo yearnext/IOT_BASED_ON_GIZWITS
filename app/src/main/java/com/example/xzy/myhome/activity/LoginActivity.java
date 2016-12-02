@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
@@ -34,11 +34,7 @@ public class LoginActivity extends BaseActivity {
     @BindView(R.id.login_anonymity)
     TextView loginAnonymity;
     AlertDialog ad;
-    private String mLoginEmail;
-    private String mLoginPassword;
     private SharedPreferences mPreferences;
-    private SharedPreferences.Editor mEditor;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,10 +49,6 @@ public class LoginActivity extends BaseActivity {
         String password = mPreferences.getString("password", "");
         eTLoginEmail.setText(account);
         eTLoginPassword.setText(password);
-        String android_id = Settings.Secure.getString(getContentResolver(),
-                Settings.Secure.ANDROID_ID);
-        Log.e("onCreate", android_id);
-
     }
 
 
@@ -64,16 +56,16 @@ public class LoginActivity extends BaseActivity {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.login_button://登录
-                mLoginEmail = eTLoginEmail.getText().toString();
-                mLoginPassword = eTLoginPassword.getText().toString();
-                if (ExceptionUtil.isException(mLoginEmail, mLoginPassword, LoginActivity.this)) break;
+                String mLoginEmail = eTLoginEmail.getText().toString();
+                String mLoginPassword = eTLoginPassword.getText().toString();
+                if (ExceptionUtil.validateAccount(mLoginEmail, mLoginPassword, LoginActivity.this)) break;
                 ad.show();
                 GizWifiSDK.sharedInstance().userLogin(mLoginEmail, mLoginPassword);
-                mEditor = mPreferences.edit();
+                SharedPreferences.Editor mEditor = mPreferences.edit();
                 mEditor.putString("account", mLoginEmail);
                 mEditor.putString("password", mLoginPassword);
                 mEditor.putBoolean("loginState", true);
-                mEditor.commit();
+                mEditor.apply();
                 break;
 
             case R.id.login_anonymity:
@@ -82,9 +74,7 @@ public class LoginActivity extends BaseActivity {
                 break;
 
             case R.id.register_start:
-                Intent intent = new Intent(getApplication().getString(R.string.offline_broadcast));
-                sendBroadcast(intent);
-                ////startActivity(new Intent(LoginActivity.this, Main2Activity.class));
+                startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
                 break;
         }
     }
@@ -93,7 +83,6 @@ public class LoginActivity extends BaseActivity {
     //登录回调
     @Override
     protected void mDidUserLogin(GizWifiErrorCode result, String uid, String token) {
-        Log.e(TAG, "didUserLogin: 准备判断result");
         if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             intent.putExtra("mUid", uid);
@@ -102,10 +91,9 @@ public class LoginActivity extends BaseActivity {
             ToastUtil.showToast(LoginActivity.this, "登录成功");
             finish();
         } else {
-            // 登录失败
             ad.dismiss();
             Log.e(TAG, "mDidUserLogin: " + result);
-            ToastUtil.showToast(LoginActivity.this, "登录失败");
+            Snackbar.make(eTLoginEmail, "登录失败", Snackbar.LENGTH_LONG).show();
         }
     }
 

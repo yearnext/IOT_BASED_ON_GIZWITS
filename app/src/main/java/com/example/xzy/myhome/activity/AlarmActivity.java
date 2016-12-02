@@ -82,7 +82,6 @@ public class AlarmActivity extends AppCompatActivity {
                                 finish();
                             }
                         }).show();
-
             }
         });
 
@@ -114,7 +113,6 @@ public class AlarmActivity extends AppCompatActivity {
                         timeData[4] = (byte) hourOfDay;
                         timeData[5] = (byte) minute;
                         closeTimeButton.setText(hourOfDay + ":" + minute);
-
                     }
                 }, 0, 0, true);
                 close.show();

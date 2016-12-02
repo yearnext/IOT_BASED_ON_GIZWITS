@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.xzy.myhome.R;
-import com.example.xzy.myhome.bean.IotDevice;
+import com.example.xzy.myhome.model.bean.IotDevice;
 
 import java.util.List;
 
@@ -18,11 +18,11 @@ import butterknife.ButterKnife;
  * Created by xzy on 16/9/22.
  */
 
-public class IotRecyckerViewAdapter extends RecyclerView.Adapter<IotRecyckerViewAdapter.MyViewHodler> {
+public class IotRecyclerAdapter extends RecyclerView.Adapter<IotRecyclerAdapter.MyViewHodler> {
     List<IotDevice> iotDeviceList;
     private OnItemClickLitener mOnItemClickLitener;
 
-    public IotRecyckerViewAdapter(List<IotDevice> iotDeviceList) {
+    public IotRecyclerAdapter(List<IotDevice> iotDeviceList) {
         this.iotDeviceList = iotDeviceList;
     }
 

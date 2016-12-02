@@ -1,4 +1,4 @@
-package com.example.xzy.myhome.bean;
+package com.example.xzy.myhome.model.bean;
 
 /**
  * Created by xzy on 16/9/22.

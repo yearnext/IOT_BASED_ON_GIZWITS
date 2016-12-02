@@ -10,7 +10,7 @@ import android.net.NetworkInfo;
 
 public class ExceptionUtil {
     //判断账号问题
-    public static boolean isException(String Email, String Password, Context context) {
+    public static boolean validateAccount(String Email, String Password, Context context) {
         if ((Email.isEmpty()) || (Password.isEmpty())) {
             ToastUtil.showToast(context, "账号或密码为空");
             return true;

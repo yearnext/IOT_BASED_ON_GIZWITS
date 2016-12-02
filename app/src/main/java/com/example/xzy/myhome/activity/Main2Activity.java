@@ -19,7 +19,7 @@ import android.widget.TimePicker;
 
 import com.example.xzy.myhome.R;
 import com.example.xzy.myhome.adapter.DeviceItemRecycerViewAdapter;
-import com.example.xzy.myhome.bean.Device;
+import com.example.xzy.myhome.model.bean.Device;
 import com.example.xzy.myhome.util.ParsePacket;
 import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
@@ -143,6 +143,7 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
 
 
         //RecyclerView
+        initData();
         deviceRVAdapter = new DeviceItemRecycerViewAdapter(deviceList);
         deviceRVAdapter.setDeviceSetListener(this);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -272,7 +273,6 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
     }
 
     private void updateDeviceList(ParsePacket parsePacket) {
-        //// TODO: 控制命令
         //请求设备数
         if (parsePacket.getCommand() == ParsePacket.COMMAND.UPDATE_DEVICE_COUNT ||
                 parsePacket.getCommand() == ParsePacket.COMMAND.DEVICE_RESPONSE_APP_COUNT) {
@@ -313,7 +313,6 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
-                    //// TODO: 2016/10/26 倒计时还是老的data对应
                     case 0:
                         parsePacket.setDataCountdown(00, 10);
                         parsePacket.sendPacket(mDevice);

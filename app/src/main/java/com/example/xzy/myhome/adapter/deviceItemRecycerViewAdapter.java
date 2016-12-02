@@ -14,7 +14,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.example.xzy.myhome.R;
-import com.example.xzy.myhome.bean.Device;
+import com.example.xzy.myhome.model.bean.Device;
 import com.example.xzy.myhome.util.ParsePacket;
 
 import java.util.List;

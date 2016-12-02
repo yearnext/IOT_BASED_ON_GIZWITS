@@ -32,16 +32,13 @@ public class RegisterActivity extends BaseActivity {
         ButterKnife.bind(this);
     }
 
-    //注册回调
     @Override
-    protected void MDidRegisterUser(GizWifiErrorCode result) {
+    protected void mDidRegisterUser(GizWifiErrorCode result) {
         if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
-            // 注册成功
             Toast.makeText(RegisterActivity.this, "邮箱注册成功，自动登录", Toast.LENGTH_SHORT).show();
             GizWifiSDK.sharedInstance().userLogin(RegisterEmail, RegisterPassword);
 
         } else {
-            // 注册失败
             Snackbar.make(registerEmail, "注册失败", Snackbar.LENGTH_SHORT).show();
         }
     }
@@ -50,12 +47,11 @@ public class RegisterActivity extends BaseActivity {
     public void onClick() {
         RegisterEmail = registerEmail.getText().toString();
         RegisterPassword = registerPassword.getText().toString();
-        if (ExceptionUtil.isException(RegisterEmail, RegisterPassword, RegisterActivity.this))
+        if (ExceptionUtil.validateAccount(RegisterEmail, RegisterPassword, RegisterActivity.this))
             return;
         GizWifiSDK.sharedInstance().registerUser(RegisterEmail, RegisterPassword, null, GizUserAccountType.GizUserEmail);
     }
 
-    //登录回调
     @Override
     protected void mDidUserLogin(GizWifiErrorCode result, String uid, String token) {
         if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {

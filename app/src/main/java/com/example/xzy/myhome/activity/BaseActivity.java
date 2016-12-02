@@ -55,7 +55,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         @Override   //注册回调
         public void didRegisterUser(GizWifiErrorCode result, String uid, String token) {
-            MDidRegisterUser(result);
+            mDidRegisterUser(result);
         }
 
         @Override   //绑定结果回调
@@ -177,7 +177,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
 
     //注册回调
-    protected void MDidRegisterUser(GizWifiErrorCode result) {
+    protected void mDidRegisterUser(GizWifiErrorCode result) {
     }
 
 
