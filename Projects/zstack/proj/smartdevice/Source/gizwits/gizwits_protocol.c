@@ -1380,9 +1380,9 @@ bool updateDeviceTime( ptotocolNetTime_t *packet )
 * @param[in] mode void
 * @return 时间数据
 */
-user_time gizwitsGetTime( void )
+user_time *gizwitsGetTime( void )
 {
-    return device_time;
+    return &device_time;
 }
 
 /**

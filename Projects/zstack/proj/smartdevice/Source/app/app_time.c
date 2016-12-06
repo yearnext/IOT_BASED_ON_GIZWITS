@@ -27,6 +27,7 @@
 #include <string.h>
 #include "hal_ds1302.h"
 #include "gizwits_protocol.h"
+#include "myprotocol.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -69,10 +70,12 @@ void app_time_update( void )
 {
     hal_time_read(&now_time);
     
+#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
     if( getGizwitsM2MStatus() == true )
     {
         hal_time_set(gizwitsGetTime()); 
     }
+#endif
 }
 
 /**

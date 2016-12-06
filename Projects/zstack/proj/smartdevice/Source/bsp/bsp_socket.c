@@ -24,10 +24,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "bsp_socket.h"
-#include "mcu_timer.h"
 #include <string.h>
 #include "app_save.h"
-#include "app_timer.h"
 #include "bsp_socket.h"
 #include "Onboard.h"
 
@@ -35,9 +33,19 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-// 继电器数值与PWM占空比之间转换
-#define Socket_Value_Conversion(n) ( 0xFF - (n) )
-#define Get_Socket_Value()         ( Get_TIM4_CH0_Duty() )
+// 插座控制端口寄存器定义
+#define SOCKET_CONTROL_PORT     P2_0
+#define SOCKET_CONTROL_BV       BV(0)
+#define SOCKET_CONTROL_SEL      P2SEL
+#define SOCKET_CONTROL_DIR      P2DIR
+#define SOCKET_CONTROL_POLARITY ACTIVE_HIGH
+
+// 插座控制端口功能配置
+#define SOCKET_CONTROL_WrMode() ( SOCKET_CONTROL_SEL &= ~SOCKET_CONTROL_BV, SOCKET_CONTROL_DIR |=  SOCKET_CONTROL_BV )
+#define SOCKET_CONTROL_RdMode() ( SOCKET_CONTROL_SEL &= ~SOCKET_CONTROL_BV, SOCKET_CONTROL_DIR &= ~SOCKET_CONTROL_BV )
+#define SET_SOCKET_CONTROL()    ( SOCKET_CONTROL_PORT = SOCKET_CONTROL_POLARITY(1) )
+#define CLR_SOCKET_CONTROL()    ( SOCKET_CONTROL_PORT = SOCKET_CONTROL_POLARITY(0) )
+#define RD_SOCKET_CONTROL()     ( SOCKET_CONTROL_POLARITY(SOCKET_CONTROL_PORT) )
 
 #define DEVICE_SOCKET_DATA_SIZE    (Cal_DataSize(socket))
 
@@ -235,7 +243,8 @@ static void socket_rst_set( void )
  */
 void bsp_socket_init( void )
 {
-    Timer4_PWM_Init( TIM4_CH0_PORT_P2_0 );
+//    Timer4_PWM_Init( TIM4_CH0_PORT_P2_0 );
+    SOCKET_CONTROL_WrMode();
     set_socket_value(SOCKET_OFF_CMD);
     
     // FLASH 数据初始化
@@ -247,7 +256,7 @@ void bsp_socket_init( void )
 /**
  *******************************************************************************
  * @brief       插座数值设置函数
- * @param       [in/out]  uint8    电灯的亮度
+ * @param       [in/out]  uint8    插座状态
  * @return      [in/out]  void
  * @note        None
  *******************************************************************************
@@ -256,11 +265,11 @@ void set_socket_value( uint8 value )
 {
     if( value == 0 )
     {
-        TIM4_CH0_UpdateDuty( Socket_Value_Conversion( SOCKET_OFF_CMD ) );
+        CLR_SOCKET_CONTROL();
     }
     else
     {
-        TIM4_CH0_UpdateDuty( Socket_Value_Conversion( SOCKET_ON_CMD) );
+        SET_SOCKET_CONTROL();
     }
 }
 
@@ -274,14 +283,7 @@ void set_socket_value( uint8 value )
  */
 uint8 get_socket_value( void )
 {
-    if( Socket_Value_Conversion(get_socket_value()) == SOCKET_OFF_CMD )
-    {
-        return 0;
-    }
-    else
-    {
-        return 1;
-    }
+    return RD_SOCKET_CONTROL();
 }
 
 /**

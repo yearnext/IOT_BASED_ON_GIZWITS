@@ -358,6 +358,6 @@ extern bool getGizwitsAPPStatus( void );
 extern bool getGizwitsM2MStatus( void );
 extern int32 gizwitsReport( uint8 *packet );
 
-extern user_time gizwitsGetTime( void );
+extern user_time *gizwitsGetTime( void );
 
 #endif

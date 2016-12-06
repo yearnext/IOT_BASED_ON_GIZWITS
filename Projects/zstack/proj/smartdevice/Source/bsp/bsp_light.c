@@ -84,11 +84,6 @@ static struct _DEVICE_LIGHT_SAVE_DATA_
     DEVICE_TIMER timer[LIGHT_USE_TIMER_NUM]; 
     
     // 初始化载入数据
-//    enum
-//    {
-//        LIGHT_NO_LOAD_SET = 0x00,
-//        LIGHT_LOAD_SET    = 0x01,
-//    }load_set;
     uint8 load_set;
 }light;
 
