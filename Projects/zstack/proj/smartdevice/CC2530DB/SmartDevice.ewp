@@ -3836,6 +3836,12 @@
           <state>$PROJ_DIR$\..\..\..\..\..\Components\stack\zdo</state>
           <state>$PROJ_DIR$\..\..\..\..\..\Components\zmac</state>
           <state>$PROJ_DIR$\..\..\..\..\..\Components\zmac\f8w</state>
+          <state>$PROJ_DIR$\..\Source\app</state>
+          <state>$PROJ_DIR$\..\Source\bsp</state>
+          <state>$PROJ_DIR$\..\Source\devicelist</state>
+          <state>$PROJ_DIR$\..\Source\gizwits</state>
+          <state>$PROJ_DIR$\..\Source\hal</state>
+          <state>$PROJ_DIR$\..\Source\myprotocol</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
