@@ -135,9 +135,9 @@ void Timer4_Init( void )
 /**
  *******************************************************************************
  * @brief       定时器4输出比较功能初始化
- * @param       [in/out]  task_id    输出比较通道引脚
- * @return      [in/out]  false      配置失败
- * @return      [in/out]  true       配置成功
+ * @param       [in/out]  CHANNEL_PIN    输出比较通道引脚
+ * @return      [in/out]  false          配置失败
+ * @return      [in/out]  true           配置成功
  * @note        PWM周期大约为1ms
  *******************************************************************************
  */
@@ -148,7 +148,7 @@ bool Timer4_PWM_Init( uint8 CHANNEL_PIN )
         case TIM4_CH0_PORT_P1_0:
             // 配置定时器3的IO位置为备用位置1
             PERCFG &= ~0x10;
-            // 配置P2_0为外设IO
+            // 配置P1_0为外设IO
             P1SEL |= 0x01;
             // 定时器输出比较配置
             T4CCTL0 = 0xAC;
@@ -191,6 +191,83 @@ bool Timer4_PWM_Init( uint8 CHANNEL_PIN )
     }
     // 启动定时器3 128时钟分频
     T4CTL = 0xF4;
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       定时器4输出比较功能复位
+ * @param       [in/out]  CHANNEL_PIN    输出比较通道引脚
+ * @return      [in/out]  false          配置失败
+ * @return      [in/out]  true           配置成功
+ * @note        默认复位IO端口为输出高电平状态
+ *******************************************************************************
+ */
+bool Timer4_PWM_Deinit( uint8 CHANNEL_PIN )
+{
+    switch( CHANNEL_PIN )
+    {
+        case TIM4_CH0_PORT_P1_0:
+            // 定时器输出比较配置
+            T4CCTL0 = 0x00;
+            // 定时器比较寄存器配置
+            T4CC0 = 0x00;    
+            // 配置P1_0为外设IO
+            P1SEL &= ~0x01;
+            // 配置P1_0为输出状态
+            P1DIR |= 0x01;
+            // 配置P1_0输出高电平
+            P1_0  |= 0x01;
+            break;
+        case TIM4_CH0_PORT_P2_0:
+            // 定时器输出比较配置
+            T4CCTL0 = 0x00;
+            // 定时器比较寄存器配置
+            T4CC0 = 0x00;      
+            // 配置定时器3的IO位置为备用位置2
+            PERCFG &= ~0x10;
+            // 配置P2_0为外设IO
+            P2SEL |= 0x01;
+            // 配置P1_0为输出状态
+            P2DIR |= 0x01;
+            // 配置P1_0输出高电平
+            P2_0  |= 0x01;
+            break;
+        case TIM4_CH1_PORT_P1_1:
+            // 定时器输出比较配置
+            T4CCTL1 = 0x00;
+            // 定时器比较寄存器配置
+            T4CC1 = 0x00;      
+            // 配置P1_1为外设IO
+            P1SEL &= ~0x02;
+            // 配置P1_0为输出状态
+            P1DIR |= 0x02;
+            // 配置P1_0输出高电平
+            P1_1  |= 0x02;
+            break;
+        case TIM4_CH1_PORT_P2_1:
+            // 定时器输出比较配置
+            T4CCTL1 = 0x00;
+            // 定时器比较寄存器配置
+            T4CC1 = 0x00;     
+            // 配置定时器3的IO位置为备用位置2
+            PERCFG &= ~0x10;
+            // 配置P1_1为外设IO
+            P2SEL &= ~0x02;
+            // 配置P1_0为输出状态
+            P2DIR |= 0x02;
+            // 配置P1_0输出高电平
+            P2_1  |= 0x02;
+
+            break;
+        default:
+            return false;
+                break;
+    }
+    
+    // 关闭定时器4
+    T4CTL = 0x00;
     
     return true;
 }

@@ -29,6 +29,11 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
+// 定时器3启动/停止 命令
+#define TIM3_START_BIT (1 << 4)
+#define TIM3_START() ( T3CTL |= TIM3_START_BIT )
+#define TIM3_STOP()  ( T3CTL &= ~TIM3_START_BIT )
+
 // 定时器3占空比更新
 #define TIM3_CH0_UpdateDuty( n ) ( T3CC0 = (n) )
 #define TIM3_CH1_UpdateDuty( n ) ( T3CC1 = (n) )
@@ -59,6 +64,7 @@ extern void Timer3_Init( void );
 extern bool Timer3_PWM_Init( uint8 CHANNEL_PIN );
 extern void Timer4_Init( void );
 extern bool Timer4_PWM_Init( uint8 );
+extern bool Timer4_PWM_Deinit( uint8 );
 
 #endif      /* __CC2530_MCU_TIMER_H__ */
 
