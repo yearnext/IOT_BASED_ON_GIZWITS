@@ -25,114 +25,136 @@
 /* Includes ------------------------------------------------------------------*/
 #include "myprotocol.h"
 #include "hal_uart.h"
-#include <string.h>
-#include "devicelist.h"
-#include "NLMEDE.h"
-#include "aps_groups.h"
+#include "AF.h"
 #include "onBoard.h"
-
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-#include "gizwits_protocol.h"
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
-#include "bsp_light.h"
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
-#include "bsp_socket.h"
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
-#include "bsp_htsensor.h"
-#endif
+#include <string.h>
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /**
- * @name 日志打印宏
- * @{
- */
-#define USE_MYPROTOCOL_DEBUG 1
-
-#if USE_MYPROTOCOL_DEBUG
-    #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-        #define MYPROTOCOL_LOG(n) HalUARTWrite(1,n,sizeof(n))  ///<运行日志打印
-    #else
-        #define MYPROTOCOL_LOG(n) HalUARTWrite(0,n,sizeof(n))  ///<运行日志打印
-    #endif
-#else 
-    #define MYPROTOCOL_LOG(n)
-#endif
-/**@} */
-
-/**
- * @name 发送数据至WIFI模块宏
- * @{
- */
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-#define MYPROTOCOL_UART_WRITE(data,len)  HalUARTWrite(0,data,len)
-#define MYPROTOCOL_PACKET_REPORT(packet) gizwitsReport(packet)
-#else
-#define MYPROTOCOL_PACKET_REPORT(packet)
-#define MYPROTOCOL_UART_WRITE(data,len)
-#endif
-/**@} */
-
-/**
  * @name Zigbee通讯配置
  * @{
  */
 
 /** 簇的数量 */
-#define SamrtDevice_ClustersNum        (1)
-#define SmartDevice_Comm_ClustersID    (0x0001)
-#define SmartDevice_EndPoint           (20)
-#define SmartDevice_DeviceID           (0x0001)
-#define SmartDevice_Version            (0x00)
-#define SmartDevice_Flags              (0)
-#define SmartDevice_ProfileID          (0x0F08)
-
-/**@} */
-
-/** 数据包大小 宏 */
-#define MYPROTOCOL_PACKET_SIZE          (sizeof(MYPROTOCOL_FORMAT))
+#define DeviceClustersNum        (1)
+#define DeviceCommClustersID     (0x0001)
+#define DeviceEndPoint           (20)
+#define DeviceDeviceID           (0x0001)
+#define DeviceVersion            (0x00)
+#define DeviceFlags              (0)
+#define DeviceProfileID          (0x0F08)
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-// 数据缓冲区
-//static MYPROTOCOL_FORMAT tx_packet;
-//static myprotocol_format rx_packet;
-
 /** 端点描述符 */
-static endPointDesc_t SmartDevice_epDesc;
+static endPointDesc_t DeviceEpDesc;
 
 /** 簇表 */
-const cId_t SmartDevice_InClusterList[SamrtDevice_ClustersNum] =
+static const cId_t DeviceInClusterList[DeviceClustersNum] =
 {
-    SmartDevice_Comm_ClustersID,
+    DeviceCommClustersID,
 };
 
 /** 简单描述符 */
-static const SimpleDescriptionFormat_t SmartDevice_SimpleDesc =
+static const SimpleDescriptionFormat_t DeviceSimpleDesc =
 {
-    SmartDevice_EndPoint, 
-    SmartDevice_ProfileID,
-    SmartDevice_DeviceID,
-    SmartDevice_Version,
-    SmartDevice_Flags,                  
-    SamrtDevice_ClustersNum,
-    (cId_t *)&SmartDevice_InClusterList,
-    SamrtDevice_ClustersNum,
-    (cId_t *)&SmartDevice_InClusterList,
+    DeviceEndPoint, 
+    DeviceProfileID,
+    DeviceDeviceID,
+    DeviceVersion,
+    DeviceFlags,                  
+    DeviceClustersNum,
+    (cId_t *)&DeviceInClusterList,
+    DeviceClustersNum,
+    (cId_t *)&DeviceInClusterList,
 };
 
 /** 发送ID */
-static uint8 SmartDevice_TransID;
+static uint8 DeviceTransID = 0;
+
 /** 设备组别 */
-static aps_Group_t SmartDevice_Group;
+static aps_Group_t DeviceGroup;
 
 /** 目标地址 */
+static afAddrType_t DeviceDstAddr;
+
+/**@} */
+
 //static afAddrType_t MYPROTOCOL_DST_ADDR;
+
+// 数据缓冲区
+//static MYPROTOCOL_FORMAT_t tx_packet;
+//static MYPROTOCOL_FORMAT_t rx_packet;
 
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
+/**
+ * @name MYPROTOCOL 硬件通讯层
+ * @{
+ */
+ 
+#if USE_MYPROTOCOL_DEBUG
+
+/**
+ *******************************************************************************
+ * @brief       初始化函数
+ * @param       [in/out]  *task_id    任务ID
+ * @return      [in/out]  bool        返回状态
+ * @note        None
+ *******************************************************************************
+ */
+bool HalMyprotocolInit( uint8 *taskId )
+{
+	if( task_id == NULL )
+	{
+		return false;
+	}
+	
+	/** 初始化发送ID */
+    DeviceTransID = 0;
+	
+	/** 初始化目标接收地址 */
+	memset(&DeviceDstAddr.addr.extaddr,0,sizeof(DeviceDstAddr.addr.extaddr));
+	DeviceDstAddr.addrMode = afAddr64Bit;
+    DeviceDstAddr.endPoint = DeviceEndPoint;
+	
+    /** 注册AF层应用对象 */
+    DeviceEpDesc.endPoint = DeviceEndPoint;
+    DeviceEpDesc.simpleDesc = (SimpleDescriptionFormat_t *)&DeviceSimpleDesc;
+    DeviceEpDesc.task_id = taskId;
+    DeviceEpDesc.latencyReq = noLatencyReqs;
+    afRegister(&DeviceEpDesc);
+
+    /** 创建一个组表 */
+    DeviceGroup.ID = 0x0001;
+    osal_memcpy( DeviceGroup.name, "Group 1", 7 );
+    aps_AddGroup(DeviceEndPoint, &DeviceGroup);
+	
+	return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       输出调试信息程序
+ * @param       [in/out]  *log    调试信息
+ * @param       [in/out]  size    调试信息大小
+ * @return      [in/out]  bool    返回状态
+ * @note        None
+ *******************************************************************************
+ */
+void MyprotocolPutLog( uint8 *log, uint16 size )
+{
+	#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+		HalUARTWrite(HAL_UART_PORT_1,log,size);
+	#else
+		HalUARTWrite(HAL_UART_PORT_0,log,size);
+	#endif
+}
+
+#else
 /**
  *******************************************************************************
  * @brief       初始化函数
@@ -141,48 +163,62 @@ static aps_Group_t SmartDevice_Group;
  * @note        None
  *******************************************************************************
  */
-void myprotocol_init( uint8 *task_id )
+void HalMyprotocolInit( uint8 *taskId )
 {
-    //memset(&tx_packet,0,sizeof(MYPROTOCOL_FORMAT));
-    
-    SmartDevice_TransID = 0;
+	/** 初始化发送ID */
+    DeviceTransID = 0;
+	
+	/** 初始化目标接收地址 */
+	memset(&DeviceDstAddr.addr.extaddr,0,sizeof(DeviceDstAddr.addr.extaddr));
+	DeviceDstAddr.addrMode = afAddr64Bit;
+    DeviceDstAddr.endPoint = DeviceEndPoint;
+	
     /** 注册AF层应用对象 */
-    SmartDevice_epDesc.endPoint = SmartDevice_EndPoint;
-    SmartDevice_epDesc.simpleDesc = (SimpleDescriptionFormat_t *)&SmartDevice_SimpleDesc;
-    SmartDevice_epDesc.task_id = task_id;
-    SmartDevice_epDesc.latencyReq = noLatencyReqs;
-    afRegister(&SmartDevice_epDesc);
-    
-//#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-//    memset(&MYPROTOCOL_DST_ADDR.addr.extaddr,0,sizeof(MYPROTOCOL_DST_ADDR.addr));
-//    MYPROTOCOL_DST_ADDR.addrMode = afAddr64Bit;
-//    MYPROTOCOL_DST_ADDR.endPoint = SmartDevice_EndPoint;
-//#else
-//    MYPROTOCOL_DST_ADDR.addr.shortAddr= 0x0000;
-//    MYPROTOCOL_DST_ADDR.addrMode = afAddr16Bit;
-//    MYPROTOCOL_DST_ADDR.endPoint = SmartDevice_EndPoint;
-//#endif
-    
+    DeviceEpDesc.endPoint = DeviceEndPoint;
+    DeviceEpDesc.simpleDesc = (SimpleDescriptionFormat_t *)&DeviceSimpleDesc;
+    DeviceEpDesc.task_id = taskId;
+    DeviceEpDesc.latencyReq = noLatencyReqs;
+    afRegister(&DeviceEpDesc);
+
     /** 创建一个组表 */
-    SmartDevice_Group.ID = 0x0001;
-    osal_memcpy( SmartDevice_Group.name, "Group 1", 7 );
-    aps_AddGroup(SmartDevice_EndPoint, &SmartDevice_Group);
+    DeviceGroup.ID = 0x0001;
+    osal_memcpy( DeviceGroup.name, "Group 1", 7 );
+    aps_AddGroup(DeviceEndPoint, &DeviceGroup);
 }
+
+#endif
 
 /**
  *******************************************************************************
  * @brief       计算数据包的校验和
  * @param       [in/out]  packet    数据包地址
  * @return      [in/out]  checksum  校验和
- * @note        None
+ * @note        已进行加速化处理
  *******************************************************************************
  */
-static uint8 myprotocol_cal_checksum( uint8 *packet )
+static uint8 MyprotocolCalChecksum( uint8 *packet )
 {
     uint8 i;
+    
+    /** 计算有效数据数量 */
+    uint8 num = MYPROTOCOL_USER_DATA_LEN_OFFSET+packet[MYPROTOCOL_USER_DATA_LEN_OFFSET];
+    
     uint8 checksum;
 
-    for( i=0, checksum=0; i<MYPROTOCOL_PACKET_SIZE-1; i++ )
+#USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("cal check sum func intput param is invalid! \r\n");
+        return 0;
+    }
+#endif
+
+    // for( i=0, checksum=0; i<MYPROTOCOL_PACKET_SIZE-1; i++ )
+    // {
+        // checksum += packet[i];
+    // }
+    
+    for( i=0, checksum=0; i<num; i++ )
     {
         checksum += packet[i];
     }
@@ -192,658 +228,559 @@ static uint8 myprotocol_cal_checksum( uint8 *packet )
 
 /**
  *******************************************************************************
- * @brief       检测数据包是否合法
- * @param       [in/out]  data    事件序号
- * @return      [in/out]  bool    数据包合法状态
+ * @brief       校验数据包
+ * @param       [in/out]  packet    数据包
+ * @return      [in/out]  bool      校验结果
  * @note        None
  *******************************************************************************
  */
-bool myprotocol_packet_check( uint8 *data )
+static bool MyprotocolPacketCheck( void *packet )
 {
-    MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)data;
-    
-    if( packet->check_sum != myprotocol_cal_checksum(data) )
+    if( packet == NULL )
     {
+#USE_MYPROTOCOL_DEBUG
+        MYPROTOCOL_LOG("check packet is invalid! \r\n");
+#endif
+        return false;
+    }
+
+    if( (MYPROTOCOL_FORMAT_t *)(packet)->sum != MyprotocolCalChecksum((uint8 *)packet) )
+    {
+#USE_MYPROTOCOL_DEBUG
+        MYPROTOCOL_LOG("the packet's check sum is error! \r\n");
+#endif
         return false;
     }
     
     return true;
-}
+} 
 
 /**
  *******************************************************************************
- * @brief        SmartDevice发送信息函数
- * @param       [in/out]   create_packet    创建数据包功能
- *              [in/out]   ctx              上下文
- * @return      [in/out]  void
+ * @brief       发送D2D数据包
+ * @param       [in/out]  ctx       上下文数据
+ * @param       [in/out]  packet    创建数据包函数   
+ * @return      [in/out]  bool      程序运行状态
  * @note        None
  *******************************************************************************
  */
-bool MYPROTOCO_D2W_MSG_SEND( packet_func create_packet, void *ctx )
+bool MyprotocolD2DSendData( void *ctx, void *packet )
 {
-    MYPROTOCOL_FORMAT packet;
-    afAddrType_t dst_addr;
-        
-    memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
-    memset(&dst_addr,0,sizeof(dst_addr));
-
-    packet.device.device = SMART_DEVICE_TYPE;
-    memcpy(&packet.device.mac,&aExtendedAddress,sizeof(packet.device.mac));
-    
-    create_packet(ctx,&packet);
-    packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
-    
-    MYPROTOCOL_PACKET_REPORT((uint8 *)&packet);
-    
-    return true;
-}
-
-/**
- *******************************************************************************
- * @brief        SmartDevice发送信息函数
- * @param       [in/out]   create_packet    创建数据包功能
- *              [in/out]   ctx              上下文
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool MYPROTOCO_S2H_MSG_SEND( packet_func create_packet, void *ctx )
-{
-    MYPROTOCOL_FORMAT packet;
-    afAddrType_t dst_addr;
-    
-    memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
-    memset(&dst_addr,0,sizeof(dst_addr));
-    
-    create_packet(ctx,&packet);
-    
-    packet.device.device = SMART_DEVICE_TYPE;
-    memcpy(&packet.device.mac,&aExtendedAddress,sizeof(packet.device.mac));
-    
-    packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
-
-    dst_addr.addr.shortAddr = 0x0000;
-    dst_addr.addrMode = afAddr16Bit;
-    dst_addr.endPoint = SmartDevice_EndPoint;
-    
-    return AF_DataRequest(&dst_addr,
-                           &SmartDevice_epDesc,
-                           SmartDevice_Comm_ClustersID,
-                           sizeof(MYPROTOCOL_FORMAT),
-                           (uint8 *)&packet,
-                           &SmartDevice_TransID,
-                           AF_DISCV_ROUTE,
-                           AF_DEFAULT_RADIUS);
-}
-
-/**
- *******************************************************************************
- * @brief        SmartDevice发送信息函数
- * @param       [in/out]   create_packet    创建数据包功能
- *              [in/out]   ctx              上下文
- * @return      [in/out]  void
- * @note        本函数只能用于存在完整数据包的情况
- *******************************************************************************
- */
-bool MYPROTOCO_H2S_MSG_SEND( MYPROTOCOL_DEVICE_INFO info, packet_func create_packet, void *ctx )
-{
-    MYPROTOCOL_FORMAT packet;
-    afAddrType_t dst_addr;
-    
-    memset(&packet,0,sizeof(MYPROTOCOL_FORMAT));
-    memset(&dst_addr,0,sizeof(dst_addr));
-
-    packet.device.device = info.device;
-    memcpy(&packet.device.mac,&info.mac,sizeof(packet.device.mac));
-    
-    create_packet(ctx,&packet);
-    
-    packet.check_sum = myprotocol_cal_checksum((uint8 *)&packet);
-
-    memcpy(&dst_addr.addr.extAddr,&info.mac,sizeof(dst_addr.addr.extAddr));
-    dst_addr.addrMode = afAddr64Bit;
-    dst_addr.endPoint = SmartDevice_EndPoint;
-    
-    return AF_DataRequest(&dst_addr,
-                           &SmartDevice_epDesc,
-                           SmartDevice_Comm_ClustersID,
-                           sizeof(MYPROTOCOL_FORMAT),
-                           (uint8 *)&packet,
-                           &SmartDevice_TransID,
-                           AF_DISCV_ROUTE,
-                           AF_DEFAULT_RADIUS);
-}
-
-/**
- *******************************************************************************
- * @brief        SmartDevice发送信息函数
- * @param       [in/out]   create_packet    创建数据包功能
- *              [in/out]   ctx              上下文
- * @return      [in/out]  void
- * @note        本函数只能用于存在完整数据包的情况
- *******************************************************************************
- */
-bool MYPROTOCO_H2S_FORWARD_MSG( void *ctx )
-{
-    MYPROTOCOL_FORMAT format_packet;
-    afAddrType_t dst_addr;
-    
-    memset(&dst_addr,0,sizeof(dst_addr));
-    memset(&format_packet,0,sizeof(MYPROTOCOL_FORMAT));
-    
-    memcpy(&format_packet,ctx,sizeof(format_packet));
-    
-    memcpy(&dst_addr.addr.extAddr,&format_packet.device.mac,sizeof(dst_addr.addr.extAddr));
-    dst_addr.addrMode = afAddr64Bit;
-    dst_addr.endPoint = SmartDevice_EndPoint;
-    
-    return AF_DataRequest(&dst_addr,
-                           &SmartDevice_epDesc,
-                           SmartDevice_Comm_ClustersID,
-                           sizeof(MYPROTOCOL_FORMAT),
-                           (uint8 *)&format_packet,
-                           &SmartDevice_TransID,
-                           AF_DISCV_ROUTE,
-                           AF_DEFAULT_RADIUS);
-}
-
-/**
- *******************************************************************************
- * @brief       转发数据包函数
- * @param       [in/out]   *user_data       用户数据
- * @return      [in/out]   bool             转发状态
- * @note        None
- *******************************************************************************
- */
-bool MYPROTOCOL_FORWARD_PACKET( MYPROTOCOL_DATA_DIR dir, MYPROTOCOL_FORMAT *packet )
-{
-    switch( dir )
+#if USE_MYPROTOCOL_DEBUG
+    if( ctx == NULL )
     {
-        case MYPROTOCOL_FORWORD_W2D:
-            MYPROTOCO_H2S_FORWARD_MSG(packet);
-            break;
-        case MYPROTOCOL_FORWORD_D2W:
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-            if( getGizwitsAPPStatus() == false )
-            {
-                return false;
-            }
-#endif
-            MYPROTOCOL_PACKET_REPORT((uint8 *)packet);  
-            MYPROTOCOL_LOG("REPORT DEVICE DATA!\n");
-            break;
-        default:
-            return false;
-            break;
+        MYPROTOCOL_LOG("MyprotocolD2DSendData intput param ctx is invalid! \r\n");
+        return false;
     }
-    
-    return true;
-}
-
-/**
- *******************************************************************************
- * @brief       MYPROTOCOL 数据发送函数
- * @param       [in/out]   data_dir         数据方向
- *              [in/out]   packet           相关数据包
- *              [in/out]   packet_create    应答数据包创建函数
- *              [in/out]   ctx              参数
- * @return      [out]      bool
- * @note        None
- *******************************************************************************
- */
-bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR dir, MYPROTOCOL_FORMAT *packet, packet_func create_packet, void *param )
-{
-    switch( dir )
+    else if( packet == NULL )
     {
-        case MYPROTOCOL_DIR_D2W:
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-            if( getGizwitsAPPStatus() == false )
-            {
-                return false;
-            }
-#endif
-            MYPROTOCO_D2W_MSG_SEND(create_packet,param);
-            break;
-        case MYPROTOCOL_DIR_S2H:
-            MYPROTOCO_S2H_MSG_SEND(create_packet,param);
-            break;
-        case MYPROTOCOL_DIR_H2S:
-            MYPROTOCO_H2S_MSG_SEND(packet->device,create_packet,param);
-            break;
-        case MYPROTOCOL_FORWORD_D2W:
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-            if( getGizwitsAPPStatus() == false )
-            {
-                return false;
-            }
-#endif
-            MYPROTOCOL_PACKET_REPORT((uint8 *)packet);
-            break;
-        case MYPROTOCOL_FORWORD_W2D:
-            MYPROTOCO_H2S_FORWARD_MSG((void*)packet);
-            break;
-        default:
-            return false;
-            break;
-    }
-    
-    return true;
-}
-
-/**
- *******************************************************************************
- * @brief       SmartDevice信息处理
- * @param       [in]   pkt    信息
- * @return      [out]  void
- * @note        None
- *******************************************************************************
- */
-void SmartDevice_Message_Handler( afIncomingMSGPacket_t *pkt )
-{
-    if( pkt->clusterId != SmartDevice_Comm_ClustersID )
-    {
-        return;
-    }
-    
-    MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)pkt->cmd.Data;
-
-    if( packet->check_sum != myprotocol_cal_checksum(pkt->cmd.Data) )
-    {
-        return;
+        MYPROTOCOL_LOG("MyprotocolD2DSendData intput param packet is invalid! \r\n");
+        return false;
     }
     else
     {
-        switch( packet->commtype )
-        {
-            case MYPROTOCOL_W2D_WAIT:
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
-        light_cmd_resolve(&packet->user_data);
-        MYPROTOCOL_LOG("Device Light Get a Control CMD!\n");
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)  
-        socket_cmd_resolve(&packet->user_data);
-        MYPROTOCOL_LOG("Device Socket Get a Control CMD!\n");  
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
-		ht_sensor_cmd_resolve(&packet->user_data);
-		MYPROTOCOL_LOG("Device DHT11 Get a Control CMD!\n");
-#endif
-                break;
-            case MYPROTOCOL_D2W_WAIT:
-                MYPROTOCOL_FORWARD_PACKET(MYPROTOCOL_FORWORD_D2W,packet);
-                break;
-            case MYPROTOCOL_S2H_WAIT:
-            {
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-            DEVICE_INFO device_info;
-            memcpy(&device_info.device,&packet->device,sizeof(packet->device));
-
-            if( Add_Device_Forlist(&device_info) == false )
-            {
-                Add_DeviceTick_ForList(&device_info);
-            }
-
-            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_H2S,packet,create_acktick_packet,&device_info.device);
-            
-            if( device_info.device.device == MYPROTOCOL_DEVICE_LIGHT )
-            {
-                MYPROTOCOL_LOG("Coord get light tick!\n");
-            }
-            else if( device_info.device.device == MYPROTOCOL_DEVICE_SOCKET )
-            {
-                MYPROTOCOL_LOG("Coord get socket tick!\n");
-            }
-            else if( device_info.device.device == MYPROTOCOL_DEVICE_CURTAIN )
-            {
-                MYPROTOCOL_LOG("Coord get curtain tick!\n");
-            }
-            else if( device_info.device.device == MYPROTOCOL_DEVICE_HT_SENSOR )
-            {
-                MYPROTOCOL_LOG("Coord get ht_sensor tick!\n");
-            }
-            else
-            {
-                MYPROTOCOL_LOG("Coord get one device tick!\n");
-            }
-#endif
-                break;
-            }
-            case MYPROTOCOL_S2H_ACK:
-                MYPROTOCOL_LOG("Device Get Coord Ack Tick!\n");
-                break;
-            case MYPROTOCOL_W2D_ACK:
-                break;
-            case MYPROTOCOL_COMM_ERROR:
-                break;
-            default:
-                break;
-        }
-    }
-}
-
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)     
-/**
- *******************************************************************************
- * @brief       数据包处理函数
- * @param       [in/out]  data    数据包
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-void Gizwits_Message_Handler( uint8 *report_data, uint8 *packet_data )
-{
-    MYPROTOCOL_FORMAT *packet = (MYPROTOCOL_FORMAT *)packet_data;
-    
-    if( myprotocol_packet_check(packet_data) == false )
-    {
-        MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_errcode_packet,NULL);
-        return;
-    }
-    else 
-    {
-        switch( packet->commtype )
-        {
-            case MYPROTOCOL_W2D_WAIT:
-            {
-                // 检测数据接收设备，若不是本机则进行数据转发操作
-                if( packet->device.device == MYPROTOCOL_DEVICE_COORD )
-                {
-                    switch( packet->user_data.cmd )
-                    {
-                        case W2D_GET_DEVICE_NUM_CMD:
-                        {
-                            uint8 num = Get_DeviceNum_ForList();
-                            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_devicenum_packet,(void *)&num);
-                        }
-                            break;
-                        case W2D_GET_DEVICE_INFO_CMD:
-                        {
-                            MYPROTOCOL_DEVCICE_ACK device;
-                            device.id = packet->user_data.data[0];
-                            Get_DeviceInfo_InList(&device);
-                            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_deviceinfo_packet,&device);
-                        }
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
-                {
-                    // 转发数据并应答APP
-                    MYPROTOCOL_FORWARD_PACKET(MYPROTOCOL_FORWORD_W2D,packet);
-                    MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_w2d_ack_packet,packet);
-                }
-                    break;
-            }
-            case MYPROTOCOL_D2W_ACK:
-                break;
-            case MYPROTOCOL_COMM_ERROR:
-                break;
-            default:
-                break;
-        }
-    }
-}
-
-#endif
-
-/**
- *******************************************************************************
- * @brief        SmartDevice发送信息函数
- * @param       [in/out]   ctx              上下文
- *              [in/out]   create_packet    创建数据包功能
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool create_tick_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{    
-    packet->commtype = MYPROTOCOL_S2H_WAIT;
-    packet->sn = 0;
         
-    packet->user_data.cmd = MYPROTOCOL_TICK_CMD;
-    packet->user_data.len = 0;
-    
-    return true;
-}
-
-/**
- *******************************************************************************
- * @brief        SmartDevice发送信息函数
- * @param       [in/out]   ctx              上下文
- *              [in/out]   create_packet    创建数据包功能
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool create_acktick_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{
-    packet->commtype = MYPROTOCOL_S2H_ACK;
-    packet->sn = 0;
-        
-    packet->user_data.cmd = MYPROTOCOL_TICK_CMD;
-    packet->user_data.len = 0;
-    
-    return true;
-}
-
-/**
- *******************************************************************************
- * @brief       创建错误代码数据包
- * @param       [in/out]  ctx     上下文
- *              [in/out]  packet  数据包  
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool create_errcode_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{
-    packet->commtype = MYPROTOCOL_COMM_ERROR;
-    return true;
-}
-
-/**
- *******************************************************************************
- * @brief       创建结束通讯数据包
- * @param       [in/out]  ctx     上下文
- *              [in/out]  packet  数据包  
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool create_commend_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{
-    packet->commtype = MYPROTOCOL_COMM_END;
-    return true;
-}
-
-/**
- *******************************************************************************
- * @brief       创建写入设备信息应答数据包
- * @param       [in/out]  ctx     上下文
- *              [in/out]  packet  数据包  
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool create_w2d_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{
-//    if( ctx != NULL )
-//    {
-//        
-//    }
-
-    MYPROTOCOL_FORMAT *last_packet = (MYPROTOCOL_FORMAT *)ctx;
-    
-    packet->commtype = MYPROTOCOL_W2D_ACK;
-    memcpy(&packet->device,&last_packet->device,sizeof(packet->device));
-    
-    return true;
-}
-
-/**
- *******************************************************************************
- * @brief       创建写入设备信息应等待答数据包
- * @param       [in/out]  ctx     上下文
- *              [in/out]  packet  数据包  
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool create_w2d_wait_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{
-    if( ctx != NULL )
-    {
-        memcpy(&packet->user_data,ctx,sizeof(MYPROTOCOL_USER_DATA));
     }
+#endif
 
-    packet->commtype = MYPROTOCOL_W2D_WAIT;
-    
-    return true;
+	memcpy(&DeviceDstAddr.addr.extaddr,(uint8 *)ctx,sizeof(DeviceDstAddr.addr.extaddr));
+	
+	return AF_DataRequest(&DeviceDstAddr,
+					      &DeviceEpDesc,
+					      DeviceCommClustersID,
+					      MYPROTOCOL_PACKET_SIZE,
+					      (uint8 *)&packet,
+					      &DeviceTransID,
+					      AF_DISCV_ROUTE,
+					      AF_DEFAULT_RADIUS);
 }
 
 /**
  *******************************************************************************
- * @brief       创建写入设备信息应答数据包
- * @param       [in/out]  ctx     上下文
- *              [in/out]  packet  数据包  
- * @return      [in/out]  void
+ * @brief       发送D2W数据包
+ * @param       [in/out]  ctx       上下文数据
+ * @param       [in/out]  packet    创建数据包函数   
+ * @return      [in/out]  bool      程序运行状态
  * @note        None
  *******************************************************************************
  */
-bool create_d2w_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
+bool MyprotocolD2WSendData( void *ctx, void *packet )
 {
-    if( ctx != NULL )
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
     {
-        memcpy(&packet->user_data,ctx,sizeof(MYPROTOCOL_USER_DATA));
-    }
-
-    packet->commtype = MYPROTOCOL_D2W_ACK;
-    
-    return true;
-}
-
-/**
- *******************************************************************************
- * @brief       创建写入设备信息应等待答数据包
- * @param       [in/out]  ctx     上下文
- *              [in/out]  packet  数据包  
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool create_d2w_wait_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{
-    if( ctx != NULL )
-    {
-        MYPROTOCOL_USER_DATA *data = (MYPROTOCOL_USER_DATA *)ctx;
-        memcpy(&packet->user_data,ctx,sizeof(data->cmd)+sizeof(data->cmd)+data->len);
-    }
-
-    packet->commtype = MYPROTOCOL_D2W_WAIT;
-    
-    return true;
-}
-
-/**
- *******************************************************************************
- * @brief       创建读取设备数量应答数据包
- * @param       [in/out]  ctx     上下文
- *              [in/out]  packet  数据包  
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool create_devicenum_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{ 
-    uint8 *num = (uint8 *)ctx;
-    
-    if( ctx == NULL )
-    {
+        MYPROTOCOL_LOG("MyprotocolD2WSendData intput param packet is invalid! \r\n");
         return false;
     }
-    
-    packet->commtype = MYPROTOCOL_W2D_ACK;
-    packet->user_data.cmd = W2D_GET_DEVICE_NUM_CMD;
-    packet->user_data.data[0] = *num;
-    packet->user_data.len = sizeof(uint8);
-    
-    return true;
+    else
+    {
+        
+    }
+#endif
+
+	gizwitsReport(packet);
 }
 
 /**
  *******************************************************************************
- * @brief       创建读取设备信息应答数据包
- * @param       [in/out]  ctx     上下文
- *              [in/out]  packet  数据包  
- * @return      [in/out]  void
+ * @brief       Myprotocol 发送数据函数
+ * @param       [in/out]  ctx            上下文数据(上一个数据包)
+ * @param       [in/out]  dstaddr        发送目标的MAC地址  
+ * @param       [in/out]  packet_func    创建数据包函数
+ * @param       [in/out]  send_func      发送数据包函数
+ * @return      [in/out]  bool           程序运行状态
  * @note        None
  *******************************************************************************
  */
-bool create_deviceinfo_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{ 
-    MYPROTOCOL_DEVCICE_ACK *device_info = (MYPROTOCOL_DEVCICE_ACK *)ctx;
-    
-    if( ctx == NULL )
+bool MyprotocolSendData( void *ctx, void *dstaddr, packet_type packet_func, send_type send_func )
+{
+	MYPROTOCOL_FORMAT_t packet;
+	
+#if USE_MYPROTOCOL_DEBUG
+    if( dstaddr == NULL )
     {
+        MYPROTOCOL_LOG("MyprotocolSendData intput param dstaddr is invalid! \r\n");
         return false;
     }
-
-    packet->commtype = MYPROTOCOL_W2D_ACK;
-    packet->user_data.cmd = W2D_GET_DEVICE_INFO_CMD;
-    packet->user_data.data[0] = device_info->id;
-    packet->user_data.data[1] = device_info->info->device;
-    memcpy(&packet->user_data.data[2],&device_info->info->mac,sizeof(device_info->info->mac));
+    else if( packet_func == NULL )
+    {
+        MYPROTOCOL_LOG("MyprotocolSendData intput param packet_func is invalid! \r\n");
+        return false;
+    }
+    else if( send_func == NULL )
+    {
+        MYPROTOCOL_LOG("MyprotocolSendData intput param send_func is invalid! \r\n");
+        return false;
+    }
+    else
+    {
+        
+    }
+#endif
     
-    packet->user_data.len = sizeof(uint8)+ sizeof(MYPROTOCOL_DEVICE_INFO);
+//    memset(&packet,0,sizeof(MYPROTOCOL_FORMAT_t));
+
+    packet.device.device = SMART_DEVICE_TYPE;
+    memcpy(&packet.device.mac,&aExtendedAddress,sizeof(packet.device.mac));
+    
+    packet_func(ctx, &packet);
+    
+    packet.sum = MyprotocolCalChecksum((uint8 *)&packet);
+     
+    return send(dstaddr, packet);
+}
+
+/**
+ *******************************************************************************
+ * @brief       Myprotocol 转发数据包函数
+ * @param       [in/out]  ctx            上下文数据(上一个数据包)
+ * @param       [in/out]  dstaddr        发送目标的MAC地址  
+ * @param       [in/out]  packet_func    创建数据包函数
+ * @param       [in/out]  send_func      发送数据包函数
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool MyprotocolForwardData( void *dstaddr, void *packet, send_type send_func )
+{
+#if USE_MYPROTOCOL_DEBUG
+    if( dstaddr == NULL )
+    {
+        MYPROTOCOL_LOG("MyprotocolSendData intput param dstaddr is invalid! \r\n");
+        return false;
+    }
+    else if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("MyprotocolSendData intput param packet is invalid! \r\n");
+        return false;
+    }
+    else if( send_func == NULL )
+    {
+        MYPROTOCOL_LOG("MyprotocolSendData intput param send_func is invalid! \r\n");
+        return false;
+    }
+    else
+    {
+        
+    }
+#endif
+
+    return send_func(dstaddr, packet);
+}
+
+/**
+ *******************************************************************************
+ * @brief       Myprotocol 接收数据函数
+ * @param       [in/out]  ctx            上下文数据(上一个数据包)
+ * @param       [in/out]  receive        数据包解析函数
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool MyprotocolReceiveData( void *ctx, void *packet, receive_type error, receive_type receive )
+{
+    if( MyprotocolPacketCheck(packet) == false )
+    {
+        error(ctx, packet);
+        return false;
+    }
+    else
+    {
+        receive(ctx, packet);
+    }
     
     return true;
 }
+
+/**@} */     /** MYPROTOCOL 硬件层 */
+
+/**
+ * @name MYPROTOCOL 数据包函数
+ * @{
+ */
  
 /**
  *******************************************************************************
- * @brief       创建读取设备信息应答数据包
- * @param       [in/out]  ctx     上下文
- *              [in/out]  packet  数据包  
- * @return      [in/out]  void
+ * @brief       通讯错误数据包
+ * @param       [in/out]  ctx            上下文数据(上一个数据包)
+ * @param       [in/out]  packet         创建数据包函数
+ * @return      [in/out]  bool           程序运行状态
  * @note        None
  *******************************************************************************
  */
-bool create_devicelist_update_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
-{ 
-    uint8 *num = (uint8 *)ctx;
-    
-    if( ctx == NULL )
+bool CommErrorPacket( void *ctx, void *packet )
+{
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
     {
+        MYPROTOCOL_LOG("comm error packet intput param is invalid! \r\n");
         return false;
     }
-    
-    packet->commtype = MYPROTOCOL_D2W_WAIT;
-    packet->user_data.cmd = W2D_DEVICE_LIST_UPDATE_CMD;
-    packet->user_data.data[0] = *num;
-    packet->user_data.len = sizeof(uint8);
+#endif 
+
+    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_COMM_ERROR;
     
     return true;
 }
 
 /**
  *******************************************************************************
- * @brief       创建数据上报数据包
- * @param       [in/out]  ctx     上下文
- *              [in/out]  packet  数据包  
- * @return      [in/out]  void
+ * @brief       通讯结束数据包
+ * @param       [in/out]  ctx            上下文数据(上一个数据包)
+ * @param       [in/out]  packet         创建数据包函数
+ * @return      [in/out]  bool           程序运行状态
  * @note        None
  *******************************************************************************
  */
-bool create_report_packet( void *ctx, MYPROTOCOL_FORMAT *packet )
+bool CommEndPacket( void *ctx, void *packet )
 {
-    MYPROTOCOL_USER_DATA *data = (MYPROTOCOL_USER_DATA *)ctx;
-    
-    packet->commtype = MYPROTOCOL_D2W_WAIT;
-    memcpy(&packet->user_data, data, sizeof(MYPROTOCOL_USER_DATA));
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("comm end packet intput param is invalid! \r\n");
+        return false;
+    }
+#endif 
+
+    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_COMM_END;
     
     return true;
 }
 
-/** @}*/     /* myprotocol模块 */
+/**
+ *******************************************************************************
+ * @brief       设备发送心跳包
+ * @param       [in/out]  ctx            上下文数据(上一个数据包)
+ * @param       [in/out]  packet         创建数据包函数
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool DeviceTickPacket( void *ctx, void *packet )
+{
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("tick packet intput param is invalid! \r\n");
+        return false;
+    }
+#endif    
+
+    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_S2H_WAIT;
+    (MYPROTOCOL_FORMAT_t *)(packet)->user_data.cmd = MYPROTOCOL_TICK_CMD; 
+    (MYPROTOCOL_FORMAT_t *)(packet)->user_data.len = 0;
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       网关响应设备心跳包
+ * @param       [in/out]  ctx            上下文数据(上一个数据包)
+ * @param       [in/out]  packet         创建数据包函数
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool DeviceTickAckPacket( void *ctx, void *packet )
+{
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("tick ack packet is invalid! \r\n");
+        return false;
+    }
+    
+    if( ctx == NULL )
+    {
+        MYPROTOCOL_LOG("tick ack device info  is invalid! \r\n");
+        return false;
+    }
+#endif    
+
+    (MYPROTOCOL_FORMAT_t *)(packet)->commtype      = MYPROTOCOL_S2H_ACK;
+    (MYPROTOCOL_FORMAT_t *)(packet)->user_data.cmd = MYPROTOCOL_TICK_CMD; 
+    (MYPROTOCOL_FORMAT_t *)(packet)->user_data.len = 0;
+    
+    memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->device, ctx, MYPROTOCOL_DEVICE_INFO_SIZE );
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       从机向主机发送等待应答数据包
+ * @param       [in/out]  ctx            用户数据
+ * @param       [in/out]  packet         创建数据包函数
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool S2HWaitPacket( void *ctx, void *packet )
+{
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("S2H ack packet intput param packet is invalid! \r\n");
+        return false;
+    }
+#endif 
+
+    if( ctx != NULL )
+    {
+        memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->user_data, ctx, MYPROTOCOL_CAL_USER_DATA_SIZE(ctx) );
+    }
+    
+    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_S2H_WAIT;
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       从机向主机发送应答数据包
+ * @param       [in/out]  ctx            用户数据
+ * @param       [in/out]  packet         创建数据包函数
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool S2HAckPacket( void *ctx, void *packet )
+{
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("S2H ack packet intput param packet is invalid! \r\n");
+        return false;
+    }
+#endif 
+
+    if( ctx != NULL )
+    {
+        memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->user_data, ctx, MYPROTOCOL_CAL_USER_DATA_SIZE(ctx) );
+    }
+    
+    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_S2H_ACK;
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       主机向从机发送等待应答数据包
+ * @param       [in/out]  ctx            用户数据
+ * @param       [in/out]  packet         创建数据包函数
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool H2SWaitPacket( void *ctx, void *packet )
+{
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("H2S wait packet intput param packet is invalid! \r\n");
+        return false;
+    }
+#endif 
+
+    if( ctx != NULL )
+    {
+        memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->user_data, ctx, MYPROTOCOL_CAL_USER_DATA_SIZE(ctx) );
+    }
+    
+    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_H2S_WAIT;
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       主机向从机发送应答数据包
+ * @param       [in/out]  ctx            用户数据
+ * @param       [in/out]  packet         创建数据包函数
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool H2SAckPacket( void *ctx, void *packet )
+{
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("H2S ack packet intput param packet is invalid! \r\n");
+        return false;
+    }
+#endif 
+
+    if( ctx != NULL )
+    {
+        memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->user_data, ctx, MYPROTOCOL_CAL_USER_DATA_SIZE(ctx) );
+    }
+    
+    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_H2S_ACK;
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       设备向APP发送等待应答数据包
+ * @param       [in/out]  ctx            用户数据
+ * @param       [in/out]  packet         创建数据包函数
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool D2WWaitPacket( void *ctx, void *packet )
+{
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("D2W wait packet intput param packet is invalid! \r\n");
+        return false;
+    }
+#endif 
+
+    if( ctx != NULL )
+    {
+        memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->user_data, ctx, MYPROTOCOL_CAL_USER_DATA_SIZE(ctx) );
+    }
+    
+    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_D2W_WAIT;
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       设备向APP发送应答数据包
+ * @param       [in/out]  ctx            用户数据
+ * @param       [in/out]  packet         创建数据包函数
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool D2WAckPacket( void *ctx, void *packet )
+{
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("D2W ack packet intput param packet is invalid! \r\n");
+        return false;
+    }
+#endif 
+
+    if( ctx != NULL )
+    {
+        memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->user_data, ctx, MYPROTOCOL_CAL_USER_DATA_SIZE(ctx) );
+    }
+    
+    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_D2W_ACK;
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       APP向设备发送等待应答数据包
+ * @param       [in/out]  ctx            用户数据
+ * @param       [in/out]  packet         创建数据包函数
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool W2DWaitPacket( void *ctx, void *packet )
+{
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("W2D wait packet intput param packet is invalid! \r\n");
+        return false;
+    }
+#endif 
+
+    if( ctx != NULL )
+    {
+        memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->user_data, ctx, MYPROTOCOL_CAL_USER_DATA_SIZE(ctx) );
+    }
+    
+    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_W2D_WAIT;
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       APP向设备发送应答数据包
+ * @param       [in/out]  ctx            用户数据
+ * @param       [in/out]  packet         创建数据包函数
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool W2DAckPacket( void *ctx, void *packet )
+{
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("W2D ack packet intput param packet is invalid! \r\n");
+        return false;
+    }
+#endif 
+
+    if( ctx != NULL )
+    {
+        memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->user_data, ctx, MYPROTOCOL_CAL_USER_DATA_SIZE(ctx) );
+    }
+    
+    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_W2D_ACK;
+    
+    return true;
+}
+
+/**@} */     /** MYPROTOCOL 数据包函数 */
+
+/** @}*/     /** myprotocol模块 */
 
 /**********************************END OF FILE*********************************/

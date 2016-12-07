@@ -18,34 +18,104 @@
  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MY_PROTOCOL_H__
-#define __MY_PROTOCOL_H__
+#ifndef __MY_IOT_PROTOCOL_H__
+#define __MY_IOT_PROTOCOL_H__
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
-#include "AF.h"
 
 /* Exported macro ------------------------------------------------------------*/
-/** 通讯格式 用户数据大小 */
-#define MYPROTOCOL_USER_DATA_SIZE  (18)
-/** 通讯格式 MAC地址大小 */
-#define MYPROTOCOL_MAC_ADDR_SIZE   (8)
-// 设备心跳命令
-#define MYPROTOCOL_TICK_CMD        (0x00)
-// 获取设备信息命令
-#define W2D_DEVICE_LIST_UPDATE_CMD (0x10)
-#define W2D_GET_DEVICE_NUM_CMD     (0x11)
-#define W2D_GET_DEVICE_INFO_CMD    (0x12)
+/** 程序调试宏 */
+#define USE_MYPROTOCOL_DEBUG 1
 
-//设备类型
+/** 定义支持设备清单 */
 #define MYPROTOCOL_DEVICE_COORD     (0x00)
 #define MYPROTOCOL_DEVICE_LIGHT     (0x01)
 #define MYPROTOCOL_DEVICE_SOCKET    (0x02)
 #define MYPROTOCOL_DEVICE_CURTAIN   (0x03)
 #define MYPROTOCOL_DEVICE_HT_SENSOR (0x04)
 
+/** 定义当前设备类型 */
+#define SMART_DEVICE_TYPE MYPROTOCOL_DEVICE_COORD
+
+/**
+ * @name 定义通信相关参数
+ * @{
+ */
+/** 数据包所占内存空间 */
+#define MYPROTOCOL_PACKET_SIZE                   (sizeof(MYPROTOCOL_FORMAT_t)/sizeof(uint8))
+
+/** 设备信息所占内存空间 */
+#define MYPROTOCOL_DEVICE_INFO_SIZE              (sizeof(MYPROTOCOL_DEVICE_INFO_t)/sizeof(uint8))
+
+/** 计算user_data在MYPROTOCOL_FORMAT_t中的偏移量 */
+#define MYPROTOCOL_USER_DATA_OFFSET              ((uint8)(&((MYPROTOCOL_FORMAT_t *)(0))->user_data))
+
+/** 计算cmd在MYPROTOCOL_USER_DATA_t中的偏移量 */
+#define MTPROTOCOL_USER_CMD_OFFSET               ((uint8)(&((MYPROTOCOL_USER_DATA_t *)(0))->user_data.cmd))
+
+/** 计算len在MYPROTOCOL_USER_DATA_t中的偏移量 */
+#define MYPROTOCOL_USER_DATA_LEN_OFFSET          ((uint8)(&((MYPROTOCOL_USER_DATA_t *)(0))->user_data.len))
+
+/** 计算data在MYPROTOCOL_USER_DATA_t中的偏移量 */
+#define MYPROTOCOL_USER_DATA_DATA_OFFSET         ((uint8)(&((MYPROTOCOL_USER_DATA_t *)(0))->user_data.data))
+
+/** 计算user_data所占内存空间大小 user_data为MYPROTOCOL_USER_DATA_t类型的结构体指针*/
+#define MYPROTOCOL_CAL_USER_DATA_SIZE(user_data) ((uint8)(MYPROTOCOL_USER_DATA_LEN_OFFSET \
+                                                          + ((MYPROTOCOL_USER_DATA_t *)(user_data))->len))
+
+/** 计算user_message所占内存空间大小 user_data为MYPROTOCOL_USER_DATA_t类型的结构体指针*/                                                          
+#define MYPROTOCOL_CAL_USER_MSG_SIZE(user_data)  ((uint8)((uint8)MYPROTOCOL_DEVICE_INFO_SIZE \
+                                                          + MYPROTOCOL_USER_DATA_LEN_OFFSET \
+                                                          + ((MYPROTOCOL_USER_DATA_t *)(user_data))->len))
+
+/** 通讯格式 用户数据大小 */
+#define MYPROTOCOL_USER_DATA_SIZE   (18)
+
+/** 通讯格式 MAC地址大小 */
+#define MYPROTOCOL_MAC_ADDR_SIZE    (8)
+
+/** 定义通讯方向 */
+// #define MYPROTOCOL_COMM_END          (0x00)
+// #define MYPROTOCOL_W2D_WAIT			(0x01)
+// #define MYPROTOCOL_W2D_ACK			(0x02)
+// #define MYPROTOCOL_D2W_WAIT			(0x03)
+// #define MYPROTOCOL_D2W_ACK			(0x04)
+// #define MYPROTOCOL_H2S_WAIT			(0x05)
+// #define MYPROTOCOL_H2S_ACK			(0x06)
+// #define MYPROTOCOL_S2H_WAIT			(0x07)
+// #define MYPROTOCOL_S2H_ACK			(0x08)
+// #define MYPROTOCOL_COMM_ERROR		(0x09)
+
+/** 定义设备通用命令 */
+#define MYPROTOCOL_TICK_CMD         (0x00)
+#define MYPROTOCOL_RESET_CMD        (0x01)
+#define MYPROTOCOL_REBOOT_CMD       (0x02)
+#define MYPROTOCOL_UPDATE_TIME_CMD  (0x03)
+#define MYPROTOCOL_RD_TIME_CMD      (0x04)
+#define MYPROTOCOL_WR_TIME_CMD      (0x05)
+/**@} */
+
 /* Exported types ------------------------------------------------------------*/
-// 通讯类型
+/**
+ * @name MYPROTOCOL相关功能接口定义
+ * @{
+ */
+typedef bool (*packet_type)(void *ctx, void *packet);
+typedef bool (*send_type)(void *ctx, void *packet);
+typedef bool (*receive_type)(void *ctx, void *packet);
+/**@} */
+
+/**
+ * @name MYPROTOCOL数据包格式定义
+ * @{
+ */
+/** 通讯类型 */
 typedef enum
 {
     MYPROTOCOL_COMM_END = 0x00,
@@ -58,98 +128,123 @@ typedef enum
     MYPROTOCOL_S2H_WAIT,
     MYPROTOCOL_S2H_ACK,
     MYPROTOCOL_COMM_ERROR,
-}myprotocol_commtype;
+}MYPROTOCOL_COMMTYPE_t;
 
-// 设备信息
+/** 设备信息 */
 typedef struct
 {
     uint8 device;
     uint8 mac[MYPROTOCOL_MAC_ADDR_SIZE];
-}MYPROTOCOL_DEVICE_INFO;
+}MYPROTOCOL_DEVICE_INFO_t;
 
-// 用户数据
+/** 用户数据 */
 typedef struct
 {
     uint8 cmd;
     uint8 len;
     uint8 data[MYPROTOCOL_USER_DATA_SIZE];
-}MYPROTOCOL_USER_DATA;
+}MYPROTOCOL_USER_DATA_t;
     
-// 设备应答
+/** 设备应答 */
 typedef struct
 {
     uint8 id;
     MYPROTOCOL_DEVICE_INFO *info;
-}MYPROTOCOL_DEVCICE_ACK;
+}MYPROTOCOL_DEVCICE_ACK_t;
 
-// MYPROTOCOL 格式
+/** 用户信息 */
 typedef struct
 {
-    myprotocol_commtype    commtype;
+    MYPROTOCOL_DEVICE_INFO deviceInfo;
+    MYPROTOCOL_USER_DATA   userData;
+}MYPROTOCOL_USER_MESSAGE_t;
+
+/** MYPROTOCOL 格式 */
+typedef struct
+{
+    MYPROTOCOL_COMMTYPE    commtype;
     uint8                  sn;
     MYPROTOCOL_DEVICE_INFO device;
     MYPROTOCOL_USER_DATA   user_data;
-    uint8                  check_sum;
-}MYPROTOCOL_FORMAT;
+    uint8                  sum;
+}MYPROTOCOL_FORMAT_t;
 
-// 数据发送方向
-typedef enum
-{
-    MYPROTOCOL_DIR_W2D,
-    MYPROTOCOL_DIR_D2W,
-    MYPROTOCOL_DIR_S2H,
-    MYPROTOCOL_DIR_H2S,
-    MYPROTOCOL_FORWORD_D2W,
-    MYPROTOCOL_FORWORD_W2D,
-}MYPROTOCOL_DATA_DIR;
-
-// 创建数据包函数
-typedef bool (*packet_func)(void *ctx, MYPROTOCOL_FORMAT *packet);
-
-// 设备基本命令
-typedef enum
-{
-    DEVICE_TICK   = 0x00,
-    DEVICE_RESET  = 0x01,
-    DEVICE_REBOOT = 0x02,
-}DEVICE_BASE_CMD;
+/**@} */
 
 /* Exported variables --------------------------------------------------------*/
-// 设备类型
-#define SMART_DEVICE_TYPE MYPROTOCOL_DEVICE_HT_SENSOR
-
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-// MYPROTOCOL初始化函数
-extern void myprotocol_init( uint8 *task_id );
+/**
+ * @name 硬件初始化函数 宏定义
+ * @{
+ */
+#if USE_MYPROTOCOL_DEBUG
+extern bool HalMyprotocolInit( uint8* );
+#else
+extern void HalMyprotocolInit( uint8* );
+#endif
+/**@} */
 
-// 数据包解析函数
-extern void SmartDevice_Message_Handler( afIncomingMSGPacket_t *pkt );
-extern void Gizwits_Message_Handler( uint8 *report_data, uint8 *packet_data );
+/**
+ * @name 输出调试信息函数 宏定义
+ * @note 请使用宏 MYPROTOCOL_LOG 输出调试信息
+ * @{
+ */
+#if USE_MYPROTOCOL_DEBUG
+extern void MyprotocolPutLog( uint8*, uint16 );
+#define MYPROTOCOL_LOG(n) MyprotocolPutLog(n,sizeof(n))
+#else
+#define MYPROTOCOL_LOG(n)
+#endif
+/**@} */
 
-// 数据包发送函数
-extern bool MYPROTOCO_S2H_MSG_SEND( packet_func, void * );
-extern bool MYPROTOCO_H2S_MSG_SEND( MYPROTOCOL_DEVICE_INFO, packet_func, void* );
-extern bool MYPROTOCOL_FORWARD_PACKET( MYPROTOCOL_DATA_DIR, MYPROTOCOL_FORMAT* );
-extern bool MYPROTOCOL_D2W_SEND_MSG( MYPROTOCOL_FORMAT*, packet_func, void* );
-extern bool MYPROTOCOL_SEND_MSG( MYPROTOCOL_DATA_DIR, MYPROTOCOL_FORMAT*, packet_func, void* );
+/**
+ * @name 发送数据API
+ * @note 建议使用函数MyprotocolSendData发送数据
+ * @{
+ */
+extern bool MyprotocolD2DSendData( void*, void* );
+extern bool MyprotocolD2WSendData( void*, void* );
+extern bool MyprotocolForwardData( void*, void*, send_type );
+extern bool MyprotocolSendData( void*, void*, packet_type, send_type );
+/**@} */
 
-// 创建数据包函数
-extern bool create_tick_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
-extern bool create_acktick_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
-extern bool create_errcode_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
-extern bool create_commend_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
-extern bool create_w2d_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
-extern bool create_w2d_wait_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
-extern bool create_d2w_ack_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
-extern bool create_d2w_wait_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
-extern bool create_devicenum_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
-extern bool create_deviceinfo_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
-extern bool create_devicelist_update_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
-extern bool create_report_packet( void *ctx, MYPROTOCOL_FORMAT *packet );
+/**
+ * @name                  接收数据API
+ * @param ctx             接收到的数据包
+ * @param receive_func    数据包处理函数
+ * @note                  建议使用函数MyprotocolReceiveData接收解析数据
+ * @{
+ */
+#define MyprotocolW2DReceiveData( ctx, receive_func ) receive_func(ctx)
+#define MyprotocolD2DReceiveData( ctx, receive_func ) receive_func(ctx)
 
-#endif      /* __myprotocol_H__ */
+extern bool MyprotocolReceiveData( void*, void*, receive_type, receive_type );
+/**@} */
+
+/**
+ * @name    数据包函数
+ * @{
+ */
+extern bool CommErrorPacket( void*, void* );
+extern bool DeviceTickPacket( void*, void* );
+extern bool DeviceTickAckPacket( void*, void* );
+extern bool S2HWaitPacket( void*, void* );
+extern bool S2HAckPacket( void*, void* );
+extern bool H2SWaitPacket( void*, void* );
+extern bool H2SAckPacket( void*, void* );
+extern bool D2WWaitPacket( void*, void* );
+extern bool D2WAckPacket( void*, void* );
+extern bool W2DWaitPacket( void*, void* );
+extern bool W2DAckPacket( void*, void* );
+/**@} */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif      /** __MY_IOT_PROTOCOL_H__ */
 
 /**********************************END OF FILE*********************************/

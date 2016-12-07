@@ -1,30 +1,40 @@
 /**
-************************************************************
-* @file         gizwits_product.h
-* @brief        对应gizwits_product.c的头文件(包含产品软硬件版本定义)
-* @author       Gizwits
-* @date         2016-09-05
-* @version      V03010101
-* @copyright    Gizwits
-* 
-* @note         机智云.只为智能硬件而生
-*               Gizwits Smart Cloud  for Smart Products
-*               链接|增值ֵ|开放|中立|安全|自有|自由|生态
-*               www.gizwits.com
-*
-***********************************************************/
+ ******************************************************************************
+  * @file       gizwits_product.h
+  * @author     Gizwits
+  * @par        Modify
+                    yearnext
+  * @version    V03010101
+  * @date       2016年12月1日
+  * @brief      gizwits_product 头文件
+  * @par        工作平台                                  
+  *                  CC2530
+  * @par        工作频率                                  
+  *                  32MHz
+  * @par        编译平台									                          
+  * 				 IAR
+ ******************************************************************************
+  * @note
+  * 机智云.只为智能硬件而生
+  * Gizwits Smart Cloud  for Smart Products
+  * 链接|增值ֵ|开放|中立|安全|自有|自由|生态
+  * www.gizwits.com               						                      
+ ******************************************************************************
+ */
 
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef __GIZWITS_PRODUCT_H__
+#define __GIZWITS_PRODUCT_H__
 
-#ifndef _GIZWITS_PRODUCT_H
-#define _GIZWITS_PRODUCT_H
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-#include "gizwits_protocol.h"
-#include "myprotocol.h"
+/* Includes ------------------------------------------------------------------*/
+#include "ZComDef.h"
 
-#define GIZWITS_BUFF_CHANGED (0)
-#define GIZWITS_BUFF_NORMAL  (1)
-#define GIZWITS_BUFF_ERROR   (2)
-
+/* Exported macro ------------------------------------------------------------*/
 /**
 * MCU软件版本号
 */
@@ -50,10 +60,22 @@
 #define REPORT_TIME_MAX 6000 //6S
 /**@} */
 
+/* Exported types ------------------------------------------------------------*/
+/* Exported variables --------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
+/* Private typedef -----------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
+/* Exported functions --------------------------------------------------------*/
 /**@name Gizwits 用户API接口
 * @{
 */
-int8 gizwitsEventProcess(eventInfo_t *info, uint8 *data, uint8 len);
+extern bool gizwitsEventProcess(eventInfo_t *info, uint8 *data, uint8 len);
 /**@} */
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif      /** __GIZWITS_PROTOCOL_H__ */
+
+/**********************************END OF FILE*********************************/

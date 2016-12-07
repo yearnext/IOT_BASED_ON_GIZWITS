@@ -1,76 +1,139 @@
 /**
-************************************************************
-* @file         gizwits_protocol.c
-* @brief        Gizwits协议相关文件 (SDK API 接口函数定义)
-* @author       Gizwits
-* @date         2016-09-05
-* @version      V03010101
-* @copyright    Gizwits
-* 
-* @note         机智云.只为智能硬件而生
-*               Gizwits Smart Cloud  for Smart Products
-*               链接|增值ֵ|开放|中立|安全|自有|自由|生态
-*               www.gizwits.com
-*
-***********************************************************/
-#include "myprotocol.h"
+ ******************************************************************************
+  * @file       gizwits_protocol.c
+  * @author     Gizwits
+  * @par        Modify
+                    yearnext
+  * @version    V03010101
+  * @date       2016年12月1日
+  * @brief      gizwits_protocol 源文件
+  * @par        工作平台                                  
+  *                  CC2530
+  * @par        工作频率                                  
+  *                  32MHz
+  * @par        编译平台									                          
+  * 				 IAR
+  ******************************************************************************
+  * @note
+  * 机智云.只为智能硬件而生
+  * Gizwits Smart Cloud  for Smart Products
+  * 链接|增值ֵ|开放|中立|安全|自有|自由|生态
+  * www.gizwits.com               						                      
+  ******************************************************************************
+ */
+
+/**
+ * @defgroup gizwits_protocol模块
+ * @{
+ */
+
+/* Includes ------------------------------------------------------------------*/
 #include <string.h>
 #include "gizwits_product.h"
 #include "gizwits_protocol.h"
 #include "Onboard.h"
 
+/* Exported macro ------------------------------------------------------------*/
+#define GIZWITS_LOG(n) MYPROTOCOL_LOG(n)
+
+/* Exported types ------------------------------------------------------------*/
+/* Exported variables --------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
+/* Private typedef -----------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
 /** 协议全局变量 **/
 static gizwitsProtocol_t gizwitsProtocol;
 
-// 设备时间数据
-static user_time device_time;
+/** 环形缓冲区结构体变量 **/
+static rb_t pRb;                                    
 
-/**@name 串口接收环形缓冲区实现
-* @{
-*/
-static rb_t pRb;                                      ///< 环形缓冲区结构体变量
-static uint8 rbBuf[RB_MAX_LEN];                       ///< 环形缓冲区数据缓存区
-
-static void rbCreate(rb_t* rb)
+/* Private functions ---------------------------------------------------------*/
+/**
+ *******************************************************************************
+ * @brief       环形缓冲区创建函数
+ * @param       [in/out]  *rb         指向环形缓冲区的指针
+ * @return      [in/out]  bool        返回状态
+ * @note        None
+ *******************************************************************************
+ */
+static bool rbCreate( rb_t* rb )
 {
+#if USE_MYPROTOCOL_DEBUG
     if(NULL == rb)
     {
-        return;
+        GIZWITS_LOG("rbCreate ERROR: input rb is NULL\n");
+        return false;
     }
-
+#endif
     rb->rbHead = rb->rbBuff;
     rb->rbTail = rb->rbBuff;
+    
+    return true;
 }
 
-//static void rbDelete(rb_t* rb)
-//{
-//    if(NULL == rb)
-//    {
-//        return;
-//    }
-//
-//    rb->rbBuff = NULL;
-//    rb->rbHead = NULL;
-//    rb->rbTail = NULL;
-//    rb->rbCapacity = 0;
-//}
-
-static int32 rbCapacity(rb_t *rb)
+/**
+ *******************************************************************************
+ * @brief       环形缓冲区删除函数
+ * @param       [in/out]  *rb         指向环形缓冲区的指针
+ * @return      [in/out]  bool        返回状态
+ * @note        None
+ *******************************************************************************
+ */
+static bool rbDelete( rb_t* rb )
 {
+#if USE_MYPROTOCOL_DEBUG
     if(NULL == rb)
     {
-        return -1;
+        GIZWITS_LOG("rbDelete ERROR: input rb is NULL\n");
+        return false;
     }
+#endif
+    rb->rbBuff = NULL;
+    rb->rbHead = NULL;
+    rb->rbTail = NULL;
+    rb->rbCapacity = 0;
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       获取环形缓冲区大小
+ * @param       [in/out]  *rb         指向环形缓冲区的指针
+ * @return      [in/out]  uint8       环形缓冲区的大小
+ * @note        None
+ *******************************************************************************
+ */
+static uint8 rbCapacity( rb_t *rb )
+{
+#if USE_MYPROTOCOL_DEBUG
+    if(NULL == rb)
+    {
+        GIZWITS_LOG("rbCapacity ERROR: input rb is NULL\n");
+        return 0;
+    }
+#endif
 
     return rb->rbCapacity;
 }
 
-static int32 rbCanRead(rb_t *rb)
+/**
+ *******************************************************************************
+ * @brief       获取环形缓冲区能够读取数据的数量
+ * @param       [in/out]  *rb         指向环形缓冲区的指针
+ * @return      [in/out]  uint8       够读取数据的数量
+ * @note        None
+ *******************************************************************************
+ */
+static uint8 rbCanRead( rb_t *rb )
 {
+#if USE_MYPROTOCOL_DEBUG
     if(NULL == rb)
     {
-        return -1;
+        GIZWITS_LOG("rbCanRead ERROR: input rb is NULL\n");
+        return 0;
     }
+#endif
 
     if (rb->rbHead == rb->rbTail)
     {
@@ -85,36 +148,60 @@ static int32 rbCanRead(rb_t *rb)
     return rbCapacity(rb) - (rb->rbHead - rb->rbTail);
 }
 
-static int32 rbCanWrite(rb_t *rb)
+/**
+ *******************************************************************************
+ * @brief       获取环形缓冲区能够写入数据的数量
+ * @param       [in/out]  *rb         指向环形缓冲区的指针
+ * @return      [in/out]  uint8       够读写入据的数量
+ * @note        None
+ *******************************************************************************
+ */
+static uint8 rbCanWrite( rb_t *rb )
 {
+#if USE_MYPROTOCOL_DEBUG
     if(NULL == rb)
     {
-        return -1;
+        GIZWITS_LOG("rbCanWrite ERROR: input rb is NULL\n");
+        return 0;
     }
+#endif
 
     return rbCapacity(rb) - rbCanRead(rb);
 }
 
-static int32 rbRead(rb_t *rb, void *data, size_t count)
+/**
+ *******************************************************************************
+ * @brief       向环形缓冲区读取数据
+ * @param       [in/out]  *rb           指向环形缓冲区的指针
+ * @param       [in/out]  *data         指向数据缓冲区的指针
+ * @param       [in/out]  count         读取数据的数量
+ * @return      [in/out]  uint8         读到数据的数量
+ * @note        None
+ *******************************************************************************
+ */
+static uint8 rbRead( rb_t *rb, void *data, uint8 count )
 {
     int copySz = 0;
-
+    
+#if USE_MYPROTOCOL_DEBUG
     if(NULL == rb)
     {
-        return -1;
+        GIZWITS_LOG("rbRead ERROR: input rb is NULL\n");
+        return 0;
     }
 
     if(NULL == data)
     {
-        return -1;
+        GIZWITS_LOG("rbRead ERROR: input data is NULL\n");
+        return 0;
     }
+#endif
 
     if (rb->rbHead < rb->rbTail)
     {
         copySz = min(count, rbCanRead(rb));
         memcpy(data, rb->rbHead, copySz);
         rb->rbHead += copySz;
-        return copySz;
     }
     else
     {
@@ -123,7 +210,6 @@ static int32 rbRead(rb_t *rb, void *data, size_t count)
             copySz = count;
             memcpy(data, rb->rbHead, copySz);
             rb->rbHead += copySz;
-            return copySz;
         }
         else
         {
@@ -131,31 +217,48 @@ static int32 rbRead(rb_t *rb, void *data, size_t count)
             memcpy(data, rb->rbHead, copySz);
             rb->rbHead = rb->rbBuff;
             copySz += rbRead(rb, (char*)data+copySz, count-copySz);
-            return copySz;
         }
     }
+    
+    return copySz;
 }
 
-static int32 rbWrite(rb_t *rb, const void *data, size_t count)
+/**
+ *******************************************************************************
+ * @brief       向环形缓冲区写入数据
+ * @param       [in/out]  *rb           指向环形缓冲区的指针
+ * @param       [in/out]  *data         指向数据缓冲区的指针
+ * @param       [in/out]  count         写入数据的数量
+ * @return      [in/out]  uint8         写入数据的数量
+ * @note        None
+ *******************************************************************************
+ */
+static uint8 rbWrite( rb_t *rb, const void *data, uint8 count )
 {
     int tailAvailSz = 0;
 
-    if(NULL == rb)
+#if USE_MYPROTOCOL_DEBUG
+    if( NULL == rb )
     {
-        return -1;
+        GIZWITS_LOG("rbWrite ERROR: rb is empty \n");
+        return 0;
     }
 
-    if(NULL == data)
+    if( NULL == data )
     {
-        return -1;
+        GIZWITS_LOG("rbWrite ERROR: data is empty \n");
+        return 0;
     }
 
-    if (count >= rbCanWrite(rb))
+#endif
+
+    if ( count >= rbCanWrite(rb) )
     {
-        return -1;
+        GIZWITS_LOG("rbWrite ERROR: no memory %d \n", rbCanWrite(rb));
+        return 0;
     }
 
-    if (rb->rbHead <= rb->rbTail)
+    if ( rb->rbHead <= rb->rbTail )
     {
         tailAvailSz = rbCapacity(rb) - (rb->rbTail - rb->rbBuff);
         if (count <= tailAvailSz)
@@ -166,6 +269,7 @@ static int32 rbWrite(rb_t *rb, const void *data, size_t count)
             {
                 rb->rbTail = rb->rbBuff;
             }
+            
             return count;
         }
         else
@@ -180,34 +284,37 @@ static int32 rbWrite(rb_t *rb, const void *data, size_t count)
     {
         memcpy(rb->rbTail, data, count);
         rb->rbTail += count;
+        
         return count;
     }
 }
-/**@} */
 
+/* Exported functions --------------------------------------------------------*/
 /**
-* @brief 向环形缓冲区写入数据
-* @param [in] buf        : buf地址
-* @param [in] len        : 字节长度
-* @return   正确 : 返回写入的数据长度
-            失败 : -1
-*/
-int32 gizPutData(uint8 *buf, uint32 len)
+ *******************************************************************************
+ * @brief       向环形缓冲区写入数据
+ * @param       [in/out]  *buf          字节长度
+ * @param       [in/out]  len           字节长度
+ * @return      [in/out]  bool          返回状态
+ * @note        None
+ *******************************************************************************
+ */
+bool gizPutData( uint8 *buf, uint8 len )
 {
-    int32 count = 0;
-
-    if(NULL == buf)
+#if USE_MYPROTOCOL_DEBUG    
+	if( NULL == buf )
     {
-        return -1;
+        GIZWITS_LOG("gizPutData ERROR: gizPutData buf is empty \n");
+        return false;
     }
 
-    count = rbWrite(&pRb, buf, len);
-    if(count != len)
+    if( rbWrite(&pRb, buf, len) != len )
     {
-        return -1;
+        GIZWITS_LOG("gizPutData ERROR: Failed to rbWrite \n");
+        return false;
     }
 
-    return count;
+    return true;
 }
 
 /**
@@ -216,46 +323,67 @@ int32 gizPutData(uint8 *buf, uint32 len)
 * @param none
 * @return none
 */
+/**
+ *******************************************************************************
+ * @brief       系统1毫秒计时维护函数,毫秒自增,溢出归零
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
 void gizTimerMs(void)
 {
     gizwitsProtocol.timerMsCount++;
 }
 
+/**
+ *******************************************************************************
+ * @brief       系统50毫秒计时维护函数,毫秒自增,溢出归零
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
 void gizTimer50Ms(void)
 {
     gizwitsProtocol.timerMsCount++;
 }
 
 /**
-* @brief 读取系统时间毫秒计时数
-
-* @param none
-* @return 系统时间毫秒数
-*/
+ *******************************************************************************
+ * @brief       读取系统时间毫秒计时数
+ * @param       [in/out]  void
+ * @return      [in/out]  uint32    系统时间毫秒数
+ * @note        None
+ *******************************************************************************
+ */
 uint32 gizGetTimerCount(void)
 {
     return gizwitsProtocol.timerMsCount;
 }
 
 /**
-* @brief 报文数据校验和计算
-*
-* @param [in] buf   : buf地址
-* @param [in] len   : 字节长度
-*
-* @return sum : 从缓冲区第3个字节后所有的字节累加求和
-*/
-static uint8 gizProtocolSum(uint8 *buf, uint32 len)
+ *******************************************************************************
+ * @brief       报文数据校验和计算
+ * @param       [in/out]  *buf     报文地址
+ * @param       [in/out]  len      字节长度
+ * @return      [in/out]  uint8    校验和
+ * @note        None
+ *******************************************************************************
+ */
+static uint8 gizProtocolSum( uint8 *buf, uint8 len )
 {
-    uint8     sum = 0;
-    uint32    i = 0;
-
+    uint8 sum = 0;
+    uint8 i = 0;
+	
+#if USE_MYPROTOCOL_DEBUG
     if(buf == NULL || len <= 0)
     {
         return 0;
     }
+#endif
 
-    for(i=2; i<len-1; i++)
+    for( i=2; i<len-1; i++ )
     {
         sum += buf[i];
     }
@@ -264,15 +392,16 @@ static uint8 gizProtocolSum(uint8 *buf, uint32 len)
 }
 
 /**
-* @brief 16位数据字节序转换
-*
-* @param [in] value : 需要转换的数据
-*
-* @return  tmp_value: 转换后的数据
-*/
-static int16 gizProtocolExchangeBytes(int16 value)
+ *******************************************************************************
+ * @brief       16位数据字节序转换
+ * @param       [in/out]  value    需要转换的数据
+ * @return      [in/out]  uint16   转换后的数据
+ * @note        None
+ *******************************************************************************
+ */
+static uint16 gizProtocolExchangeBytes(uint16 value)
 {
-    int16    tmp_value;
+    uint16    tmp_value;
     uint8     *index_1, *index_2;
 
     index_1 = (uint8 *)&tmp_value;
@@ -284,178 +413,169 @@ static int16 gizProtocolExchangeBytes(int16 value)
     return tmp_value;
 }
 
-///**
-//* @brief 32位数据字节序转换
-//*
-//* @param [in] value : 需要转换的数据
-//*
-//* @return  tmp_value: 转换后的数据
-//*/
-//static uint32 gizExchangeWord(uint32  value)
-//{
-//    return ((value & 0x000000FF) << 24) |
-//        ((value & 0x0000FF00) << 8) |
-//        ((value & 0x00FF0000) >> 8) |
-//        ((value & 0xFF000000) >> 24) ;
-//}
+/**
+ *******************************************************************************
+ * @brief       32位数据字节序转换
+ * @param       [in/out]  value    需要转换的数据
+ * @return      [in/out]  uint32   转换后的数据
+ * @note        None
+ *******************************************************************************
+ */
+static uint32 gizExchangeWord(uint32  value)
+{
+   return ((value & 0x000000FF) << 24) \
+           |((value & 0x0000FF00) << 8) \
+		   |((value & 0x00FF0000) >> 8) \
+		   |((value & 0xFF000000) >> 24);
+}
 
 /**
-* @brief 数组缓冲区网络字节序转换
-*
-* @param [in] buf      : buf地址
-* @param [in] dataLen  : 字节长度
-*
-* @return 正确 : 0 
-          失败 : -1
-*/
-static int8 gizByteOrderExchange(uint8 *buf,uint32 dataLen)
+ *******************************************************************************
+ * @brief       数组缓冲区网络字节序转换
+ * @param       [in/out]  *buf      buf地址
+ * @param       [in/out]  dataLen   字节长度
+ * @return      [in/out]  bool      返回状态
+ * @note        None
+ *******************************************************************************
+ */
+static bool gizByteOrderExchange( uint8 *buf, uint8 dataLen )
 {
     uint32 i = 0;
     uint8 preData = 0;
     uint8 aftData = 0;
-
+	
+#if USE_MYPROTOCOL_DEBUG
     if(NULL == buf)
     {
-//        GIZWITS_LOG("gizByteOrderExchange Error , Illegal Param\n");
-        return -1;
+        GIZWITS_LOG("gizByteOrderExchange Error , Illegal Param\n");
+        return false;
     }
+#endif
 
-    for(i = 0;i<dataLen/2;i++)
+    for(i = 0; i<dataLen/2; i++)
     {
         preData = buf[i];
         aftData = buf[dataLen - i - 1];
         buf[i] = aftData;
         buf[dataLen - i - 1] = preData;
     }
-    return 0;
-}
-
-// 串口发送数据
-bool GIZWITS_UART_WRITE( uint8 *data, uint8 len )
-{
-    uint8 i,j;
-    uint8 packet[128];
-    
-    packet[0] = data[0];
-    packet[1] = data[1];
-    
-    for( i=2,j=2; i<len; i++ )
-    {
-        packet[j] = data[i];
-        
-        if( packet[j++] == 0xFF )
-        {
-            packet[j++] = 0x55;
-        }
-    }
-    
-    HalUARTWrite(GIZWITS_UART_PORT,packet,j);
-    
+	
     return true;
 }
 
-//
-///**
-//* @brief 数据点跨字节判断
-//*
-//* @param [in] bitOffset     : 位偏移
-//* @param [in] bitLen        : 占用位长度 
-//*
-//* @return 未跨字节 : 0 
-//            跨字节 : 1
-//*/
-//static uint8 gizAcrossByteJudge(uint32 bitOffset,uint32 bitLen)
-//{
-//    if((0 == bitOffset)||(0 == bitOffset%8))
-//    {
-//        if(bitLen <= 8)
-//        {
-//            return 0;
-//        }
-//        else
-//        {
-//            return 1;
-//        }
-//    }
-//    else
-//    {
-//        if(8 - bitOffset%8 >= bitLen)
-//        {
-//            return 0;
-//        }
-//        else
-//        {
-//            return 1; 
-//        }
-//    }
-//}
-
-///**
-//* @brief bool和enum类型数据点数据压缩
-//*
-//* @param [in] byteOffset    : 字节偏移
-//* @param [in] bitOffset     : 位偏移
-//* @param [in] bitLen        : 占用位长度
-//* @param [out] arrayAddr    : 数组地址
-//* @param [in] srcData       : 原始数据
-//*
-//* @return : 0,正确返回;-1，错误返回
-//*/
-//static int32 gizCompressValue(uint32 byteOffset,uint32 bitOffset,uint32 bitLen,uint8 *bufAddr,uint32 srcData)
-//{
-//    uint8 highBit = 0;
-//    uint8 lowBit = 0;
-//    uint8 ret = 0;
-//
-//    if(NULL == bufAddr)
-//    {
-////        GIZWITS_LOG("gizCompressValue Error , Illegal Param\n");
-//        return -1;
-//    }
-//
-//    ret = gizAcrossByteJudge(bitOffset,bitLen);
-//    if(0 == ret)
-//    {
-//        bufAddr[byteOffset] |= (((uint8)srcData)<<(bitOffset%8));
-//    }
-//    else if(1 == ret)
-//    {
-//        /* 暂时支持最多跨两字节的压缩 */ 
-//        highBit = ((uint8)srcData)>>(8-bitOffset%8);
-//        lowBit = (uint8)srcData & (0xFF >> (8-bitOffset%8));
-//        bufAddr[byteOffset + 1] |=  highBit;
-//        bufAddr[byteOffset] |= (lowBit<<(bitOffset%8));
-//    }
-//
-//    return 0;
-//////}
-
 /**
+ *******************************************************************************
+ * @brief       从环形缓冲区中抓取一包数据
+ * @param       [in/out]  rb      输入数据地址
+ * @param       [in/out]  data    输出数据地址
+ * @param       [in/out]  len     输出数据长度
+ * @return      [in/out]  int8    返回状态
+ * @note        None
+ *******************************************************************************
+ */
+#if 1
+static int8 gizProtocolGetOnePacket( rb_t *rb, uint8 *data, uint8 *len )
+{
+	static uint8 lastData = 0;
+	static uint8 *buffdata = data;
+	
+	uint8 nowData = 0;
+	uint8 dataLen = buffdata - data;
+	uint8 packetLen = 0;
+	
+#if USE_MYPROTOCOL_DEBUG
+    if((NULL == rb) || (NULL == data) ||(NULL == len))
+    {
+        GIZWITS_LOG("gizProtocolGetOnePacket Error , Illegal Param\n");
+        return false;
+    }
+#endif
+	
+	while( rbRead( rb, &nowData, 1 ) == 0 )
+	{
+		if( lastData == 0xFF && nowData == 0xFF )
+		{
+			buffdata = data;
+			
+			*buffdata = 0xFF;
+			buffdata++;
+			
+			*buffdata = 0xFF;
+			buffdata++;
+			
+			dataLen = 2;
+		}
+		else if( lastData == 0xFF && nowData == 0x55 )
+		{
+		}
+		else
+		{
+			if( dataLen >= 2 )
+			{
+				*buffdata = nowData;
+				buffdata++;
+				
+				dataLen = buffdata - data;
+				if( dataLen > 4 )
+				{
+					packetLen = gizProtocolExchangeBytes(((protocolHead_t *)buffdata)->len)+4;
+
+					if( dataLen == packetLen )
+					{
+						buffdata = data;
+						*len = packetLen;
+						lastData = 0;
+						
+						if( gizProtocolSum(buffdata, dataLen) == buffdata[dataLen-1] )
+						{
+							return 0;
+						}
+						else
+						{
+							return -2;
+						}
+					}
+				}
+			}
+			else
+			{
+				buffdata = data;
+			}
+		}
+		lastData = rdData;
+	}
+	
+	return -1;
+}
+
+#else
+  /**
 * @brief 从环形缓冲区中抓取一包数据
 *
-* @param [in]  rb                  : 输入数据地址
-* @param [out] data                : 输出数据地址
-* @param [out] len                 : 输出数据长度
+* @param [in]   rb           : 输入数据地址
+* @param [out]  data         : 输出数据地址
+* @param [out]  len          : 输出数据长度
 *
 * @return : 0,正确返回;-1，错误返回;-2，数据校验失败
 */
-static int8 gizProtocolGetOnePacket(rb_t *rb, uint8 *data, uint16 *len)
+static int8_t gizProtocolGetOnePacket(rb_t *rb, uint8_t *data, uint16_t *len)
 {
-    uint8 ret = 0;
-    uint8 sum = 0;
-    uint8 i = 0;
-    uint8 tmpData;
-    uint8 tmpLen = 0;
-    uint16 tmpCount = 0;
-    static uint8 protocolFlag = 0;
-    static uint16 protocolCount = 0;
-    static uint8 lastData = 0;
-    static uint8 debugCount = 0;
-    uint8 *protocolBuff = data;
+    uint8_t ret = 0;
+    uint8_t sum = 0;
+    uint8_t i = 0;
+    uint8_t tmpData;
+    uint8_t tmpLen = 0;
+    uint16_t tmpCount = 0;
+    static uint8_t protocolFlag = 0;
+    static uint16_t protocolCount = 0;
+    static uint8_t lastData = 0;
+    static uint8_t debugCount = 0;
+    uint8_t *protocolBuff = data;
     protocolHead_t *head = NULL;
 
     if((NULL == rb) || (NULL == data) ||(NULL == len))
     {
+        GIZWITS_LOG("gizProtocolGetOnePacket Error , Illegal Param\n");
         return -1;
     }
 
@@ -541,125 +661,174 @@ static int8 gizProtocolGetOnePacket(rb_t *rb, uint8 *data, uint16 *len)
     return 1;
 }
 
-/**
-* @brief 根据协议生成“控制型事件”
+#endif 
+}
 
-* @param [in] issuedData  ：控制型数据
-* @param [out] info       ：事件队列
-* @param [out] dataPoints ：数据点数据
-* @return 0，执行成功， 非 0，失败
-*/
-static int8 gizDataPoint2Event(gizwitsIssued_t *issuedData, eventInfo_t *info, dataPoint_t *dataPoints)
+/**
+ *******************************************************************************
+ * @brief       串口发送数据
+ * @param       [in/out]  rb      输入数据地址
+ * @param       [in/out]  data    输出数据地址
+ * @param       [in/out]  len     输出数据长度
+ * @return      [in/out]  bool    返回状态
+ * @note        None
+ *******************************************************************************
+ */
+bool GIZWITS_UART_WRITE( uint8 *data, uint8 len )
 {
+    uint8 i,j;
+    
+    gizwitsProtocol.protocolTxBuff[0] = data[0];
+    gizwitsProtocol.protocolTxBuff[1] = data[1];
+    
+    for( i=2,j=2; i<len; i++ )
+    {
+        gizwitsProtocol.protocolTxBuff[j] = data[i];
+        
+        if( gizwitsProtocol.protocolTxBuff[j++] == 0xFF )
+        {
+            gizwitsProtocol.protocolTxBuff[j++] = 0x55;
+        }
+    }
+    
+    HalUARTWrite(HAL_UART_PORT_0,&gizwitsProtocol.protocolTxBuff,j);
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       根据协议生成“控制型事件”
+ * @param       [in/out]  issuedData     控制型数据
+ * @param       [in/out]  info           事件队列
+ * @param       [in/out]  dataPoints     数据点数据
+ * @return      [in/out]  bool           返回状态
+ * @note        None
+ *******************************************************************************
+ */
+static bool gizDataPoint2Event(gizwitsIssued_t *issuedData, eventInfo_t *info, dataPoint_t *dataPoints)
+{
+#if USE_MYPROTOCOL_DEBUG
     if((NULL == issuedData) || (NULL == info) ||(NULL == dataPoints))
     {
-//        GIZWITS_LOG("gizDataPoint2Event Error , Illegal Param\n");
-        return -1;
+        GIZWITS_LOG("gizDataPoint2Event Error , Illegal Param\n");
+        return false;
     }
+#endif
+
     /** 大于1字节做位序转换 **/
     if(sizeof(issuedData->attrFlags) > 1)
     {
-        if(-1 == gizByteOrderExchange((uint8 *)&issuedData->attrFlags,sizeof(attrFlags_t)))
+        if(false == gizByteOrderExchange((uint8_t *)&issuedData->attrFlags,sizeof(attrFlags_t)))
         {
-//            GIZWITS_LOG("gizByteOrderExchange Error\n");
-            return -1;
+            GIZWITS_LOG("gizByteOrderExchange Error\n");
+            return false;
         }
     }
-
-
     if(0x01 == issuedData->attrFlags.flagPacket)
     {
-        info->event[info->num] = EVENT_PACKET;
-        info->num++;
+        info->event[info->num++] = EVENT_PACKET;
         memcpy((uint8 *)dataPoints->valuePacket,issuedData->attrVals.valuePacket,sizeof(issuedData->attrVals.valuePacket));
     }
 
-    return 0;
+    return true;
 }
 
-///**
-//* @brief 对比当前数据和上次数据
-//*
-//* @param [in] cur        : 当前数据点数据
-//* @param [in] last       : 上次数据点数据
-//*
-//* @return : 0,数据无变化;1，数据有变化
-//*/
-//static int8 gizCheckReport(dataPoint_t *cur, dataPoint_t *last)
-//{
-//    int8 ret = 0;
-////    static uint32 lastReportTime = 0;
-//
-//    if((NULL == cur) || (NULL == last))
-//    {
-//        return -1;
-//    }
-//    if(0 != memcmp((uint8 *)&last->valuePacket,(uint8 *)&cur->valuePacket,sizeof(last->valuePacket)))
-//    {
-//        ret = 1;
-//    }
-//
-//
-//    return ret;
-//}
+/**
+ *******************************************************************************
+ * @brief       对比当前数据和上次数据
+ * @param       [in/out]  cur     当前数据点数据
+ * @param       [in/out]  last    上次数据点数据
+ * @return      [in/out]  bool    返回状态
+ * @note        None
+ *******************************************************************************
+ */
+static bool gizCheckReport(dataPoint_t *cur, dataPoint_t *last)
+{
+#if USE_MYPROTOCOL_DEBUG
+    if((NULL == cur) || (NULL == last))
+    {
+        GIZWITS_LOG("gizCheckReport Error , Illegal Param\n");
+        return false;
+    }
+#endif
+
+    if(!memcmp(&cur->valuePacket, &last->valuePacket, sizeof(dataPoint_t)))
+    {
+        GIZWITS_LOG("valueLED_OnOff Changed\n");
+        return true;
+    }
+
+    return false;
+}
 
 /**
-* @brief 用户数据点数据转换为机智云上报数据点数据
-*
-* @param [in]  dataPoints           : 用户数据点数据地址
-* @param [out] devStatusPtr         : 机智云上报数据点数据地址
-*
-* @return 0,正确返回;-1，错误返回
-*/
-static int8 gizDataPoints2ReportData(dataPoint_t *dataPoints , devStatus_t *devStatusPtr)
+ *******************************************************************************
+ * @brief       用户数据点数据转换为机智云上报数据点数据
+ * @param       [in/out]  dataPoints      用户数据点数据地址
+ * @param       [in/out]  devStatusPtr    机智云上报数据点数据地址
+ * @return      [in/out]  bool    返回状态
+ * @note        None
+ *******************************************************************************
+ */
+static bool gizDataPoints2ReportData(dataPoint_t *dataPoints , devStatus_t *devStatusPtr)
 {
+#if USE_MYPROTOCOL_DEBUG
     if((NULL == dataPoints) || (NULL == devStatusPtr))
     {
-//        GIZWITS_LOG("gizDataPoints2ReportData Error , Illegal Param\n");
-        return -1;
+        GIZWITS_LOG("gizDataPoints2ReportData Error , Illegal Param\n");
+        return false;
     }
+#endif
 
     memcpy((uint8 *)devStatusPtr->valuePacket,(uint8 *)&dataPoints->valuePacket,sizeof(dataPoints->valuePacket));
-    return 0;
+    
+    return true;
 }
 
 /**
-* @brief 协议头初始化
-*
-* @param [out] head         : 协议头指针
-*
-* @return 0， 执行成功， 非 0， 失败    
-*/
-static int8 gizProtocolHeadInit(protocolHead_t *head)
+ *******************************************************************************
+ * @brief       协议头初始化
+ * @param       [in/out]  head      协议头指针
+ * @return      [in/out]  bool    返回状态
+ * @note        None
+ *******************************************************************************
+ */
+static bool gizProtocolHeadInit(protocolHead_t *head)
 {
+#if USE_MYPROTOCOL_DEBUG
     if(NULL == head)
     {
-//        GIZWITS_LOG("ERROR: gizProtocolHeadInit head is empty \n");
-        return -1;
+        GIZWITS_LOG("ERROR: gizProtocolHeadInit head is empty \n");
+        return false;
     }
+#endif
 
     memset((uint8 *)head, 0, sizeof(protocolHead_t));
     head->head[0] = 0xFF;
     head->head[1] = 0xFF;
 
-    return 0;
+    return true;
 }
 
 /**
-* @brief 协议ACK校验处理函数
-*
-* @param [in] data            : 数据地址
-* @param [in] len             : 数据长度
-*
-* @return 0， 执行成功， 非 0， 失败
-*/
-static int8 gizProtocolWaitAck(uint8 *data, uint32 len)
+ *******************************************************************************
+ * @brief       协议ACK校验处理函数
+ * @param       [in/out]  data    数据地址
+ * @param       [in/out]  len     数据长度
+ * @return      [in/out]  bool    返回状态
+ * @note        None
+ *******************************************************************************
+ */
+static bool gizProtocolWaitAck(uint8 *data, uint32 len)
 {
+#if USE_MYPROTOCOL_DEBUG
     if(NULL == data)
     {
-//        GIZWITS_LOG("ERROR: data is empty \n");
-        return -1;
+        GIZWITS_LOG("gizProtocolWaitAck ERROR: data is empty \n");
+        return false;
     }
+#endif
 
     memset((uint8 *)&gizwitsProtocol.waitAck, 0, sizeof(protocolWaitAck_t));
     memcpy((uint8 *)gizwitsProtocol.waitAck.buf, data, len);
@@ -668,19 +837,18 @@ static int8 gizProtocolWaitAck(uint8 *data, uint32 len)
     gizwitsProtocol.waitAck.flag = 1;
     gizwitsProtocol.waitAck.sendTime = gizGetTimerCount();
 
-    return 0;
+    return true;
 }
 
 /**
-* @brief 协议数据重发
-
-* 校验超时且满足重发次数限制的协议数据进行重发
-
-* @param none    
-*
-* @return none
-*/
-static void gizProtocolResendData(void)
+ *******************************************************************************
+ * @brief       协议数据重发
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        校验超时且满足重发次数限制的协议数据进行重发
+ *******************************************************************************
+ */
+static void gizProtocolResendData( void )
 {
     if(0 == gizwitsProtocol.waitAck.flag)
     {
@@ -693,46 +861,53 @@ static void gizProtocolResendData(void)
 }
 
 /**
-* @brief 清除ACK协议报文
-*
-* @param [in] head : 协议头地址
-*
-* @return 0， 执行成功， 非 0， 失败
-*/
-static int8 gizProtocolWaitAckCheck(protocolHead_t *head)
+ *******************************************************************************
+ * @brief       清除ACK协议报文
+ * @param       [in/out]  head    协议头地址
+ * @return      [in/out]  void
+ * @note        校验超时且满足重发次数限制的协议数据进行重发
+ *******************************************************************************
+ */
+static bool gizProtocolWaitAckCheck(protocolHead_t *head)
 {
     protocolHead_t *waitAckHead = (protocolHead_t *)gizwitsProtocol.waitAck.buf;
 
+#if USE_MYPROTOCOL_DEBUG
     if(NULL == head)
     {
-//        GIZWITS_LOG("ERROR: data is empty \n");
-        return -1;
+        GIZWITS_LOG("ERROR: data is empty \n");
+        return false;
     }
+#endif
 
     if(waitAckHead->cmd+1 == head->cmd)
     {
         memset((uint8 *)&gizwitsProtocol.waitAck, 0, sizeof(protocolWaitAck_t));
     }
 
-    return 0;
+    return true;
 }
 
 /**
-* @brief 发送通用协议报文数据
-* 
-* @param [in] head              : 协议头指针
-*
-* @return : 有效数据长度,正确返回;-1，错误返回
-*/
-static int32 gizProtocolCommonAck(protocolHead_t *head)
+ *******************************************************************************
+ * @brief       发送通用协议报文数据
+ * @param       [in/out]  head    协议头地址
+ * @return      [in/out]  bool    执行结果
+ * @note        NONE
+ *******************************************************************************
+ */
+static bool gizProtocolCommonAck(protocolHead_t *head)
 {
     protocolCommon_t ack;
-
+	
+#if USE_MYPROTOCOL_DEBUG
     if(NULL == head)
     {
-//        GIZWITS_LOG("ERROR: gizProtocolCommonAck data is empty \n");
-        return -1;
+        GIZWITS_LOG("ERROR: gizProtocolCommonAck data is empty \n");
+        return false;
     }
+#endif
+	
     memcpy((uint8 *)&ack, (uint8 *)head, sizeof(protocolHead_t));
     ack.head.cmd = ack.head.cmd+1;
     ack.head.len = gizProtocolExchangeBytes(sizeof(protocolCommon_t)-4);
@@ -740,19 +915,18 @@ static int32 gizProtocolCommonAck(protocolHead_t *head)
 
     GIZWITS_UART_WRITE((uint8 *)&ack, sizeof(protocolCommon_t));
 
-    return sizeof(protocolCommon_t);
+    return true;
 }
 
 /**
-* @brief ACK逻辑处理函数
-
-* 发送后的协议数据进行超时判断，超时200ms进行重发，重发上限为三次
-
-* @param none 
-*
-* @return none
-*/
-static void gizProtocolAckHandle(void)
+ *******************************************************************************
+ * @brief       ACK逻辑处理函数
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        发送后的协议数据进行超时判断，超时200ms进行重发，重发上限为三次
+ *******************************************************************************
+ */
+static void gizProtocolAckHandle( void )
 {
     if(1 == gizwitsProtocol.waitAck.flag)
     {
@@ -761,8 +935,8 @@ static void gizProtocolAckHandle(void)
             //300ms未收到ACK重发
             if(SEND_MAX_TIME < (gizGetTimerCount() - gizwitsProtocol.waitAck.sendTime))
             {
-//                GIZWITS_LOG("Warning:gizProtocolResendData %d %d %d\n", gizGetTimerCount(), gizwitsProtocol.waitAck.sendTime, gizwitsProtocol.waitAck.num);
-                gizProtocolResendData();
+                GIZWITS_LOG("Warning:gizProtocolResendData %d %d %d\n", gizGetTimerCount(), gizwitsProtocol.waitAck.sendTime, gizwitsProtocol.waitAck.num);
+				gizProtocolResendData();
                 gizwitsProtocol.waitAck.num++;
             }
         }
@@ -774,21 +948,24 @@ static void gizProtocolAckHandle(void)
 }
 
 /**
-* @brief 协议4.1 WiFi模组请求设备信息
-*
-* @param head : 待发送的协议报文数据
-*
-* @return 返回有效数据长度; -1，错误返回
-*/
-static int32 gizProtocolGetDeviceInfo(protocolHead_t * head)
+ *******************************************************************************
+ * @brief       协议4.1 WiFi模组请求设备信息
+ * @param       [in/out]  head    待发送的协议报文数据
+ * @return      [in/out]  bool    执行结果
+ * @note        协议4.1 WiFi模组请求设备信息
+ *******************************************************************************
+ */
+static bool gizProtocolGetDeviceInfo(protocolHead_t * head)
 {
     protocolDeviceInfo_t deviceInfo;
-
+	
+#if USE_MYPROTOCOL_DEBUG
     if(NULL == head)
     {
-//        GIZWITS_LOG("gizProtocolGetDeviceInfo Error , Illegal Param\n");
-        return -1;
+        GIZWITS_LOG("gizProtocolGetDeviceInfo Error , Illegal Param\n");
+        return false;
     }
+#endif
 
     gizProtocolHeadInit((protocolHead_t *)&deviceInfo);
     deviceInfo.head.cmd = ACK_GET_DEVICE_INFO;
@@ -798,88 +975,114 @@ static int32 gizProtocolGetDeviceInfo(protocolHead_t * head)
     memcpy((uint8 *)deviceInfo.softVer, SOFTWARE_VERSION, 8);
     memcpy((uint8 *)deviceInfo.hardVer, HARDWARE_VERSION, 8);
     memcpy((uint8 *)deviceInfo.productKey, PRODUCT_KEY, 32);
-    memcpy((uint8 *)deviceInfo.devAttr, DEV_DEFAULT, 8);
-    deviceInfo.ninableTime = 0;
+	memset((uint8_t *)deviceInfo.devAttr, 0, 8);
+    deviceInfo.devAttr[7] |= DEV_IS_GATEWAY<<0;
+    deviceInfo.devAttr[7] |= (0x01<<1);
+    deviceInfo.ninableTime = gizProtocolExchangeBytes(NINABLETIME);
     deviceInfo.head.len = gizProtocolExchangeBytes(sizeof(protocolDeviceInfo_t)-4);
     deviceInfo.sum = gizProtocolSum((uint8 *)&deviceInfo, sizeof(protocolDeviceInfo_t));
 
     GIZWITS_UART_WRITE((uint8 *)&deviceInfo, sizeof(protocolDeviceInfo_t));
 
-    return sizeof(protocolDeviceInfo_t);
+    return true;
 }
 
 /**
-* @brief 协议4.7 非法消息通知 的处理
-
-* @param[in] head  : 协议头指针
-* @param[in] errno : 非法消息通知类型
-* @return 0， 执行成功， 非 0， 失败
-*/
-static int32 gizProtocolErrorCmd(protocolHead_t *head,errorPacketsType_t errno)
+ *******************************************************************************
+ * @brief       协议4.1 WiFi模组请求设备信息
+ * @param       [in/out]  head     协议头指针
+ * @param       [in/out]  error    非法消息通知类型
+ * @return      [in/out]  bool     执行结果
+ * @note        协议4.7 非法消息通知 的处理
+ *******************************************************************************
+ */
+static bool gizProtocolErrorCmd(protocolHead_t *head,errorPacketsType_t error)
 {
     protocolErrorType_t errorType;
-
+	
+#if USE_MYPROTOCOL_DEBUG
     if(NULL == head)
     {
-//        GIZWITS_LOG("gizProtocolErrorCmd Error , Illegal Param\n");
-        return -1;
+        GIZWITS_LOG("gizProtocolErrorCmd Error , Illegal Param\n");
+        return false;
     }
+#endif
     gizProtocolHeadInit((protocolHead_t *)&errorType);
     errorType.head.cmd = ACK_ERROR_PACKAGE;
     errorType.head.sn = head->sn;
     
     errorType.head.len = gizProtocolExchangeBytes(sizeof(protocolErrorType_t)-4);
-    errorType.error = errno;
+    errorType.error = error;
     errorType.sum = gizProtocolSum((uint8 *)&errorType, sizeof(protocolErrorType_t));
     
     GIZWITS_UART_WRITE((uint8 *)&errorType, sizeof(protocolErrorType_t));
 
-    return sizeof(protocolErrorType_t);
+    return true;
 }
 
 /**
-* @brief 协议4.4 设备MCU重置WiFi模组 的相关操作
+ *******************************************************************************
+ * @brief       对应协议 4.13 接收返回的网络时间 
+ * @param       [in/out]  head    协议头地址
+ * @return      [in/out]  bool    执行结果
+ * @note        None
+ *******************************************************************************
+ */
+static bool gizProtocolNTP(protocolHead_t *head)
+{
+#if USE_MYPROTOCOL_DEBUG
+    if(NULL == head)
+    {
+        GIZWITS_LOG("ERROR: NTP is empty \n");
+        return false;
+    }
+#endif
+    memcpy((uint8_t *)&gizwitsProtocol.TimeNTP,(uint8_t *)&((protocolUTT_t *)head)->time, sizeof(protocolTime_t));
+    gizwitsProtocol.TimeNTP.year = gizProtocolExchangeBytes(gizwitsProtocol.TimeNTP.year);
+    gizwitsProtocol.TimeNTP.ntp = gizExchangeWord(gizwitsProtocol.TimeNTP.ntp);
 
-* @param none
-* @return none
-*/
-/**@} */
+    gizwitsProtocol.NTPEvent.event[gizwitsProtocol.NTPEvent.num] = WIFI_NTP;
+    gizwitsProtocol.NTPEvent.num++;
+    
+    gizwitsProtocol.issuedFlag = GET_NTP_TYPE;
+    
+    return true
+}
 
 /**
-* @brief MCU复位函数
-
-* @param none
-* @return none
-*/
-static void mcuRestart(void)
+ *******************************************************************************
+ * @brief       设备MCU重置WiFi模组
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+static void gizProtocolReboot( void )
 {
+	GIZWITS_LOG("gizProtocolReboot\n");
+	
+    Onboard_wait(600);
+   
     Onboard_soft_reset();
 }
 
-/**@} */
-
-static void gizProtocolReboot(void)
-{
-    uint32 timeDelay = gizGetTimerCount();
-    /*Wait 600ms*/
-    while((gizGetTimerCount() - timeDelay) <= 12);
-    mcuRestart();
-}
-
 /**
-* @brief 协议 4.5 WiFi模组向设备MCU通知WiFi模组工作状态的变化
-
-* @param[in] status WiFi模组工作状态
-* @return none
-*/
-static int8 gizProtocolModuleStatus(protocolWifiStatus_t *status)
+ *******************************************************************************
+ * @brief       协议 4.5 WiFi模组向设备MCU通知WiFi模组工作状态的变化
+ * @param       [in/out]  status    WiFi模组工作状态
+ * @return      [in/out]  bool      执行结果
+ * @note        None
+ *******************************************************************************
+ */
+static bool gizProtocolModuleStatus(protocolWifiStatus_t *status)
 {
+#if USE_MYPROTOCOL_DEBUG
     if(NULL == status)
     {
         GIZWITS_LOG("gizProtocolModuleStatus Error , Illegal Param\r\n");
-        return -1;
+        return false;
     }
-
+#endif
     status->ststus.value = gizProtocolExchangeBytes(status->ststus.value);
    
     //OnBoarding mode status
@@ -889,15 +1092,27 @@ static int8 gizProtocolModuleStatus(protocolWifiStatus_t *status)
         {
             gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_SOFTAP;
             gizwitsProtocol.wifiStatusEvent.num++;
+			gizwitsProtocol.wifiStatusData.softap = 1;
             GIZWITS_LOG("on softap \n");
         }
+		else
+		{
+			gizwitsProtocol.wifiStatusData.softap = 0;
+		}
 
         if(1 == status->ststus.types.station)
         {
             gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_AIRLINK;
             gizwitsProtocol.wifiStatusEvent.num++;
+			gizwitsProtocol.wifiStatusData.station = 1;
             GIZWITS_LOG("on AirLink \n");
         }
+		else
+		{
+			gizwitsProtocol.wifiStatusData.station = 0;
+		}
+		
+		gizwitsProtocol.wifiStatusData.onboarding = 1;
     }
     else
     {
@@ -905,15 +1120,27 @@ static int8 gizProtocolModuleStatus(protocolWifiStatus_t *status)
         {
             gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_SOFTAP;
             gizwitsProtocol.wifiStatusEvent.num++;
+			gizwitsProtocol.wifiStatusData.softap = 1;
             GIZWITS_LOG("on softap \n");
         }
-
+		else
+		{
+			gizwitsProtocol.wifiStatusData.softap = 0;
+		}
+		
         if(1 == status->ststus.types.station)
         {
             gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_STATION;
             gizwitsProtocol.wifiStatusEvent.num++;
+			gizwitsProtocol.wifiStatusData.station = 1;
             GIZWITS_LOG("on AirLink \n");
         }
+		else
+		{
+			gizwitsProtocol.wifiStatusData.station = 0;
+		}
+		
+		gizwitsProtocol.wifiStatusData.onboarding = 0;
     }
 
     //binding mode status
@@ -921,12 +1148,14 @@ static int8 gizProtocolModuleStatus(protocolWifiStatus_t *status)
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_OPEN_BINDING;
         gizwitsProtocol.wifiStatusEvent.num++;
+		gizwitsProtocol.wifiStatusData.binding = 1;
         GIZWITS_LOG("in binding \n");
     }
     else
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_CLOSE_BINDING;
         gizwitsProtocol.wifiStatusEvent.num++;
+		gizwitsProtocol.wifiStatusData.binding = 0;
         GIZWITS_LOG("out binding \n");
     }
 
@@ -935,17 +1164,15 @@ static int8 gizProtocolModuleStatus(protocolWifiStatus_t *status)
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_CON_ROUTER;
         gizwitsProtocol.wifiStatusEvent.num++;
+		gizwitsProtocol.wifiStatusData.con_route = 1;
         GIZWITS_LOG("connected router \n");
     }
     else
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_DISCON_ROUTER;
         gizwitsProtocol.wifiStatusEvent.num++;
-        GIZWITS_LOG("disconnected router \n");
-        
-//        gizwitsSetMode(0x02);
-//        GIZWITS_LOG("set airlink mode! \n");
-        
+		gizwitsProtocol.wifiStatusData.con_route = 0;
+        GIZWITS_LOG("disconnected router \n"); 
     }
 
     //M2M server status
@@ -953,14 +1180,14 @@ static int8 gizProtocolModuleStatus(protocolWifiStatus_t *status)
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_CON_M2M;
         gizwitsProtocol.wifiStatusEvent.num++;
-        gizwitsProtocol.m2m_connt_status = true;
+        gizwitsProtocol.wifiStatusData.con_m2m = 1;
         GIZWITS_LOG("connected m2m \n");
     }
     else
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_DISCON_M2M;
         gizwitsProtocol.wifiStatusEvent.num++;
-        gizwitsProtocol.m2m_connt_status = false;
+        gizwitsProtocol.wifiStatusData.con_m2m = 0;
         GIZWITS_LOG("disconnected m2m \n");
     }
 
@@ -969,30 +1196,32 @@ static int8 gizProtocolModuleStatus(protocolWifiStatus_t *status)
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_CON_APP;
         gizwitsProtocol.wifiStatusEvent.num++;
-        gizwitsProtocol.app_connt_status = true;
+        gizwitsProtocol.wifiStatusData.app = 1;
         GIZWITS_LOG("app connect \n");
     }
     else
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_DISCON_APP;
         gizwitsProtocol.wifiStatusEvent.num++;
-        gizwitsProtocol.app_connt_status = false;
+        gizwitsProtocol.wifiStatusData.app = 0;
         GIZWITS_LOG("no app connect \n");
     }
 
-//    //test mode status
-//    if(1 == status->ststus.types.test)
-//    {
-//        gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_OPEN_TESTMODE;
-//        gizwitsProtocol.wifiStatusEvent.num++;
-////        GIZWITS_LOG("WiFi status: in test mode\r\n");
-//    }
-//    else
-//    {
-//        gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_CLOSE_TESTMODE;
-//        gizwitsProtocol.wifiStatusEvent.num++;
-////        GIZWITS_LOG("WiFi status: out test mode\r\n");
-//    }
+   //test mode status
+   if(1 == status->ststus.types.test)
+   {
+       gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_OPEN_TESTMODE;
+       gizwitsProtocol.wifiStatusEvent.num++;
+	   gizwitsProtocol.wifiStatusData.test = 1;
+       GIZWITS_LOG("WiFi status: in test mode\r\n");
+   }
+   else
+   {
+       gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_CLOSE_TESTMODE;
+       gizwitsProtocol.wifiStatusEvent.num++;
+	   gizwitsProtocol.wifiStatusData.test = 0;
+       GIZWITS_LOG("WiFi status: out test mode\r\n");
+   }
         
     gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_RSSI;
     gizwitsProtocol.wifiStatusEvent.num++;
@@ -1000,31 +1229,35 @@ static int8 gizProtocolModuleStatus(protocolWifiStatus_t *status)
 
     gizwitsProtocol.issuedFlag = 2;
 
-    return 0;
+    return true;
 }
 
 /**
-* @brief 协议下发数据返回ACK
-*
-* @param [in] head                  : 协议头指针
-* @param [in] data                  : 数据地址
-* @param [in] len                   : 数据长度
-*
-* @return : 有效数据长度,正确返回;-1，错误返回
-*/
-static int32 gizProtocolIssuedDataAck(protocolHead_t *head, uint8 *data, uint32 len)
+ *******************************************************************************
+ * @brief       协议下发数据返回ACK
+ * @param       [in/out] head       协议头指针
+ * @param       [in/out] data       数据地址
+ * @param       [in/out] len        数据长度
+ * @return      [in/out] bool       执行结果
+ * @note        None
+ *******************************************************************************
+ */
+static bool gizProtocolIssuedDataAck(protocolHead_t *head, uint8 *data, uint8 len)
 {
     uint8 *ptrData = NULL;
-    uint32 dataLen = 0;
+    uint8 dataLen = 0;
     protocolReport_t protocolReport;
     protocolCommon_t protocolCommon;
     protocolP0Head_t *p0Head = (protocolP0Head_t *)head;
-
+	
+#if USE_MYPROTOCOL_DEBUG
     if((NULL == head)||(NULL == data))
     {
-//        GIZWITS_LOG("gizProtocolIssuedDataAck Error , Illegal Param\n");
-        return -1;
+        GIZWITS_LOG("gizProtocolIssuedDataAck Error , Illegal Param\n");
+        return false;
     }
+#endif
+
     if(0 == len)
     {
         gizProtocolHeadInit((protocolHead_t *)&protocolCommon);
@@ -1053,27 +1286,31 @@ static int32 gizProtocolIssuedDataAck(protocolHead_t *head, uint8 *data, uint32 
     
     GIZWITS_UART_WRITE(ptrData, dataLen);
 
-    return dataLen;
+    return true;
 }
 
 /**
-* @brief 上报数据
-*
-* @param [in] action            : PO cmd
-* @param [in] data              : 数据地址
-* @param [in] len               : 数据长度
-*
-* @return : 正确返回有效数据长度;-1，错误返回
-*/
-static int32 gizReportData(uint8 action, uint8 *data, uint32 len)
+ *******************************************************************************
+ * @brief       上报数据
+ * @param       [in/out]  action     PO cmd
+ * @param       [in/out]  data       数据地址
+ * @param       [in/out]  len        数据长度
+ * @return      [in/out]  bool       执行结果
+ * @note        None
+ *******************************************************************************
+ */
+static bool gizReportData(uint8 action, uint8 *data, uint32 len)
 {
     protocolReport_t protocolReport;
-
+	
+#if USE_MYPROTOCOL_DEBUG
     if(NULL == data)
     {
-//        GIZWITS_LOG("gizReportData Error , Illegal Param\n");
-        return -1;
+        GIZWITS_LOG("gizReportData Error , Illegal Param\n");
+        return false;
     }
+#endif
+
     gizProtocolHeadInit((protocolHead_t *)&protocolReport);
     protocolReport.head.cmd = CMD_REPORT_P0;
     protocolReport.head.sn = gizwitsProtocol.sn++;
@@ -1085,83 +1322,36 @@ static int32 gizReportData(uint8 action, uint8 *data, uint32 len)
     GIZWITS_UART_WRITE((uint8 *)&protocolReport, sizeof(protocolReport_t));
 
     gizProtocolWaitAck((uint8 *)&protocolReport, sizeof(protocolReport_t));
-//    gizwitsProtocol.lastReportTime = gizGetTimerCount();
 
-    return sizeof(protocolReport_t);
+    return true;
 }
 
-///**
-//* @brief 转发
-//*
-//* @param [in] devstatus         : 数据地址
-//* @param [in] len               : 数据长度
-//*
-//* @return : 正确返回有效数据长度;-1，错误返回
-//*/
-//static int32 gizForwardData( uint8 *devstatus, uint8 len )
-//{
-//    uint8 packet[ sizeof(protocolReport_t)+sizeof(devStatus_t) ];
-//    protocolHead_t *head = (protocolHead_t *)packet;
-//    uint8 start = sizeof(protocolHead_t);
-//    uint8 i = 0;
-//    
-//    if( NULL == devstatus )
-//    {
-//        return -1;
-//    }
-//
-//    memset(packet,0,sizeof(packet));
-//    
-//    gizProtocolHeadInit(head);
-//    
-//    head->cmd = CMD_REPORT_P0;
-//    head->sn = gizwitsProtocol.sn++;
-//    head->flags[0] = 0x00;
-//    head->flags[1] = 0x00;
-//    packet[start++] = ACTION_REPORT_DEV_STATUS;
-//    
-//    for( i=0; i<len; i++ )
-//    {
-//        packet[start++] = devstatus[i];
-//        if( devstatus[i] == 0xFF )
-//        {
-//           packet[start++] = 0x55; 
-//        }
-//    }
-//    start++;
-//    head->len = gizProtocolExchangeBytes(start-4);
-//    packet[start-1] = gizProtocolSum(packet, start);
-//
-//    GIZWITS_UART_WRITE(packet, start);
-//    
-//    gizProtocolWaitAck(packet, start);
-//
-//    return len;
-//}
-
 /**
-* @brief 接收协议报文并进行相应的协议处理
-
-* Wifi模组接收来自云端或APP端下发的相关协议数据发送到MCU端，经过协议报文解析后将相关协议数据传入次函数，进行下一步的协议处理
-
-* @param[in] inData   : 输入的协议数据
-* @param[in] inLen    : 输入数据的长度
-* @param[out] outData : 输出的协议数据
-* @param[out] outLen  : 输出数据的长度
-* @return 0， 执行成功， 非 0， 失败
-*/
-static int8 gizProtocolIssuedProcess(uint8 *inData, uint32 inLen, uint8 *outData, uint32 *outLen)
+ *******************************************************************************
+ * @brief       接收协议报文并进行相应的协议处理
+ * @param       [in/out]  inData     输入的协议数据
+ * @param       [in/out]  inLen      输入数据的长度
+ * @param       [in/out]  outData    输出的协议数据
+ * @param       [in/out]  outLen     输出数据的长度
+ * @return      [in/out]  bool       执行结果
+ * @note        Wifi模组接收来自云端或APP端下发的相关协议数据发送到MCU端，经过协议报文解析后
+ * @note        将相关协议数据传入次函数，进行下一步的协议处理
+ *******************************************************************************
+ */
+static bool gizProtocolIssuedProcess(uint8 *inData, uint8 inLen, uint8 *outData, uint8 *outLen)
 {
     protocolReport_t *protocolIssuedData = (protocolReport_t *)inData;
     uint8 issuedAction = 0;
     issuedAction = protocolIssuedData->action;
-
+	
+#if USE_MYPROTOCOL_DEBUG
     if((NULL == inData)||(NULL == outData)||(NULL == outLen))
     {
-//        GIZWITS_LOG("gizProtocolIssuedProcess Error , Illegal Param\n");
-        return -1;
+		GIZWITS_LOG("gizProtocolIssuedProcess Error , Illegal Param\n");
+        return false;
     }
-    
+#endif  
+
     memset((uint8 *)&gizwitsProtocol.issuedProcessEvent, 0, sizeof(eventInfo_t));
     switch(issuedAction)
     {
@@ -1171,7 +1361,6 @@ static int8 gizProtocolIssuedProcess(uint8 *inData, uint32 inLen, uint8 *outData
             outData = NULL;
             *outLen = 0;
             break;
-        
         case ACTION_READ_DEV_STATUS:
             gizDataPoints2ReportData(&gizwitsProtocol.gizLastDataPoint,&gizwitsProtocol.reportData.devStatus);
             //memcpy((uint8 *)&gizwitsProtocol.gizLastDataPoint, (uint8 *)currentData, sizeof(dataPoint_t));
@@ -1179,307 +1368,271 @@ static int8 gizProtocolIssuedProcess(uint8 *inData, uint32 inLen, uint8 *outData
             memcpy(outData, (uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(gizwitsReport_t));
             *outLen = sizeof(gizwitsReport_t);
             break;
-        
-//        case ACTION_W2D_TRANSPARENT_DATA:
-//            memcpy(gizwitsProtocol.transparentBuff, inData+sizeof(protocolP0Head_t), inLen-sizeof(protocolP0Head_t)-1);
-//            gizwitsProtocol.transparentLen = inLen - sizeof(protocolP0Head_t) - 1;
-//            gizwitsProtocol.issuedProcessEvent.event[gizwitsProtocol.issuedProcessEvent.num] = TRANSPARENT_DATA;
-//            gizwitsProtocol.issuedProcessEvent.num++;
-//            gizwitsProtocol.issuedFlag = 3;
-//            break;
+        case ACTION_W2D_TRANSPARENT_DATA:
+           memcpy(gizwitsProtocol.transparentBuff, inData+sizeof(protocolP0Head_t), inLen-sizeof(protocolP0Head_t)-1);
+           gizwitsProtocol.transparentLen = inLen - sizeof(protocolP0Head_t) - 1;
+           gizwitsProtocol.issuedProcessEvent.event[gizwitsProtocol.issuedProcessEvent.num] = TRANSPARENT_DATA;
+           gizwitsProtocol.issuedProcessEvent.num++;
+           gizwitsProtocol.issuedFlag = 3;
+           break;
         
         default:
             break;
     }
 
-    return 0;
+    return true;
 }
 
-/**@name Gizwits 用户API接口
-* @{
-*/
-
 /**
-* @brief gizwits协议初始化接口
-
-* 用户调用该接口可以完成Gizwits协议相关初始化（包括协议相关定时器、串口的初始）
-
-* 用户可在在此接口内完成数据点的初始化状态设置
-
-* @param none
-* @return none
-*/
-void gizwitsInit(void)
+ *******************************************************************************
+ * @brief       gizwits协议初始化接口
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        用户调用该接口可以完成Gizwits协议相关初始化（包括协议相关定时器、串口的初始化）
+ * @note        用户可在在此接口内完成数据点的初始化状态设置
+ *******************************************************************************
+ */
+void gizwitsInit( void )
 {
-    pRb.rbCapacity = RB_MAX_LEN;
-    pRb.rbBuff = rbBuf;
+    pRb.rbCapacity = MAX_PACKAGE_LEN;
+    pRb.rbBuff = &gizwitsProtocol.protocolRxBuff;
     rbCreate(&pRb);
 
-    device_time.year = 16;
-    device_time.month = 1;
-    device_time.day = 1;
-    device_time.week = app_cal_week(device_time);
-    device_time.hour = 0;
-    device_time.minute = 0;
-    device_time.second = 0;
-    
-//  gizwitsSetMode(0);
-        
     memset((uint8 *)&gizwitsProtocol, 0, sizeof(gizwitsProtocol_t));
 }
 
 /**
-* @brief WiFi配置接口
-
-* 用户可以调用该接口使WiFi模组进入相应的配置模式或者复位模组
-
-* @param[in] mode 配置模式选择：0x0， 模组复位 ;0x01， SoftAp模式 ;0x02， AirLink模式
-* @return 错误命令码
-*/
-int32 gizwitsSetMode(uint8 mode)
+ *******************************************************************************
+ * @brief       WiFi配置接口
+ * @param       [in/out]  mode    配置模式选择
+ * @param                         0x00: 模组复位
+ * @param						  0x01: SoftAp模式
+ * @param						  0x02: AirLink模式
+ * @param						  0x03: 产测模式模式
+ * @param						  0x04: 允许用户绑定设备
+ * @return      [in/out]  bool    执行结果
+ * @note        用户可以调用该接口使WiFi模组进入相应的配置模式或者复位模组
+ * @note        用户可在在此接口内完成数据点的初始化状态设置
+ *******************************************************************************
+ */
+bool gizwitsSetMode(uint8 mode)
 {
-    int32 ret = 0;
     protocolCfgMode_t cfgMode;
     protocolCommon_t setDefault;
 
-    if(mode == WIFI_RESET_MODE)
+    switch(mode)
     {
-        gizProtocolHeadInit((protocolHead_t *)&setDefault);
-        setDefault.head.cmd = CMD_SET_DEFAULT;
-        setDefault.head.sn = gizwitsProtocol.sn++;
-        setDefault.head.len = gizProtocolExchangeBytes(sizeof(protocolCommon_t)-4);
-        setDefault.sum = gizProtocolSum((uint8 *)&setDefault, sizeof(protocolCommon_t));
-        GIZWITS_UART_WRITE((uint8 *)&setDefault, sizeof(protocolCommon_t));
-
-        gizProtocolWaitAck((uint8 *)&setDefault, sizeof(protocolCommon_t));
+        case WIFI_RESET_MODE:
+            gizProtocolHeadInit((protocolHead_t *)&setDefault);
+            setDefault.head.cmd = CMD_SET_DEFAULT;
+            setDefault.head.sn = gizwitsProtocol.sn++;
+            setDefault.head.len = gizProtocolExchangeBytes(sizeof(protocolCommon_t)-4);
+            setDefault.sum = gizProtocolSum((uint8 *)&setDefault, sizeof(protocolCommon_t));
+            GIZWITS_UART_WRITE((uint8 *)&setDefault, sizeof(protocolCommon_t));
+            gizProtocolWaitAck((uint8 *)&setDefault, sizeof(protocolCommon_t));   
+            break;
+        case WIFI_SOFTAP_MODE:
+            gizProtocolHeadInit((protocolHead_t *)&cfgMode);
+            cfgMode.head.cmd = CMD_WIFI_CONFIG;
+            cfgMode.head.sn = gizwitsProtocol.sn++;
+            cfgMode.cfgMode = mode;
+            cfgMode.head.len = gizProtocolExchangeBytes(sizeof(protocolCfgMode_t)-4);
+            cfgMode.sum = gizProtocolSum((uint8 *)&cfgMode, sizeof(protocolCfgMode_t));
+            GIZWITS_UART_WRITE((uint8 *)&cfgMode, sizeof(protocolCfgMode_t));
+            gizProtocolWaitAck((uint8 *)&cfgMode, sizeof(protocolCfgMode_t)); 
+            break;
+        case WIFI_AIRLINK_MODE:
+            gizProtocolHeadInit((protocolHead_t *)&cfgMode);
+            cfgMode.head.cmd = CMD_WIFI_CONFIG;
+            cfgMode.head.sn = gizwitsProtocol.sn++;
+            cfgMode.cfgMode = mode;
+            cfgMode.head.len = gizProtocolExchangeBytes(sizeof(protocolCfgMode_t)-4);
+            cfgMode.sum = gizProtocolSum((uint8 *)&cfgMode, sizeof(protocolCfgMode_t));
+            GIZWITS_UART_WRITE((uint8 *)&cfgMode, sizeof(protocolCfgMode_t));
+            gizProtocolWaitAck((uint8 *)&cfgMode, sizeof(protocolCfgMode_t)); 
+            break;
+        case WIFI_PRODUCTION_TEST:
+            gizProtocolHeadInit((protocolHead_t *)&setDefault);
+            setDefault.head.cmd = CMD_PRODUCTION_TEST;
+            setDefault.head.sn = gizwitsProtocol.sn++;
+            setDefault.head.len = gizProtocolExchangeBytes(sizeof(protocolCommon_t)-4);
+            setDefault.sum = gizProtocolSum((uint8 *)&setDefault, sizeof(protocolCommon_t));
+            GIZWITS_UART_WRITE((uint8 *)&setDefault, sizeof(protocolCommon_t));
+            gizProtocolWaitAck((uint8 *)&setDefault, sizeof(protocolCommon_t));
+            break;
+        case WIFI_NINABLE_MODE:
+            gizProtocolHeadInit((protocolHead_t *)&setDefault);
+            setDefault.head.cmd = CMD_NINABLE_MODE;
+            setDefault.head.sn = gizwitsProtocol.sn++;
+            setDefault.head.len = gizProtocolExchangeBytes(sizeof(protocolCommon_t)-4);
+            setDefault.sum = gizProtocolSum((uint8 *)&setDefault, sizeof(protocolCommon_t));
+            GIZWITS_UART_WRITE((uint8 *)&setDefault, sizeof(protocolCommon_t));
+            gizProtocolWaitAck((uint8 *)&setDefault, sizeof(protocolCommon_t));
+            break;
+        default:
+            GIZWITS_LOG("gizwitsSetMode ERROR: CfgMode error!\n");
+            break;
     }
-    else if((mode == WIFI_SOFTAP_MODE)||(mode == WIFI_AIRLINK_MODE))
-    {
-        gizProtocolHeadInit((protocolHead_t *)&cfgMode);
-        cfgMode.head.cmd = CMD_WIFI_CONFIG;
-        cfgMode.head.sn = gizwitsProtocol.sn++;
-        cfgMode.cfgMode = mode;
-        cfgMode.head.len = gizProtocolExchangeBytes(sizeof(protocolCfgMode_t)-4);
-        cfgMode.sum = gizProtocolSum((uint8 *)&cfgMode, sizeof(protocolCfgMode_t));
-        GIZWITS_UART_WRITE((uint8 *)&cfgMode, sizeof(protocolCfgMode_t));
 
-        gizProtocolWaitAck((uint8 *)&cfgMode, sizeof(protocolCfgMode_t));
-    }
-
-    return ret;
+    return true;
 }
 
 /**
-* @brief 配置WIFI模块基进入绑定模式
-
-* 用户可以调用该接口使WiFi模组进入绑定模式
-
-* @param[in] mode void
-* @return 错误命令码
-*/
-int32 gizwitsSetBind( void )
+ *******************************************************************************
+ * @brief       MCU请求获取网络时间
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        用户可以调用该接口获取网络时间
+ *******************************************************************************
+ */
+bool gizwitsGetNTP( void )
 {
-    int32 ret = 0;
     protocolCommon_t packet;
-    
-    gizProtocolHeadInit((protocolHead_t *)&packet);
-    
-    packet.head.cmd   = CMD_BIND_CONFIG;
-    packet.head.len   = gizProtocolExchangeBytes(sizeof(protocolCommon_t)-4);
-    packet.head.sn    = gizwitsProtocol.sn++;
-    packet.sum        = gizProtocolSum((uint8 *)&packet, sizeof(protocolCommon_t));
-    
-    GIZWITS_UART_WRITE((uint8 *)&packet, sizeof(protocolCommon_t));
 
-    gizProtocolWaitAck((uint8 *)&packet, sizeof(protocolCommon_t));
-        
-    return ret;
+    gizProtocolHeadInit((protocolHead_t *)&packet);
+   
+	packet.head.cmd = CMD_GET_NTP;
+    packet.head.sn = gizwitsProtocol.sn++;
+    packet.head.len = gizProtocolExchangeBytes(sizeof(protocolCommon_t)-4);
+    packet.sum = gizProtocolSum((uint8_t *)&packet, sizeof(protocolCommon_t));
+    
+	GIZWITS_UART_WRITE((uint8_t *)&packet, sizeof(protocolCommon_t));
+    
+    gizProtocolWaitAck((uint8_t *)&packet, sizeof(protocolCommon_t));
+
+    return true;
 }
 
 /**
-* @brief MCU请求获取网络时间
-
-* 用户可以调用该接口获取网络时间
-
-* @param[in] mode void
-* @return 错误命令码
-*/
-int32 gizwitsGetNetTime( void )
-{
-    int32 ret = 0;
-    protocolCommon_t packet;
-    
-    gizProtocolHeadInit((protocolHead_t *)&packet);
-    
-    packet.head.cmd   = CMD_GET_NET_TIME;
-    packet.head.len   = gizProtocolExchangeBytes(sizeof(protocolCommon_t)-4);
-    packet.head.sn    = gizwitsProtocol.sn++;
-    packet.sum        = gizProtocolSum((uint8 *)&packet, sizeof(protocolCommon_t));
-    
-    GIZWITS_UART_WRITE((uint8 *)&packet, sizeof(protocolCommon_t));
-
-    gizProtocolWaitAck((uint8 *)&packet, sizeof(protocolCommon_t));
-        
-    gizwitsProtocol.lastReportTime = gizGetTimerCount();
-    
-    return ret;
-}
-
-/**
-* @brief 获取APP连接状态
-
-* 用户可以调用检测WIFI模块与APP之间的连接状态
-
-* @param[in] void
-* @return bool
-*/
+ *******************************************************************************
+ * @brief       获取APP连接状态
+ * @param       [in/out]  void
+ * @return      [in/out]  bool    连接状态
+ * @note        用户可以调用检测WIFI模块与APP之间的连接状态
+ *******************************************************************************
+ */
 bool getGizwitsAPPStatus( void )
 {
-    return gizwitsProtocol.app_connt_status;
+    return (gizwitsProtocol.wifiStatusData.app == 1) ? (true):(false);
 }
 
 /**
-* @brief 获取M2M连接状态
-
-* 用户可以调用检测WIFI模块与云端之间的连接状态
-
-* @param[in] void
-* @return bool
-*/
+ *******************************************************************************
+ * @brief       获取M2M连接状态
+ * @param       [in/out]  void
+ * @return      [in/out]  bool    连接状态
+ * @note        用户可以调用检测WIFI模块与云端之间的连接状态
+ *******************************************************************************
+ */
 bool getGizwitsM2MStatus( void )
 {
-    return gizwitsProtocol.m2m_connt_status;
+    return (gizwitsProtocol.wifiStatusData.con_m2m == 1) ? (true):(false);
 }
 
 /**
-* @brief 刷新本地时间数据
-
-* 用户可以调用该接口刷新本地时间
-
-* @param[in] mode void
-* @return 错误命令码
-*/
-bool updateDeviceTime( ptotocolNetTime_t *packet )
+ *******************************************************************************
+ * @brief       刷新本地时间数据
+ * @param       [in/out]  *packet    带有时间信息的数据包
+ * @return      [in/out]  bool       返回状态
+ * @note        用户可以调用该接口刷新本地时间
+ *******************************************************************************
+ */
+bool gizUpdateTime( protocolUTT_t *packet )
 {
-    device_time.year = packet->time.year;
-    device_time.month = packet->time.month;
-    device_time.day = packet->time.day;
-    device_time.hour = packet->time.hour;
-    device_time.minute = packet->time.minute;
-    device_time.second = packet->time.second;
-    device_time.week = app_cal_week(device_time);
+    gizwitsProtocol.TimeNTP.year   = packet->time.year;
+    gizwitsProtocol.TimeNTP.month  = packet->time.month;
+    gizwitsProtocol.TimeNTP.day    = packet->time.day;
+    gizwitsProtocol.TimeNTP.hour   = packet->time.hour;
+    gizwitsProtocol.TimeNTP.minute = packet->time.minute;
+    gizwitsProtocol.TimeNTP.second = packet->time.second;
+    gizwitsProtocol.TimeNTP.week   = app_cal_week(gizwitsProtocol.TimeNTP);
     
     return true;
 }
 
 /**
-* @brief 获取网络时间
-
-* 用户可以调用该接口刷新本地时间
-
-* @param[in] mode void
-* @return 时间数据
-*/
-user_time *gizwitsGetTime( void )
+ *******************************************************************************
+ * @brief       获取网络时间
+ * @param       [in/out]  void 
+ * @return      [in/out]  user_time    设备时间
+ * @note        用户可以调用该接口刷新本地时间
+ *******************************************************************************
+ */
+user_time gizwitsGetTime( void )
 {
-    return &device_time;
+	user_time time;
+	
+	time.year   = gizwitsProtocol.TimeNTP.year;
+    time.month  = gizwitsProtocol.TimeNTP.month;
+    time.day    = gizwitsProtocol.TimeNTP.day;
+    time.hour   = gizwitsProtocol.TimeNTP.hour;
+    time.minute = gizwitsProtocol.TimeNTP.minute;
+    time.second = gizwitsProtocol.TimeNTP.second;
+    time.week   = app_cal_week(time);
+	
+    return time;
 }
 
 /**
-* @brief 机智云上报函数
-
-* 用户可以调用该接口上报数据
-
-* @param[in] packet 数据包
-* @return 错误命令码
-*/
-int32 gizwitsReport( uint8 *packet )
+ *******************************************************************************
+ * @brief       机智云发送数据函数
+ * @param       [in/out]  *packet 发送的数据包 
+ * @return      [in/out]  bool    发送状态
+ * @note        用户可以调用该接口刷新本地时间
+ *******************************************************************************
+ */
+bool gizwitsSendData( void *packet )
 {
-    int32 ret = 0;
-    
-//    if( packet == NULL )
-//    {
-//        return -1;
-//    }
-    
+#if USE_MYPROTOCOL_DEBUG
+   if( packet == NULL )
+   {
+       return false;
+   }
+#endif
+
     gizDataPoints2ReportData((dataPoint_t *)packet,&gizwitsProtocol.reportData.devStatus);
-//    gizForwardData((uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
+
     gizReportData(ACTION_REPORT_DEV_STATUS, (uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
 //    gizReportData(ACTION_D2W_TRANSPARENT_DATA, (uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
-    memcpy((uint8 *)&gizwitsProtocol.gizLastDataPoint, packet, sizeof(dataPoint_t));
+    
+	memcpy((uint8 *)&gizwitsProtocol.gizLastDataPoint, packet, sizeof(dataPoint_t));
         
-    return ret;
+    return true;
 }
 
-///**
-//* @brief 机智云转发函数
-//
-//* 用户可以调用该接口上报数据
-//
-//* @param[in] packet 数据包
-//* @return 错误命令码
-//*/
-//int32 gizwitsForward( uint8 *packet )
-//{
-//    int32 ret = 0;
-//    
-////    if( packet == NULL )
-////    {
-////        return -1;
-////    }
-//    
-//    gizDataPoints2ReportData((dataPoint_t *)packet,&gizwitsProtocol.reportData.devStatus);
-//    //gizReportData(ACTION_REPORT_DEV_STATUS, (uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
-//    gizForwardData((uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
-////    gizReportData(ACTION_D2W_TRANSPARENT_DATA, (uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
-//    memcpy((uint8 *)&gizwitsProtocol.gizLastDataPoint, packet, sizeof(dataPoint_t));
-//        
-//    return ret;
-//}
-
 /**
-* @brief 协议处理函数
-
-* 该函数中完成了相应协议数据的处理及数据主动上报的相关操作
-
-* @param [in] currentData 待上报的协议数据指针
-* @return none
-*/
-int32 gizwitsHandle(dataPoint_t *currentData)
+ *******************************************************************************
+ * @brief       协议处理函数
+ * @param       [in/out]  void
+ * @return      [in/out]  bool         返回状态
+ * @note        该函数中完成了相应协议数据的处理及数据主动上报的相关操作
+ *******************************************************************************
+ */
+bool gizwitsHandle( void )
 {
-    int8 ret = 0;
-//    uint16 i = 0;
-    uint8 ackData[128];
+	int8 ret = 0;
     uint16 protocolLen = 0;
-    uint32 ackLen = 0;
+    uint8 ackLen = 0;
     protocolHead_t *recvHead = NULL;
-
-    if(NULL == currentData)
-    {
-        GIZWITS_LOG("GizwitsHandle Error , Illegal Param\n");
-        return -1;
-    }
 
     /*重发机制*/
     gizProtocolAckHandle();
-    ret = gizProtocolGetOnePacket(&pRb, gizwitsProtocol.protocolBuf, &protocolLen);
+    ret = gizProtocolGetOnePacket(&pRb, &gizwitsProtocol.protocolPacket, &protocolLen);
 
     if(0 == ret)
     {
         GIZWITS_LOG("Get Packet!\n");
 
-        recvHead = (protocolHead_t *)gizwitsProtocol.protocolBuf;
+        recvHead = (protocolHead_t *)gizwitsProtocol.protocolPacket;
         switch (recvHead->cmd)
         {
             case CMD_GET_DEVICE_INTO:
                 gizProtocolGetDeviceInfo(recvHead);
-                GIZWITS_LOG("report info!\n");
                 break;
             case CMD_ISSUED_P0:
-                ret = gizProtocolIssuedProcess(gizwitsProtocol.protocolBuf, protocolLen, ackData, &ackLen);
-                if(0 == ret)
+                if(gizProtocolIssuedProcess(gizwitsProtocol.protocolPacket, protocolLen, &gizwitsProtocol.ackprotocolAckBuff, &ackLen) == true)
                 {
-                    gizProtocolIssuedDataAck(recvHead, ackData, ackLen);
+                    gizProtocolIssuedDataAck(recvHead, gizwitsProtocol.ackprotocolAckBuff, ackLen);
                 }
                 break;
             case CMD_HEARTBEAT:
@@ -1496,16 +1649,20 @@ int32 gizwitsHandle(dataPoint_t *currentData)
                 break;
             case CMD_MCU_REBOOT:
                 gizProtocolCommonAck(recvHead);
-                GIZWITS_LOG("MCU reboot!\n");
-                
                 gizProtocolReboot();
                 break;
             case CMD_ERROR_PACKAGE:
                 GIZWITS_LOG("I SEND ERROR PACKET TO GIZWITS!\n");
                 break;
-            case ACK_GET_NET_TIME:
-                updateDeviceTime((ptotocolNetTime_t *)gizwitsProtocol.protocolBuf);
-                break;
+			case ACK_PRODUCTION_TEST:
+                gizProtocolWaitAckCheck(recvHead);
+                GIZWITS_LOG("Ack PRODUCTION_MODE success \n");
+                break;  
+            case ACK_GET_NTP:
+                gizProtocolWaitAckCheck(recvHead);
+                gizProtocolNTP(recvHead);
+                GIZWITS_LOG("Ack GET_UTT success \n");
+                break;   
             default:
                 gizProtocolErrorCmd(recvHead,ERROR_CMD);
                 GIZWITS_LOG("ERROR: cmd code error!\n");
@@ -1515,42 +1672,51 @@ int32 gizwitsHandle(dataPoint_t *currentData)
     else if(-2 == ret)
     {
         //校验失败，报告异常
-        recvHead = (protocolHead_t *)gizwitsProtocol.protocolBuf;
+        recvHead = (protocolHead_t *)gizwitsProtocol.protocolPacket;
         gizProtocolErrorCmd(recvHead,ERROR_ACK_SUM);
         GIZWITS_LOG("ERROR: check sum error!\n");
-        return -2;
+        return false;
     }
     
-    if(1 == gizwitsProtocol.issuedFlag)
+	switch(gizwitsProtocol.issuedFlag)
     {
-        gizwitsProtocol.issuedFlag = 0;
-        gizwitsEventProcess(&gizwitsProtocol.issuedProcessEvent, (uint8 *)&gizwitsProtocol.gizCurrentDataPoint, sizeof(dataPoint_t));
-        memset((uint8 *)&gizwitsProtocol.issuedProcessEvent,0x0,sizeof(gizwitsProtocol.issuedProcessEvent)); 
-    }
-    else if(2 == gizwitsProtocol.issuedFlag)
-    {
-        gizwitsProtocol.issuedFlag = 0;
-        gizwitsEventProcess(&gizwitsProtocol.wifiStatusEvent, (uint8 *)&gizwitsProtocol.wifiStatusData, sizeof(moduleStatusInfo_t));
-        memset((uint8 *)&gizwitsProtocol.wifiStatusEvent,0x0,sizeof(gizwitsProtocol.wifiStatusEvent));
-    }
-//    else if(3 == gizwitsProtocol.issuedFlag)
-//    {
-//        gizwitsProtocol.issuedFlag = 0;
-//        gizwitsEventProcess(&gizwitsProtocol.issuedProcessEvent, (uint8 *)gizwitsProtocol.transparentBuff, gizwitsProtocol.transparentLen);
-//    }
-    
-//    if((1 == gizCheckReport(currentData, (dataPoint_t *)&gizwitsProtocol.gizLastDataPoint)))
-//    {
-//        GIZWITS_LOG("changed, report data\n");
-//        gizwitsReport((uint8 *)currentData);
-//    }
-    
-    if(30000 <= (gizGetTimerCount() - gizwitsProtocol.lastReportTime))
-    {
-        gizwitsGetNetTime();
+        case ACTION_CONTROL_TYPE:
+            gizwitsProtocol.issuedFlag = STATELESS_TYPE;
+            gizwitsEventProcess(&gizwitsProtocol.issuedProcessEvent, (uint8_t *)&gizwitsProtocol.gizCurrentDataPoint, sizeof(dataPoint_t));
+            memset((uint8_t *)&gizwitsProtocol.issuedProcessEvent,0x0,sizeof(gizwitsProtocol.issuedProcessEvent));  
+            break;
+        case WIFI_STATUS_TYPE:
+            gizwitsProtocol.issuedFlag = STATELESS_TYPE;
+            gizwitsEventProcess(&gizwitsProtocol.wifiStatusEvent, (uint8_t *)&gizwitsProtocol.wifiStatusData, sizeof(moduleStatusInfo_t));
+            memset((uint8_t *)&gizwitsProtocol.wifiStatusEvent,0x0,sizeof(gizwitsProtocol.wifiStatusEvent));
+            break;
+        case ACTION_W2D_TRANSPARENT_TYPE:
+            gizwitsProtocol.issuedFlag = STATELESS_TYPE;
+            gizwitsEventProcess(&gizwitsProtocol.issuedProcessEvent, (uint8_t *)gizwitsProtocol.transparentBuff, gizwitsProtocol.transparentLen);
+            break;
+        case GET_NTP_TYPE:
+            gizwitsProtocol.issuedFlag = STATELESS_TYPE;
+            gizwitsEventProcess(&gizwitsProtocol.NTPEvent, (uint8_t *)&gizwitsProtocol.TimeNTP, sizeof(protocolTime_t));
+            memset((uint8_t *)&gizwitsProtocol.NTPEvent,0x0,sizeof(gizwitsProtocol.NTPEvent));
+            break;      
     }
 
-    return 0;
+    // if(0 == (gizGetTimerCount() % (100)))
+    // {
+        // GIZWITS_LOG("Info: 600S report data\n");
+        // gizDataPoints2ReportData(currentData,&gizwitsProtocol.reportData.devStatus);
+        // gizReportData(ACTION_REPORT_DEV_STATUS, (uint8_t *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
+        // memcpy((uint8_t *)&gizwitsProtocol.gizLastDataPoint, (uint8_t *)currentData, sizeof(dataPoint_t));
+    // }    
+	
+	if(0 == (gizGetTimerCount() % (100)))
+    {
+        gizwitsGetNTP();
+	}
+
+    return true;
 }
 
-/**@} */
+/** @}*/     /** myprotocol模块 */
+
+/**********************************END OF FILE*********************************/

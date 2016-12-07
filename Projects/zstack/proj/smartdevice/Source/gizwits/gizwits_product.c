@@ -1,54 +1,65 @@
 /**
-************************************************************
-* @file         gizwits_product.c
-* @brief        Gizwits 控制协议处理,及平台相关的硬件初始化 
-* @author       Gizwits
-* @date         2016-09-05
-* @version      V03010101
-* @copyright    Gizwits
-* 
-* @note         机智云.只为智能硬件而生
-*               Gizwits Smart Cloud  for Smart Products
-*               链接|增值ֵ|开放|中立|安全|自有|自由|生态
-*               www.gizwits.com
-*
-***********************************************************/
+ ******************************************************************************
+  * @file       gizwits_product.c
+  * @author     Gizwits
+  * @par        Modify
+                    yearnext
+  * @version    V03010101
+  * @date       2016年12月1日
+  * @brief      gizwits_product 源文件
+  * @par        工作平台                                  
+  *                  CC2530
+  * @par        工作频率                                  
+  *                  32MHz
+  * @par        编译平台									                          
+  * 				 IAR
+  ******************************************************************************
+  * @note
+  * 机智云.只为智能硬件而生
+  * Gizwits Smart Cloud  for Smart Products
+  * 链接|增值ֵ|开放|中立|安全|自有|自由|生态
+  * www.gizwits.com               						                      
+  ******************************************************************************
+ */
+
+/**
+ * @defgroup gizwits_product模块
+ * @{
+ */
+
+/* Includes ------------------------------------------------------------------*/
 #include <string.h>
 #include "gizwits_product.h"
 #include "myprotocol.h"
+#include "gizwits_protocol.h"
 #include "devicelist.h"
 
-/** 用户区当前设备状态结构体*/
-extern dataPoint_t currentDataPoint;
-
-/**@name Gizwits 用户API接口
-* @{
-*/
-
+/* Exported macro ------------------------------------------------------------*/
+/* Exported types ------------------------------------------------------------*/
+/* Exported variables --------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
+/* Private typedef -----------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
+/* Private functions ---------------------------------------------------------*/
+/* Exported functions --------------------------------------------------------*/
 /**
-* @brief 事件处理接口
-
-* 说明：
-
-* 1.用户可以对WiFi模组状态的变化进行自定义的处理
-
-* 2.用户可以在该函数内添加数据点事件处理逻辑，如调用相关硬件外设的操作接口
-
-* @param[in] info : 事件队列
-* @param[in] data : 协议数据
-* @param[in] len : 协议数据长度
-* @return NULL
-* @ref gizwits_protocol.h
-*/
-int8 gizwitsEventProcess(eventInfo_t *info, uint8 *data, uint8 len)
+ *******************************************************************************
+ * @brief       事件处理接口
+ * @param       [in/out]  info    事件队列
+ * @param       [in/out]  data    协议数据
+ * @param       [in/out]  len     协议数据长度
+ * @return      [in/out]  bool    返回状态
+ * @note        None
+ *******************************************************************************
+ */
+bool gizwitsEventProcess( eventInfo_t *info, uint8 *data, uint8 len )
 {
   uint8 i = 0;
   dataPoint_t *dataPointPtr = (dataPoint_t *)data;
-//  moduleStatusInfo_t *wifiData = (moduleStatusInfo_t *)data;
 
   if((NULL == info) || (NULL == data))
   {
-    return -1;
+    return false;
   }
 
   for(i=0; i<info->num; i++)
@@ -57,10 +68,7 @@ int8 gizwitsEventProcess(eventInfo_t *info, uint8 *data, uint8 len)
     {
       case EVENT_PACKET:
         GIZWITS_LOG("Evt: EVENT_PACKET\n");
-//        memcpy((uint8 *)&currentDataPoint.valuePacket,(uint8 *)&dataPointPtr->valuePacket,sizeof(currentDataPoint.valuePacket));
-        Gizwits_Message_Handler((uint8 *)&currentDataPoint.valuePacket,(uint8 *)&dataPointPtr->valuePacket);
         break;
-
       case WIFI_SOFTAP:
         break;
       case WIFI_AIRLINK:
@@ -70,7 +78,7 @@ int8 gizwitsEventProcess(eventInfo_t *info, uint8 *data, uint8 len)
       case WIFI_CON_ROUTER:
         break;
       case WIFI_DISCON_ROUTER:
-            break;
+		break;
       case WIFI_CON_M2M:
         break;
       case WIFI_DISCON_M2M:
@@ -90,12 +98,20 @@ int8 gizwitsEventProcess(eventInfo_t *info, uint8 *data, uint8 len)
       }
       case WIFI_DISCON_APP:
         break;
-//      case TRANSPARENT_DATA:
-//        break;
+	  case WIFI_NTP:
+		gizUpdateTime((protocolUTT_t *)data);
+	    break;
+      case TRANSPARENT_DATA:
+        break;
+
       default:
         break;
     }
   }
 
-  return 0;
+  return true;
 }
+
+/** @}*/     /** gizwits_product模块 */
+
+/**********************************END OF FILE*********************************/
