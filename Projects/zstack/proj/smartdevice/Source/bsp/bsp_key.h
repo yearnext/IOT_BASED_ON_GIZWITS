@@ -176,7 +176,7 @@ extern void key_scan(void);
 extern void key_handler(void);
 
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-//extern void key1_handler(key_message_t);
+extern void key1_handler(key_message_t);
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
 extern void key1_handler(key_message_t);
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
@@ -188,7 +188,7 @@ extern void key1_handler(key_message_t);
 #endif
 
 #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-//extern void key2_handler(key_message_t);
+extern void key2_handler(key_message_t);
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
 extern void key2_handler(key_message_t);
 #elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
