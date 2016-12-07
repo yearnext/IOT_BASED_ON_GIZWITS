@@ -45,9 +45,9 @@
 #define RST_DHT11_PORT()    ( DHT11_PORT = 0 )
 #define Read_DHT11_PORT()   ( DHT11_POLARITY(DHT11_PORT) )
 // 延时功能定义
-#define DHT11_START_DELAY()     Onboard_wait(30000)
-#define DHT11_END_START_DELAY() Onboard_wait(50)
-#define DHT11_WORKING_DELAY()   Onboard_wait(40)
+#define DHT11_START_DELAY()     Onboard_wait(20000)
+#define DHT11_END_START_DELAY() Onboard_wait(40)
+#define DHT11_WORKING_DELAY()   Onboard_wait(30)
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
