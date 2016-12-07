@@ -10953,6 +10953,10 @@
       <name>$PROJ_DIR$\..\Source\hal\hal_dht11.c</name>
       <outputs>
         <tool>
+          <name>ICC8051</name>
+          <file> 96</file>
+        </tool>
+        <tool>
           <name>__cstat</name>
           <file> 43</file>
         </tool>
