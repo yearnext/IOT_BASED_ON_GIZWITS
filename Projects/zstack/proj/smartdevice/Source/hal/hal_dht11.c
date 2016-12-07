@@ -45,9 +45,9 @@
 #define RST_DHT11_PORT()    ( DHT11_PORT = 0 )
 #define Read_DHT11_PORT()   ( DHT11_POLARITY(DHT11_PORT) )
 // 延时功能定义
-#define DHT11_START_DELAY()     Onboard_wait(20000)
-#define DHT11_END_START_DELAY() Onboard_wait(40)
-#define DHT11_WORKING_DELAY()   Onboard_wait(30)
+#define DHT11_START_DELAY()     Onboard_wait(30000)
+#define DHT11_END_START_DELAY() Onboard_wait(50)
+#define DHT11_WORKING_DELAY()   Onboard_wait(40)
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -119,13 +119,12 @@ static uint8 Read_Byte_FromDHT11( void )
  * @note        None
  *******************************************************************************
  */
-DHT11_DATA_t dht11_rd_data( void )
+bool dht11_rd_data( DHT11_DATA_t *htData )
 {
     uint8 timeout = 0;
     uint8 i = 0, j = 0;
     uint8 data_cache[5];
     uint8 check_sum = 0;
-    DHT11_DATA_t dht11_data = {0xFE, 0xFD};
     
     DHT11_PORT_WrMode();
     
@@ -143,7 +142,7 @@ DHT11_DATA_t dht11_rd_data( void )
         // 检测是否存在超时现象
         if( timeout == 0 )
         {
-            return dht11_data;
+            return false;
         }
         // 等待端口被拉低
         timeout = 1;
@@ -151,7 +150,7 @@ DHT11_DATA_t dht11_rd_data( void )
         // 检测是否存在超时现象
         if( timeout == 0 )
         {
-            return dht11_data;
+            return false;
         }
         // 接收数据
         for( i=0; i<5; i++ )
@@ -167,15 +166,20 @@ DHT11_DATA_t dht11_rd_data( void )
                 
                 if( check_sum == data_cache[i] )
                 {
-                    dht11_data.hum  = data_cache[0];
-                    dht11_data.temp = data_cache[2];
-                    break;
+                    htData->hum  = data_cache[0];
+                    htData->temp = data_cache[2];
+                  
+                    return true;
+                }
+                else
+                {
+                    return false;
                 }
             }
         }
     }
     
-    return dht11_data;
+    return false;
 }
 
 /** @}*/     /* DHT11 驱动模块 */

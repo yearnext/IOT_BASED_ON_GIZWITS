@@ -38,7 +38,7 @@ typedef struct
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 extern void hal_dht11_init( void );
-extern DHT11_DATA_t dht11_rd_data( void );
+extern bool dht11_rd_data( DHT11_DATA_t* );
 
 #endif      /* __HAL_DHT11_H__ */
 

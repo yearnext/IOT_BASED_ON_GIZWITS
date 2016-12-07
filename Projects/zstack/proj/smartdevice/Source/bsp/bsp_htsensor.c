@@ -29,6 +29,13 @@
 #include "Onboard.h"
 
 /* Exported macro ------------------------------------------------------------*/
+/** 定义读取温湿度数据超时计数值 */
+#define RD_HT_DATA_TIMEOUT_COUNT (3)
+
+#define HT_SENSOR_SCAN_DELAY()   {Onboard_wait(50000);Onboard_wait(50000); \
+                                  Onboard_wait(50000);Onboard_wait(50000); \
+                                  Onboard_wait(50000);Onboard_wait(50000);}
+
 /* Exported types ------------------------------------------------------------*/
 typedef DHT11_DATA_t ht_sensor_t;
 
@@ -68,13 +75,31 @@ void ht_sensor_init(void)
  */
 void report_ht_sensor_data( void )
 {
-	ht_sensor_t ht_sensor_data = dht11_rd_data();
 	MYPROTOCOL_USER_DATA user_data;
-	
-	memcpy(&user_data.data,&ht_sensor_data,sizeof(ht_sensor_data));
-	user_data.len = sizeof(ht_sensor_data);
+    uint8 timeout = 0;
+    
+    while(1)
+    {
+        if( dht11_rd_data((DHT11_DATA_t *)&user_data.data) == true )
+        {
+            break;
+        }
+        else
+        {
+            if( timeout++ >= RD_HT_DATA_TIMEOUT_COUNT )
+            {
+                ((DHT11_DATA_t *)&user_data.data)->hum = 0xFE;
+                ((DHT11_DATA_t *)&user_data.data)->temp = 0xFE;
+                break;
+            }
+            
+            HT_SENSOR_SCAN_DELAY();
+        }
+    }
+
+	user_data.len = sizeof(DHT11_DATA_t);
 	user_data.cmd = RP_HT_SENSOR_DATA;
-	
+    
 	MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
 }
 
