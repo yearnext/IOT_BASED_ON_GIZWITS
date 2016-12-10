@@ -43,7 +43,7 @@
   #include "aps_frag.h"
 #endif
 
-#include "smart_device.h"
+#include "myiot.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -67,7 +67,7 @@ const pTaskEventHandlerFn tasksArr[] = {
 #if defined ( ZIGBEE_FREQ_AGILITY ) || defined ( ZIGBEE_PANID_CONFLICT )
   ZDNwkMgr_event_loop,
 #endif
-    SamrtDevice_ProcessEven,
+    myIotProcessEven,
 };
 
 const uint8 tasksCnt = sizeof( tasksArr ) / sizeof( tasksArr[0] );
@@ -103,7 +103,7 @@ void osalInitTasks( void )
   ZDNwkMgr_Init( taskID++ );
 #endif
 //  zcl_Init( taskID++ );
-    SmartDevice_Init( taskID++ );
+    myIotInit( taskID++ );
 
 }
 

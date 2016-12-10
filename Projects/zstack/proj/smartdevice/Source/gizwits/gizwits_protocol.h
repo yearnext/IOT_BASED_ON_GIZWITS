@@ -174,29 +174,29 @@ typedef struct
 /** wifi信号强度数值结构体 */
 typedef struct 
 {
-	uint16_t            softap:1;               ///< 表示WiFi模组所处的SOFTAP模式状态，类型为bool
-	uint16_t            station:1;              ///< 表示WiFi模组所处的STATION模式状态，类型为bool
-	uint16_t            onboarding:1;           ///< 表示WiFi模组所处的配置状态，类型为bool
-	uint16_t            binding:1;              ///< 表示WiFi模组所处的绑定状态，类型为bool
-	uint16_t            con_route:1;            ///< 表示WiFi模组与路由器的连接状态，类型为bool
-	uint16_t            con_m2m:1;              ///< 表示WiFi模组与云端m2m的状态，类型为bool
-	uint16_t            reserve1:2;             ///< 数据位补齐
-	uint16_t            rssi:3;                 ///< 表示路由的信号强度，类型为数值
-	uint16_t            app:1;                  ///< 表示WiFi模组与APP端的连接状态，类型为bool
-	uint16_t            test:1;                 ///< 表示WiFi模组所处的场测模式状态，类型为bool
-	uint16_t            reserve2:3;             ///< 数据位补齐
+	uint16 softap     : 1;               ///< 表示WiFi模组所处的SOFTAP模式状态，类型为bool
+	uint16 station    : 1;              ///< 表示WiFi模组所处的STATION模式状态，类型为bool
+	uint16 onboarding : 1;           ///< 表示WiFi模组所处的配置状态，类型为bool
+	uint16 binding    : 1;              ///< 表示WiFi模组所处的绑定状态，类型为bool
+	uint16 con_route  : 1;            ///< 表示WiFi模组与路由器的连接状态，类型为bool
+	uint16 con_m2m    : 1;              ///< 表示WiFi模组与云端m2m的状态，类型为bool
+	uint16 reserve1   : 2;             ///< 数据位补齐
+	uint16 rssi       : 3;                 ///< 表示路由的信号强度，类型为数值
+	uint16 app        : 1;                  ///< 表示WiFi模组与APP端的连接状态，类型为bool
+	uint16 test       : 1;                 ///< 表示WiFi模组所处的场测模式状态，类型为bool
+	uint16 reserve2   : 3;             ///< 数据位补齐
 }moduleStatusInfo_t;
 
 /** 协议网络时间结构体 */
 typedef struct
 {
-    uint16_t year;
-    uint8_t month;
-    uint8_t day;
-    uint8_t hour;
-    uint8_t minute;
-    uint8_t second;
-    uint32_t ntp;
+    uint16 year;
+    uint8  month;
+    uint8  day;
+    uint8  hour;
+    uint8  minute;
+    uint8  second;
+    uint32 ntp;
 }protocolNetTime_t;
 
 /** 协议命令码 */
@@ -229,8 +229,12 @@ typedef enum
     CMD_ERROR_PACKAGE               = 0x11,         ///< 命令字，对应协议：4.7 非法消息通知 中 WiFi模组回应MCU对应包序号的数据包非法
     ACK_ERROR_PACKAGE               = 0x12,         ///< 命令字，对应协议：4.7 非法消息通知 中 MCU回应WiFi模组对应包序号的数据包非法
 
-    CMD_BIND_CONFIG                 = 0x15,         ///< 命令字，对应协议：4.7 MCU通知wifi模组进入可绑定模式 中 设备MCU发送
-    ACK_BIND_CONFIG                 = 0x16,         ///< 命令字，对应协议：4.7 MCU通知wifi模组进入可绑定模式 中 WiFi模组回复
+    CMD_PRODUCTION_TEST             = 0x13,         ///< 命令字，对应协议：4.11 MCU请求WiFi模组进入产测模式 中 设备MCU发送
+    ACK_PRODUCTION_TEST             = 0x14,         ///< 命令字，对应协议：4.11 MCU请求WiFi模组进入产测模式 中 WiFi模组回复
+
+    
+    CMD_NINABLE_MODE                = 0x15,         ///< 命令字，对应协议：4.7 MCU通知wifi模组进入可绑定模式 中 设备MCU发送
+    ACK_NINABLE_MODE                = 0x16,         ///< 命令字，对应协议：4.7 MCU通知wifi模组进入可绑定模式 中 WiFi模组回复
 
     CMD_GET_NTP                     = 0x17,         ///< 命令字，对应协议：4.7 MCU请求获取网络时间 中 设备MCU发送
     ACK_GET_NTP                     = 0x18,         ///< 命令字，对应协议：4.7 MCU请求获取网络时间 中 WiFi模组回复
@@ -352,7 +356,7 @@ typedef struct
 
 /** 环形缓冲区数据结构 */
 typedef struct {
-    uint8   rbCapacity;
+    uint16  rbCapacity;
     uint8   *rbHead;
     uint8   *rbTail;
     uint8   *rbBuff;
@@ -382,17 +386,25 @@ typedef struct
     dataPoint_t gizLastDataPoint;                 ///< 上次上报的设备状态数据
     gizwitsReport_t reportData;                   ///< 协议上报实际数据
     moduleStatusInfo_t wifiStatusData;            ///< WIFI 状态信息(信号强度)
-	protocolTime_t TimeNTP;                       ///< 网络时间信息
+	protocolNetTime_t TimeNTP;                    ///< 网络时间信息
 }gizwitsProtocol_t;
 
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
+/** 输出调试信息 */
+#define GIZWITS_LOG(n) MYPROTOCOL_LOG(n)
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-/**@name Gizwits 用户API接口
-* @{
-*/
+/*
+ *@name Gizwits 用户API接口
+ * @{
+ */
+extern uint32 gizGetTimerCount(void);
+extern void gizTimer50Ms(void);
+extern void gizTimerMs(void);
+extern bool gizPutData( uint8*, uint8 );
 extern bool gizwitsHandle( void );
 extern bool gizwitsSendData( void* );
 extern user_time gizwitsGetTime( void );

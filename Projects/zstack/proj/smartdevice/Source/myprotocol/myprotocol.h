@@ -47,6 +47,9 @@ extern "C"
  * @name 定义通信相关参数
  * @{
  */
+/** 计算偏移量 */
+#define MYPROTOCOL_OFFSETOF(t,m)                 ((uint16)(&((t *)0)->m)) 
+
 /** 数据包所占内存空间 */
 #define MYPROTOCOL_PACKET_SIZE                   (sizeof(MYPROTOCOL_FORMAT_t)/sizeof(uint8))
 
@@ -54,25 +57,23 @@ extern "C"
 #define MYPROTOCOL_DEVICE_INFO_SIZE              (sizeof(MYPROTOCOL_DEVICE_INFO_t)/sizeof(uint8))
 
 /** 计算user_data在MYPROTOCOL_FORMAT_t中的偏移量 */
-#define MYPROTOCOL_USER_DATA_OFFSET              ((uint8)(&((MYPROTOCOL_FORMAT_t *)(0))->user_data))
+#define MYPROTOCOL_USER_DATA_OFFSET              MYPROTOCOL_OFFSETOF(MYPROTOCOL_FORMAT_t,user_data)
+
+/** 计算user_data各个成员的的偏移量 */
+#define MYPROTOCOL_USER_DATA_M_OFFSET(m)         MYPROTOCOL_OFFSETOF(MYPROTOCOL_USER_DATA_t,m)
 
 /** 计算cmd在MYPROTOCOL_USER_DATA_t中的偏移量 */
-#define MTPROTOCOL_USER_CMD_OFFSET               ((uint8)(&((MYPROTOCOL_USER_DATA_t *)(0))->user_data.cmd))
+#define MTPROTOCOL_USER_DATA_CMD_OFFSET          MYPROTOCOL_USER_DATA_M_OFFSET(cmd)
 
 /** 计算len在MYPROTOCOL_USER_DATA_t中的偏移量 */
-#define MYPROTOCOL_USER_DATA_LEN_OFFSET          ((uint8)(&((MYPROTOCOL_USER_DATA_t *)(0))->user_data.len))
+#define MYPROTOCOL_USER_DATA_LEN_OFFSET          MYPROTOCOL_USER_DATA_M_OFFSET(len) 
 
 /** 计算data在MYPROTOCOL_USER_DATA_t中的偏移量 */
-#define MYPROTOCOL_USER_DATA_DATA_OFFSET         ((uint8)(&((MYPROTOCOL_USER_DATA_t *)(0))->user_data.data))
+#define MYPROTOCOL_USER_DATA_DATA_OFFSET         MYPROTOCOL_USER_DATA_M_OFFSET(data) 
 
-/** 计算user_data所占内存空间大小 user_data为MYPROTOCOL_USER_DATA_t类型的结构体指针*/
-#define MYPROTOCOL_CAL_USER_DATA_SIZE(user_data) ((uint8)(MYPROTOCOL_USER_DATA_LEN_OFFSET \
-                                                          + ((MYPROTOCOL_USER_DATA_t *)(user_data))->len))
-
-/** 计算user_message所占内存空间大小 user_data为MYPROTOCOL_USER_DATA_t类型的结构体指针*/                                                          
-#define MYPROTOCOL_CAL_USER_MSG_SIZE(user_data)  ((uint8)((uint8)MYPROTOCOL_DEVICE_INFO_SIZE \
-                                                          + MYPROTOCOL_USER_DATA_LEN_OFFSET \
-                                                          + ((MYPROTOCOL_USER_DATA_t *)(user_data))->len))
+///** 计算user_data所占内存空间大小 user_data为MYPROTOCOL_USER_DATA_t类型的结构体指针*/
+//#define MYPROTOCOL_CAL_USER_DATA_SIZE(user_data) ( MYPROTOCOL_USER_DATA_LEN_OFFSET \
+//                                                  + (((MYPROTOCOL_USER_DATA_t *)user_data)->len))  
 
 /** 通讯格式 用户数据大小 */
 #define MYPROTOCOL_USER_DATA_SIZE   (18)
@@ -149,24 +150,24 @@ typedef struct
 typedef struct
 {
     uint8 id;
-    MYPROTOCOL_DEVICE_INFO *info;
+    MYPROTOCOL_DEVICE_INFO_t *info;
 }MYPROTOCOL_DEVCICE_ACK_t;
 
 /** 用户信息 */
 typedef struct
 {
-    MYPROTOCOL_DEVICE_INFO deviceInfo;
-    MYPROTOCOL_USER_DATA   userData;
+    MYPROTOCOL_DEVICE_INFO_t deviceInfo;
+    MYPROTOCOL_USER_DATA_t   userData;
 }MYPROTOCOL_USER_MESSAGE_t;
 
 /** MYPROTOCOL 格式 */
 typedef struct
 {
-    MYPROTOCOL_COMMTYPE    commtype;
-    uint8                  sn;
-    MYPROTOCOL_DEVICE_INFO device;
-    MYPROTOCOL_USER_DATA   user_data;
-    uint8                  sum;
+    MYPROTOCOL_COMMTYPE_t    commtype;
+    uint8                    sn;
+    MYPROTOCOL_DEVICE_INFO_t device;
+    MYPROTOCOL_USER_DATA_t   user_data;
+    uint8                    sum;
 }MYPROTOCOL_FORMAT_t;
 
 /**@} */
@@ -181,9 +182,9 @@ typedef struct
  * @{
  */
 #if USE_MYPROTOCOL_DEBUG
-extern bool HalMyprotocolInit( uint8* );
+extern bool MyprotocolInit( uint8* );
 #else
-extern void HalMyprotocolInit( uint8* );
+extern void MyprotocolInit( uint8* );
 #endif
 /**@} */
 

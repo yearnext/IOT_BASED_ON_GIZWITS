@@ -7904,66 +7904,12 @@
     <name>App</name>
     <group>
       <name>app</name>
-      <file>
-        <name>$PROJ_DIR$\..\Source\app\app_save.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\app\app_save.h</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\app\app_time.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\app\app_time.h</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\app\app_timer.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\app\app_timer.h</name>
-      </file>
     </group>
     <group>
       <name>bsp</name>
-      <file>
-        <name>$PROJ_DIR$\..\Source\bsp\bsp_curtain.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\bsp\bsp_curtain.h</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\bsp\bsp_htsensor.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\bsp\bsp_htsensor.h</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\bsp\bsp_key.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\bsp\bsp_key.h</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\bsp\bsp_light.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\bsp\bsp_light.h</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\bsp\bsp_socket.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\bsp\bsp_socket.h</name>
-      </file>
     </group>
     <group>
       <name>DeviceList</name>
-      <file>
-        <name>$PROJ_DIR$\..\Source\devicelist\devicelist.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\devicelist\devicelist.h</name>
-      </file>
     </group>
     <group>
       <name>Gizwits</name>
@@ -7982,29 +7928,14 @@
     </group>
     <group>
       <name>hal</name>
+    </group>
+    <group>
+      <name>myiot</name>
       <file>
-        <name>$PROJ_DIR$\..\Source\hal\hal_dht11.c</name>
+        <name>$PROJ_DIR$\..\Source\app\myiot.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\hal\hal_dht11.h</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\hal\hal_ds1302.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\hal\hal_ds1302.h</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\hal\mcu_adc.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\hal\mcu_adc.h</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\hal\mcu_timer.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\hal\mcu_timer.h</name>
+        <name>$PROJ_DIR$\..\Source\app\myiot.h</name>
       </file>
     </group>
     <group>
@@ -8018,12 +7949,6 @@
     </group>
     <file>
       <name>$PROJ_DIR$\..\Source\app\OSAL_Init.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\app\smart_device.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\app\smart_device.h</name>
     </file>
   </group>
   <group>

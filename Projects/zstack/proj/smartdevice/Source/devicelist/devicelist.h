@@ -45,7 +45,7 @@ typedef enum
 
 typedef struct
 {
-    MYPROTOCOL_DEVICE_INFO device;
+    MYPROTOCOL_DEVICE_INFO_t device;
 	uint8 tick;
 }DEVICE_INFO;
 

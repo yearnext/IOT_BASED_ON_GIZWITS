@@ -34,8 +34,6 @@
 #include "Onboard.h"
 
 /* Exported macro ------------------------------------------------------------*/
-#define GIZWITS_LOG(n) MYPROTOCOL_LOG(n)
-
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -71,30 +69,30 @@ static bool rbCreate( rb_t* rb )
     return true;
 }
 
-/**
- *******************************************************************************
- * @brief       环形缓冲区删除函数
- * @param       [in/out]  *rb         指向环形缓冲区的指针
- * @return      [in/out]  bool        返回状态
- * @note        None
- *******************************************************************************
- */
-static bool rbDelete( rb_t* rb )
-{
-#if USE_MYPROTOCOL_DEBUG
-    if(NULL == rb)
-    {
-        GIZWITS_LOG("rbDelete ERROR: input rb is NULL\n");
-        return false;
-    }
-#endif
-    rb->rbBuff = NULL;
-    rb->rbHead = NULL;
-    rb->rbTail = NULL;
-    rb->rbCapacity = 0;
-    
-    return true;
-}
+///**
+// *******************************************************************************
+// * @brief       环形缓冲区删除函数
+// * @param       [in/out]  *rb         指向环形缓冲区的指针
+// * @return      [in/out]  bool        返回状态
+// * @note        None
+// *******************************************************************************
+// */
+//static bool rbDelete( rb_t* rb )
+//{
+//#if USE_MYPROTOCOL_DEBUG
+//    if(NULL == rb)
+//    {
+//        GIZWITS_LOG("rbDelete ERROR: input rb is NULL\n");
+//        return false;
+//    }
+//#endif
+//    rb->rbBuff = NULL;
+//    rb->rbHead = NULL;
+//    rb->rbTail = NULL;
+//    rb->rbCapacity = 0;
+//    
+//    return true;
+//}
 
 /**
  *******************************************************************************
@@ -254,7 +252,7 @@ static uint8 rbWrite( rb_t *rb, const void *data, uint8 count )
 
     if ( count >= rbCanWrite(rb) )
     {
-        GIZWITS_LOG("rbWrite ERROR: no memory %d \n", rbCanWrite(rb));
+        GIZWITS_LOG("rbWrite ERROR: no memory \n");
         return 0;
     }
 
@@ -307,7 +305,7 @@ bool gizPutData( uint8 *buf, uint8 len )
         GIZWITS_LOG("gizPutData ERROR: gizPutData buf is empty \n");
         return false;
     }
-
+#endif
     if( rbWrite(&pRb, buf, len) != len )
     {
         GIZWITS_LOG("gizPutData ERROR: Failed to rbWrite \n");
@@ -477,11 +475,10 @@ static bool gizByteOrderExchange( uint8 *buf, uint8 dataLen )
 static int8 gizProtocolGetOnePacket( rb_t *rb, uint8 *data, uint8 *len )
 {
 	static uint8 lastData = 0;
-	static uint8 *buffdata = data;
+	static uint8 dataLen = 0;
 	
 	uint8 nowData = 0;
-	uint8 dataLen = buffdata - data;
-	uint8 packetLen = 0;
+	uint16 packetLen = 0;
 	
 #if USE_MYPROTOCOL_DEBUG
     if((NULL == rb) || (NULL == data) ||(NULL == len))
@@ -495,15 +492,10 @@ static int8 gizProtocolGetOnePacket( rb_t *rb, uint8 *data, uint8 *len )
 	{
 		if( lastData == 0xFF && nowData == 0xFF )
 		{
-			buffdata = data;
-			
-			*buffdata = 0xFF;
-			buffdata++;
-			
-			*buffdata = 0xFF;
-			buffdata++;
-			
-			dataLen = 2;
+            dataLen = 0;
+            
+			data[dataLen++] = 0xFF;
+			data[dataLen++] = 0xFF;
 		}
 		else if( lastData == 0xFF && nowData == 0x55 )
 		{
@@ -512,21 +504,19 @@ static int8 gizProtocolGetOnePacket( rb_t *rb, uint8 *data, uint8 *len )
 		{
 			if( dataLen >= 2 )
 			{
-				*buffdata = nowData;
-				buffdata++;
-				
-				dataLen = buffdata - data;
+				data[dataLen++] = nowData;
+                
 				if( dataLen > 4 )
 				{
-					packetLen = gizProtocolExchangeBytes(((protocolHead_t *)buffdata)->len)+4;
+					packetLen = gizProtocolExchangeBytes(((protocolHead_t *)data)->len)+4;
 
 					if( dataLen == packetLen )
 					{
-						buffdata = data;
 						*len = packetLen;
+                        dataLen = 0;
 						lastData = 0;
 						
-						if( gizProtocolSum(buffdata, dataLen) == buffdata[dataLen-1] )
+						if( gizProtocolSum(data, packetLen) == data[packetLen-1] )
 						{
 							return 0;
 						}
@@ -539,10 +529,11 @@ static int8 gizProtocolGetOnePacket( rb_t *rb, uint8 *data, uint8 *len )
 			}
 			else
 			{
-				buffdata = data;
+				lastData = 0;
+                dataLen = 0;
 			}
 		}
-		lastData = rdData;
+		lastData = nowData;
 	}
 	
 	return -1;
@@ -558,19 +549,19 @@ static int8 gizProtocolGetOnePacket( rb_t *rb, uint8 *data, uint8 *len )
 *
 * @return : 0,正确返回;-1，错误返回;-2，数据校验失败
 */
-static int8_t gizProtocolGetOnePacket(rb_t *rb, uint8_t *data, uint16_t *len)
+static int8_t gizProtocolGetOnePacket(rb_t *rb, uint8 *data, uint16_t *len)
 {
-    uint8_t ret = 0;
-    uint8_t sum = 0;
-    uint8_t i = 0;
-    uint8_t tmpData;
-    uint8_t tmpLen = 0;
+    uint8 ret = 0;
+    uint8 sum = 0;
+    uint8 i = 0;
+    uint8 tmpData;
+    uint8 tmpLen = 0;
     uint16_t tmpCount = 0;
-    static uint8_t protocolFlag = 0;
+    static uint8 protocolFlag = 0;
     static uint16_t protocolCount = 0;
-    static uint8_t lastData = 0;
-    static uint8_t debugCount = 0;
-    uint8_t *protocolBuff = data;
+    static uint8 lastData = 0;
+    static uint8 debugCount = 0;
+    uint8 *protocolBuff = data;
     protocolHead_t *head = NULL;
 
     if((NULL == rb) || (NULL == data) ||(NULL == len))
@@ -662,7 +653,6 @@ static int8_t gizProtocolGetOnePacket(rb_t *rb, uint8_t *data, uint16_t *len)
 }
 
 #endif 
-}
 
 /**
  *******************************************************************************
@@ -691,7 +681,7 @@ bool GIZWITS_UART_WRITE( uint8 *data, uint8 len )
         }
     }
     
-    HalUARTWrite(HAL_UART_PORT_0,&gizwitsProtocol.protocolTxBuff,j);
+    HalUARTWrite(HAL_UART_PORT_0,(uint8 *)&gizwitsProtocol.protocolTxBuff,j);
     
     return true;
 }
@@ -719,7 +709,7 @@ static bool gizDataPoint2Event(gizwitsIssued_t *issuedData, eventInfo_t *info, d
     /** 大于1字节做位序转换 **/
     if(sizeof(issuedData->attrFlags) > 1)
     {
-        if(false == gizByteOrderExchange((uint8_t *)&issuedData->attrFlags,sizeof(attrFlags_t)))
+        if(false == gizByteOrderExchange((uint8 *)&issuedData->attrFlags,sizeof(attrFlags_t)))
         {
             GIZWITS_LOG("gizByteOrderExchange Error\n");
             return false;
@@ -734,33 +724,33 @@ static bool gizDataPoint2Event(gizwitsIssued_t *issuedData, eventInfo_t *info, d
     return true;
 }
 
-/**
- *******************************************************************************
- * @brief       对比当前数据和上次数据
- * @param       [in/out]  cur     当前数据点数据
- * @param       [in/out]  last    上次数据点数据
- * @return      [in/out]  bool    返回状态
- * @note        None
- *******************************************************************************
- */
-static bool gizCheckReport(dataPoint_t *cur, dataPoint_t *last)
-{
-#if USE_MYPROTOCOL_DEBUG
-    if((NULL == cur) || (NULL == last))
-    {
-        GIZWITS_LOG("gizCheckReport Error , Illegal Param\n");
-        return false;
-    }
-#endif
-
-    if(!memcmp(&cur->valuePacket, &last->valuePacket, sizeof(dataPoint_t)))
-    {
-        GIZWITS_LOG("valueLED_OnOff Changed\n");
-        return true;
-    }
-
-    return false;
-}
+///**
+// *******************************************************************************
+// * @brief       对比当前数据和上次数据
+// * @param       [in/out]  cur     当前数据点数据
+// * @param       [in/out]  last    上次数据点数据
+// * @return      [in/out]  bool    返回状态
+// * @note        None
+// *******************************************************************************
+// */
+//static bool gizCheckReport(dataPoint_t *cur, dataPoint_t *last)
+//{
+//#if USE_MYPROTOCOL_DEBUG
+//    if((NULL == cur) || (NULL == last))
+//    {
+//        GIZWITS_LOG("gizCheckReport Error , Illegal Param\n");
+//        return false;
+//    }
+//#endif
+//
+//    if(!memcmp(&cur->valuePacket, &last->valuePacket, sizeof(dataPoint_t)))
+//    {
+//        GIZWITS_LOG("valueLED_OnOff Changed\n");
+//        return true;
+//    }
+//
+//    return false;
+//}
 
 /**
  *******************************************************************************
@@ -935,8 +925,7 @@ static void gizProtocolAckHandle( void )
             //300ms未收到ACK重发
             if(SEND_MAX_TIME < (gizGetTimerCount() - gizwitsProtocol.waitAck.sendTime))
             {
-                GIZWITS_LOG("Warning:gizProtocolResendData %d %d %d\n", gizGetTimerCount(), gizwitsProtocol.waitAck.sendTime, gizwitsProtocol.waitAck.num);
-				gizProtocolResendData();
+                gizProtocolResendData();
                 gizwitsProtocol.waitAck.num++;
             }
         }
@@ -975,7 +964,7 @@ static bool gizProtocolGetDeviceInfo(protocolHead_t * head)
     memcpy((uint8 *)deviceInfo.softVer, SOFTWARE_VERSION, 8);
     memcpy((uint8 *)deviceInfo.hardVer, HARDWARE_VERSION, 8);
     memcpy((uint8 *)deviceInfo.productKey, PRODUCT_KEY, 32);
-	memset((uint8_t *)deviceInfo.devAttr, 0, 8);
+	memset((uint8 *)deviceInfo.devAttr, 0, 8);
     deviceInfo.devAttr[7] |= DEV_IS_GATEWAY<<0;
     deviceInfo.devAttr[7] |= (0x01<<1);
     deviceInfo.ninableTime = gizProtocolExchangeBytes(NINABLETIME);
@@ -1037,7 +1026,7 @@ static bool gizProtocolNTP(protocolHead_t *head)
         return false;
     }
 #endif
-    memcpy((uint8_t *)&gizwitsProtocol.TimeNTP,(uint8_t *)&((protocolUTT_t *)head)->time, sizeof(protocolTime_t));
+    memcpy((uint8 *)&gizwitsProtocol.TimeNTP,(uint8 *)&((protocolUTT_t *)head)->time, sizeof(gizwitsProtocol.TimeNTP));
     gizwitsProtocol.TimeNTP.year = gizProtocolExchangeBytes(gizwitsProtocol.TimeNTP.year);
     gizwitsProtocol.TimeNTP.ntp = gizExchangeWord(gizwitsProtocol.TimeNTP.ntp);
 
@@ -1046,7 +1035,7 @@ static bool gizProtocolNTP(protocolHead_t *head)
     
     gizwitsProtocol.issuedFlag = GET_NTP_TYPE;
     
-    return true
+    return true;
 }
 
 /**
@@ -1083,12 +1072,12 @@ static bool gizProtocolModuleStatus(protocolWifiStatus_t *status)
         return false;
     }
 #endif
-    status->ststus.value = gizProtocolExchangeBytes(status->ststus.value);
+    status->status.value = gizProtocolExchangeBytes(status->status.value);
    
     //OnBoarding mode status
-    if(1 == status->ststus.types.onboarding)
+    if(1 == status->status.types.onboarding)
     {
-        if(1 == status->ststus.types.softap)
+        if(1 == status->status.types.softap)
         {
             gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_SOFTAP;
             gizwitsProtocol.wifiStatusEvent.num++;
@@ -1100,7 +1089,7 @@ static bool gizProtocolModuleStatus(protocolWifiStatus_t *status)
 			gizwitsProtocol.wifiStatusData.softap = 0;
 		}
 
-        if(1 == status->ststus.types.station)
+        if(1 == status->status.types.station)
         {
             gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_AIRLINK;
             gizwitsProtocol.wifiStatusEvent.num++;
@@ -1116,7 +1105,7 @@ static bool gizProtocolModuleStatus(protocolWifiStatus_t *status)
     }
     else
     {
-        if(1 == status->ststus.types.softap)
+        if(1 == status->status.types.softap)
         {
             gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_SOFTAP;
             gizwitsProtocol.wifiStatusEvent.num++;
@@ -1128,7 +1117,7 @@ static bool gizProtocolModuleStatus(protocolWifiStatus_t *status)
 			gizwitsProtocol.wifiStatusData.softap = 0;
 		}
 		
-        if(1 == status->ststus.types.station)
+        if(1 == status->status.types.station)
         {
             gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_STATION;
             gizwitsProtocol.wifiStatusEvent.num++;
@@ -1144,7 +1133,7 @@ static bool gizProtocolModuleStatus(protocolWifiStatus_t *status)
     }
 
     //binding mode status
-    if(1 == status->ststus.types.binding)
+    if(1 == status->status.types.binding)
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_OPEN_BINDING;
         gizwitsProtocol.wifiStatusEvent.num++;
@@ -1160,7 +1149,7 @@ static bool gizProtocolModuleStatus(protocolWifiStatus_t *status)
     }
 
     //router status
-    if(1 == status->ststus.types.con_route)
+    if(1 == status->status.types.con_route)
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_CON_ROUTER;
         gizwitsProtocol.wifiStatusEvent.num++;
@@ -1176,7 +1165,7 @@ static bool gizProtocolModuleStatus(protocolWifiStatus_t *status)
     }
 
     //M2M server status
-    if(1 == status->ststus.types.con_m2m)
+    if(1 == status->status.types.con_m2m)
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_CON_M2M;
         gizwitsProtocol.wifiStatusEvent.num++;
@@ -1192,7 +1181,7 @@ static bool gizProtocolModuleStatus(protocolWifiStatus_t *status)
     }
 
     //APP status
-    if(1 == status->ststus.types.app)
+    if(1 == status->status.types.app)
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_CON_APP;
         gizwitsProtocol.wifiStatusEvent.num++;
@@ -1208,7 +1197,7 @@ static bool gizProtocolModuleStatus(protocolWifiStatus_t *status)
     }
 
    //test mode status
-   if(1 == status->ststus.types.test)
+   if(1 == status->status.types.test)
    {
        gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_OPEN_TESTMODE;
        gizwitsProtocol.wifiStatusEvent.num++;
@@ -1225,7 +1214,7 @@ static bool gizProtocolModuleStatus(protocolWifiStatus_t *status)
         
     gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_RSSI;
     gizwitsProtocol.wifiStatusEvent.num++;
-    gizwitsProtocol.wifiStatusData.rssi = status->ststus.types.rssi;
+    gizwitsProtocol.wifiStatusData.rssi = status->status.types.rssi;
 
     gizwitsProtocol.issuedFlag = 2;
 
@@ -1369,13 +1358,12 @@ static bool gizProtocolIssuedProcess(uint8 *inData, uint8 inLen, uint8 *outData,
             *outLen = sizeof(gizwitsReport_t);
             break;
         case ACTION_W2D_TRANSPARENT_DATA:
-           memcpy(gizwitsProtocol.transparentBuff, inData+sizeof(protocolP0Head_t), inLen-sizeof(protocolP0Head_t)-1);
-           gizwitsProtocol.transparentLen = inLen - sizeof(protocolP0Head_t) - 1;
-           gizwitsProtocol.issuedProcessEvent.event[gizwitsProtocol.issuedProcessEvent.num] = TRANSPARENT_DATA;
-           gizwitsProtocol.issuedProcessEvent.num++;
-           gizwitsProtocol.issuedFlag = 3;
+//           memcpy(gizwitsProtocol.transparentBuff, inData+sizeof(protocolP0Head_t), inLen-sizeof(protocolP0Head_t)-1);
+//           gizwitsProtocol.transparentLen = inLen - sizeof(protocolP0Head_t) - 1;
+//           gizwitsProtocol.issuedProcessEvent.event[gizwitsProtocol.issuedProcessEvent.num] = TRANSPARENT_DATA;
+//           gizwitsProtocol.issuedProcessEvent.num++;
+//           gizwitsProtocol.issuedFlag = 3;
            break;
-        
         default:
             break;
     }
@@ -1395,7 +1383,7 @@ static bool gizProtocolIssuedProcess(uint8 *inData, uint8 inLen, uint8 *outData,
 void gizwitsInit( void )
 {
     pRb.rbCapacity = MAX_PACKAGE_LEN;
-    pRb.rbBuff = &gizwitsProtocol.protocolRxBuff;
+    pRb.rbBuff = (uint8 *)&gizwitsProtocol.protocolRxBuff;
     rbCreate(&pRb);
 
     memset((uint8 *)&gizwitsProtocol, 0, sizeof(gizwitsProtocol_t));
@@ -1494,11 +1482,11 @@ bool gizwitsGetNTP( void )
 	packet.head.cmd = CMD_GET_NTP;
     packet.head.sn = gizwitsProtocol.sn++;
     packet.head.len = gizProtocolExchangeBytes(sizeof(protocolCommon_t)-4);
-    packet.sum = gizProtocolSum((uint8_t *)&packet, sizeof(protocolCommon_t));
+    packet.sum = gizProtocolSum((uint8 *)&packet, sizeof(protocolCommon_t));
     
-	GIZWITS_UART_WRITE((uint8_t *)&packet, sizeof(protocolCommon_t));
+	GIZWITS_UART_WRITE((uint8 *)&packet, sizeof(protocolCommon_t));
     
-    gizProtocolWaitAck((uint8_t *)&packet, sizeof(protocolCommon_t));
+    gizProtocolWaitAck((uint8 *)&packet, sizeof(protocolCommon_t));
 
     return true;
 }
@@ -1545,7 +1533,6 @@ bool gizUpdateTime( protocolUTT_t *packet )
     gizwitsProtocol.TimeNTP.hour   = packet->time.hour;
     gizwitsProtocol.TimeNTP.minute = packet->time.minute;
     gizwitsProtocol.TimeNTP.second = packet->time.second;
-    gizwitsProtocol.TimeNTP.week   = app_cal_week(gizwitsProtocol.TimeNTP);
     
     return true;
 }
@@ -1611,13 +1598,13 @@ bool gizwitsSendData( void *packet )
 bool gizwitsHandle( void )
 {
 	int8 ret = 0;
-    uint16 protocolLen = 0;
+    uint8 protocolLen = 0;
     uint8 ackLen = 0;
     protocolHead_t *recvHead = NULL;
 
     /*重发机制*/
     gizProtocolAckHandle();
-    ret = gizProtocolGetOnePacket(&pRb, &gizwitsProtocol.protocolPacket, &protocolLen);
+    ret = gizProtocolGetOnePacket(&pRb, (uint8 *)&gizwitsProtocol.protocolPacket, &protocolLen);
 
     if(0 == ret)
     {
@@ -1630,9 +1617,9 @@ bool gizwitsHandle( void )
                 gizProtocolGetDeviceInfo(recvHead);
                 break;
             case CMD_ISSUED_P0:
-                if(gizProtocolIssuedProcess(gizwitsProtocol.protocolPacket, protocolLen, &gizwitsProtocol.ackprotocolAckBuff, &ackLen) == true)
+                if(gizProtocolIssuedProcess((uint8 *)&gizwitsProtocol.protocolPacket, protocolLen, (uint8 *)&gizwitsProtocol.protocolAckBuff, &ackLen) == true)
                 {
-                    gizProtocolIssuedDataAck(recvHead, gizwitsProtocol.ackprotocolAckBuff, ackLen);
+                    gizProtocolIssuedDataAck(recvHead, (uint8 *)&gizwitsProtocol.protocolAckBuff, ackLen);
                 }
                 break;
             case CMD_HEARTBEAT:
@@ -1682,22 +1669,22 @@ bool gizwitsHandle( void )
     {
         case ACTION_CONTROL_TYPE:
             gizwitsProtocol.issuedFlag = STATELESS_TYPE;
-            gizwitsEventProcess(&gizwitsProtocol.issuedProcessEvent, (uint8_t *)&gizwitsProtocol.gizCurrentDataPoint, sizeof(dataPoint_t));
-            memset((uint8_t *)&gizwitsProtocol.issuedProcessEvent,0x0,sizeof(gizwitsProtocol.issuedProcessEvent));  
+            gizwitsEventProcess(&gizwitsProtocol.issuedProcessEvent, (uint8 *)&gizwitsProtocol.gizCurrentDataPoint, sizeof(dataPoint_t));
+            memset((uint8 *)&gizwitsProtocol.issuedProcessEvent,0x0,sizeof(gizwitsProtocol.issuedProcessEvent));  
             break;
         case WIFI_STATUS_TYPE:
             gizwitsProtocol.issuedFlag = STATELESS_TYPE;
-            gizwitsEventProcess(&gizwitsProtocol.wifiStatusEvent, (uint8_t *)&gizwitsProtocol.wifiStatusData, sizeof(moduleStatusInfo_t));
-            memset((uint8_t *)&gizwitsProtocol.wifiStatusEvent,0x0,sizeof(gizwitsProtocol.wifiStatusEvent));
+            gizwitsEventProcess(&gizwitsProtocol.wifiStatusEvent, (uint8 *)&gizwitsProtocol.wifiStatusData, sizeof(moduleStatusInfo_t));
+            memset((uint8 *)&gizwitsProtocol.wifiStatusEvent,0x0,sizeof(gizwitsProtocol.wifiStatusEvent));
             break;
         case ACTION_W2D_TRANSPARENT_TYPE:
-            gizwitsProtocol.issuedFlag = STATELESS_TYPE;
-            gizwitsEventProcess(&gizwitsProtocol.issuedProcessEvent, (uint8_t *)gizwitsProtocol.transparentBuff, gizwitsProtocol.transparentLen);
+//            gizwitsProtocol.issuedFlag = STATELESS_TYPE;
+//            gizwitsEventProcess(&gizwitsProtocol.issuedProcessEvent, (uint8 *)gizwitsProtocol.transparentBuff, gizwitsProtocol.transparentLen);
             break;
         case GET_NTP_TYPE:
             gizwitsProtocol.issuedFlag = STATELESS_TYPE;
-            gizwitsEventProcess(&gizwitsProtocol.NTPEvent, (uint8_t *)&gizwitsProtocol.TimeNTP, sizeof(protocolTime_t));
-            memset((uint8_t *)&gizwitsProtocol.NTPEvent,0x0,sizeof(gizwitsProtocol.NTPEvent));
+            gizwitsEventProcess(&gizwitsProtocol.NTPEvent, (uint8 *)&gizwitsProtocol.TimeNTP, sizeof(gizwitsProtocol.TimeNTP));
+            memset((uint8 *)&gizwitsProtocol.NTPEvent,0x0,sizeof(gizwitsProtocol.NTPEvent));
             break;      
     }
 
@@ -1705,8 +1692,8 @@ bool gizwitsHandle( void )
     // {
         // GIZWITS_LOG("Info: 600S report data\n");
         // gizDataPoints2ReportData(currentData,&gizwitsProtocol.reportData.devStatus);
-        // gizReportData(ACTION_REPORT_DEV_STATUS, (uint8_t *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
-        // memcpy((uint8_t *)&gizwitsProtocol.gizLastDataPoint, (uint8_t *)currentData, sizeof(dataPoint_t));
+        // gizReportData(ACTION_REPORT_DEV_STATUS, (uint8 *)&gizwitsProtocol.reportData.devStatus, sizeof(devStatus_t));
+        // memcpy((uint8 *)&gizwitsProtocol.gizLastDataPoint, (uint8 *)currentData, sizeof(dataPoint_t));
     // }    
 	
 	if(0 == (gizGetTimerCount() % (100)))

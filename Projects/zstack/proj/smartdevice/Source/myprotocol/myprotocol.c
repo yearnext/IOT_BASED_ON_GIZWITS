@@ -28,6 +28,8 @@
 #include "AF.h"
 #include "onBoard.h"
 #include <string.h>
+#include "aps_groups.h"
+#include "gizwits_protocol.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -106,9 +108,9 @@ static afAddrType_t DeviceDstAddr;
  * @note        None
  *******************************************************************************
  */
-bool HalMyprotocolInit( uint8 *taskId )
+bool MyprotocolInit( uint8 *taskId )
 {
-	if( task_id == NULL )
+	if( taskId == NULL )
 	{
 		return false;
 	}
@@ -117,7 +119,7 @@ bool HalMyprotocolInit( uint8 *taskId )
     DeviceTransID = 0;
 	
 	/** 初始化目标接收地址 */
-	memset(&DeviceDstAddr.addr.extaddr,0,sizeof(DeviceDstAddr.addr.extaddr));
+	memset(&DeviceDstAddr.addr,0,sizeof(DeviceDstAddr.addr));
 	DeviceDstAddr.addrMode = afAddr64Bit;
     DeviceDstAddr.endPoint = DeviceEndPoint;
 	
@@ -163,7 +165,7 @@ void MyprotocolPutLog( uint8 *log, uint16 size )
  * @note        None
  *******************************************************************************
  */
-void HalMyprotocolInit( uint8 *taskId )
+void MyprotocolInit( uint8 *taskId )
 {
 	/** 初始化发送ID */
     DeviceTransID = 0;
@@ -188,6 +190,16 @@ void HalMyprotocolInit( uint8 *taskId )
 
 #endif
 
+static uint8 MyprotocolCalUserDataSize( MYPROTOCOL_USER_DATA_t *packet )
+{
+    return MYPROTOCOL_USER_DATA_DATA_OFFSET + packet->len;
+}
+
+static uint8 MyprotocolCalPacketDataSize( MYPROTOCOL_FORMAT_t *packet )
+{
+    return MYPROTOCOL_USER_DATA_OFFSET + MyprotocolCalUserDataSize( &packet->user_data );
+}
+
 /**
  *******************************************************************************
  * @brief       计算数据包的校验和
@@ -201,11 +213,11 @@ static uint8 MyprotocolCalChecksum( uint8 *packet )
     uint8 i;
     
     /** 计算有效数据数量 */
-    uint8 num = MYPROTOCOL_USER_DATA_LEN_OFFSET+packet[MYPROTOCOL_USER_DATA_LEN_OFFSET];
+    uint8 num = MyprotocolCalPacketDataSize((MYPROTOCOL_FORMAT_t *)packet);
     
     uint8 checksum;
 
-#USE_MYPROTOCOL_DEBUG
+#if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
     {
         MYPROTOCOL_LOG("cal check sum func intput param is invalid! \r\n");
@@ -238,15 +250,15 @@ static bool MyprotocolPacketCheck( void *packet )
 {
     if( packet == NULL )
     {
-#USE_MYPROTOCOL_DEBUG
+#if USE_MYPROTOCOL_DEBUG
         MYPROTOCOL_LOG("check packet is invalid! \r\n");
 #endif
         return false;
     }
 
-    if( (MYPROTOCOL_FORMAT_t *)(packet)->sum != MyprotocolCalChecksum((uint8 *)packet) )
+    if( (((MYPROTOCOL_FORMAT_t *)packet)->sum) != MyprotocolCalChecksum((uint8 *)packet) )
     {
-#USE_MYPROTOCOL_DEBUG
+#if USE_MYPROTOCOL_DEBUG
         MYPROTOCOL_LOG("the packet's check sum is error! \r\n");
 #endif
         return false;
@@ -283,7 +295,7 @@ bool MyprotocolD2DSendData( void *ctx, void *packet )
     }
 #endif
 
-	memcpy(&DeviceDstAddr.addr.extaddr,(uint8 *)ctx,sizeof(DeviceDstAddr.addr.extaddr));
+	memcpy(&DeviceDstAddr.addr,(uint8 *)ctx,sizeof(DeviceDstAddr.addr));
 	
 	return AF_DataRequest(&DeviceDstAddr,
 					      &DeviceEpDesc,
@@ -318,7 +330,7 @@ bool MyprotocolD2WSendData( void *ctx, void *packet )
     }
 #endif
 
-	gizwitsReport(packet);
+	return gizwitsSendData(packet);
 }
 
 /**
@@ -367,7 +379,7 @@ bool MyprotocolSendData( void *ctx, void *dstaddr, packet_type packet_func, send
     
     packet.sum = MyprotocolCalChecksum((uint8 *)&packet);
      
-    return send(dstaddr, packet);
+    return send_func(dstaddr, &packet);
 }
 
 /**
@@ -458,7 +470,7 @@ bool CommErrorPacket( void *ctx, void *packet )
     }
 #endif 
 
-    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_COMM_ERROR;
+    (((MYPROTOCOL_FORMAT_t *)packet)->commtype) = MYPROTOCOL_COMM_ERROR;
     
     return true;
 }
@@ -482,7 +494,7 @@ bool CommEndPacket( void *ctx, void *packet )
     }
 #endif 
 
-    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_COMM_END;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_COMM_END;
     
     return true;
 }
@@ -506,9 +518,9 @@ bool DeviceTickPacket( void *ctx, void *packet )
     }
 #endif    
 
-    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_S2H_WAIT;
-    (MYPROTOCOL_FORMAT_t *)(packet)->user_data.cmd = MYPROTOCOL_TICK_CMD; 
-    (MYPROTOCOL_FORMAT_t *)(packet)->user_data.len = 0;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_S2H_WAIT;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.cmd = MYPROTOCOL_TICK_CMD; 
+    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.len = 0;
     
     return true;
 }
@@ -538,11 +550,11 @@ bool DeviceTickAckPacket( void *ctx, void *packet )
     }
 #endif    
 
-    (MYPROTOCOL_FORMAT_t *)(packet)->commtype      = MYPROTOCOL_S2H_ACK;
-    (MYPROTOCOL_FORMAT_t *)(packet)->user_data.cmd = MYPROTOCOL_TICK_CMD; 
-    (MYPROTOCOL_FORMAT_t *)(packet)->user_data.len = 0;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype      = MYPROTOCOL_S2H_ACK;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.cmd = MYPROTOCOL_TICK_CMD; 
+    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.len = 0;
     
-    memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->device, ctx, MYPROTOCOL_DEVICE_INFO_SIZE );
+    memcpy(&(((MYPROTOCOL_FORMAT_t *)packet)->device), ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
     
     return true;
 }
@@ -568,10 +580,10 @@ bool S2HWaitPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->user_data, ctx, MYPROTOCOL_CAL_USER_DATA_SIZE(ctx) );
+        memcpy(&(((MYPROTOCOL_FORMAT_t *)packet)->user_data), ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
     }
     
-    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_S2H_WAIT;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_S2H_WAIT;
     
     return true;
 }
@@ -597,10 +609,10 @@ bool S2HAckPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->user_data, ctx, MYPROTOCOL_CAL_USER_DATA_SIZE(ctx) );
+        memcpy(&(((MYPROTOCOL_FORMAT_t *)packet)->user_data), ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
     }
     
-    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_S2H_ACK;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_S2H_ACK;
     
     return true;
 }
@@ -623,13 +635,13 @@ bool H2SWaitPacket( void *ctx, void *packet )
         return false;
     }
 #endif 
-
+    
     if( ctx != NULL )
     {
-        memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->user_data, ctx, MYPROTOCOL_CAL_USER_DATA_SIZE(ctx) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)(packet))->user_data, ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
     }
     
-    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_H2S_WAIT;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_H2S_WAIT;
     
     return true;
 }
@@ -655,10 +667,10 @@ bool H2SAckPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->user_data, ctx, MYPROTOCOL_CAL_USER_DATA_SIZE(ctx) );
+        memcpy(&(((MYPROTOCOL_FORMAT_t *)packet)->user_data), ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
     }
     
-    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_H2S_ACK;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_H2S_ACK;
     
     return true;
 }
@@ -684,10 +696,10 @@ bool D2WWaitPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->user_data, ctx, MYPROTOCOL_CAL_USER_DATA_SIZE(ctx) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
     }
     
-    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_D2W_WAIT;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_D2W_WAIT;
     
     return true;
 }
@@ -713,10 +725,10 @@ bool D2WAckPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->user_data, ctx, MYPROTOCOL_CAL_USER_DATA_SIZE(ctx) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
     }
     
-    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_D2W_ACK;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_D2W_ACK;
     
     return true;
 }
@@ -742,10 +754,10 @@ bool W2DWaitPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->user_data, ctx, MYPROTOCOL_CAL_USER_DATA_SIZE(ctx) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
     }
     
-    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_W2D_WAIT;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_W2D_WAIT;
     
     return true;
 }
@@ -771,10 +783,10 @@ bool W2DAckPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memccpy(&(MYPROTOCOL_FORMAT_t *)(packet)->user_data, ctx, MYPROTOCOL_CAL_USER_DATA_SIZE(ctx) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
     }
     
-    (MYPROTOCOL_FORMAT_t *)(packet)->commtype = MYPROTOCOL_W2D_ACK;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_W2D_ACK;
     
     return true;
 }

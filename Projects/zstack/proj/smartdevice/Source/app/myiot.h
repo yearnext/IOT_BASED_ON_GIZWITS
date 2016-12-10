@@ -1,10 +1,10 @@
 /**
  ******************************************************************************
-  * @file       smart_device.h
+  * @file       myIot.h
   * @author     yearnext
   * @version    1.0.0
   * @date       2016年9月17日
-  * @brief      smart_device 头文件
+  * @brief      myIot 头文件
   * @par        工作平台                                  
   *                  CC2530
   * @par        工作频率                                  
@@ -18,8 +18,8 @@
  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __SMART_DEVICE_H__
-#define __SMART_DEVICE_H__
+#ifndef __MY_IOT_H__
+#define __MY_IOT_H__
 
 /* Includes ------------------------------------------------------------------*/
 #include "ZComDef.h"
@@ -31,9 +31,9 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern void SmartDevice_Init( byte task_id );
+extern void myIotInit( byte task_id );
 
-extern uint16 SamrtDevice_ProcessEven( uint8 task_id, uint16 events );
-#endif      /* __SMART_LIGHT_H__ */
+extern uint16 myIotProcessEven( uint8 task_id, uint16 events );
+#endif      /* __MY_IOT_H__ */
 
 /**********************************END OF FILE*********************************/
