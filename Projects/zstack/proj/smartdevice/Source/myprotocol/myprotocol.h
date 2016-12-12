@@ -28,6 +28,7 @@ extern "C"
 
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
+#include <stddef.h>
 
 /* Exported macro ------------------------------------------------------------*/
 /** 程序调试宏 */
@@ -48,7 +49,8 @@ extern "C"
  * @{
  */
 /** 计算偏移量 */
-#define MYPROTOCOL_OFFSETOF(t,m)                 ((uint16)(&((t *)0)->m)) 
+//#define MYPROTOCOL_OFFSETOF(t,m)                 ((uint16)(&((t *)0)->m)) 
+#define MYPROTOCOL_OFFSETOF(t,m)                 offsetof(t,m)
 
 /** 数据包所占内存空间 */
 #define MYPROTOCOL_PACKET_SIZE                   (sizeof(MYPROTOCOL_FORMAT_t)/sizeof(uint8))
@@ -82,7 +84,7 @@ extern "C"
 #define MYPROTOCOL_MAC_ADDR_SIZE    (8)
 
 /** 定义通讯方向 */
-// #define MYPROTOCOL_COMM_END          (0x00)
+// #define MYPROTOCOL_COMM_END                  (0x00)
 // #define MYPROTOCOL_W2D_WAIT			(0x01)
 // #define MYPROTOCOL_W2D_ACK			(0x02)
 // #define MYPROTOCOL_D2W_WAIT			(0x03)
