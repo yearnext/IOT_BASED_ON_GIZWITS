@@ -6795,6 +6795,18 @@
     </group>
     <group>
       <name>DeviceList</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\devicelist\devicelist.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\devicelist\devicelist.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\devicelist\mynode.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\devicelist\mynode.h</name>
+      </file>
     </group>
     <group>
       <name>Gizwits</name>
