@@ -15,7 +15,8 @@ import android.widget.TextView;
 
 import com.example.xzy.myhome.R;
 import com.example.xzy.myhome.model.bean.Device;
-import com.example.xzy.myhome.util.ParsePacket;
+import com.example.xzy.myhome.model.bean.PacketBean;
+import com.yanzhenjie.recyclerview.swipe.SwipeMenuAdapter;
 
 import java.util.List;
 
@@ -32,7 +33,7 @@ import static com.example.xzy.myhome.R.drawable.socket;
  * Created by xzy on 2016/10/24.
  */
 
-public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class DeviceItemRecycleViewAdapter extends SwipeMenuAdapter<RecyclerView.ViewHolder> {
     protected static final char[] hexArray = "0123456789ABCDEF".toCharArray();
     List<Device> devices;
     Context context;
@@ -41,25 +42,36 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
     byte lampLuminance;
 
 
-    public DeviceItemRecycerViewAdapter(List<Device> devices) {
+    public DeviceItemRecycleViewAdapter(List<Device> devices) {
         this.devices = devices;
     }
 
 
+
+
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public View onCreateContentView(ViewGroup parent, int viewType) {
         context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        if (viewType == ParsePacket.DEVICE_TYPE.LAMP) {
+        if (viewType == PacketBean.DEVICE_TYPE.LAMP) {
             View lampView = inflater.inflate(R.layout.item_lampt, parent, false);
-            return new LampHolder(lampView);
-        } else if (viewType == ParsePacket.DEVICE_TYPE.SENSOR_TEMPERATURE) {
-            View lampView = inflater.inflate(R.layout.item_temperature, parent, false);
-            return new TemperatureHolder(lampView);
+            return lampView;
+        } else if (viewType == PacketBean.DEVICE_TYPE.SENSOR_TEMPERATURE) {
+            View temperatureView = inflater.inflate(R.layout.item_temperature, parent, false);
+            return temperatureView;
         }
-        View deviceView = inflater.inflate(R.layout.item_devicet, parent, false);
-        return new MyViewHolder(deviceView);
+        View deviceView = inflater.inflate(R.layout.item_socket, parent, false);
+        return deviceView;
+    }
 
+    @Override
+    public RecyclerView.ViewHolder onCompatCreateViewHolder(View realContentView, int viewType) {
+        if (viewType == PacketBean.DEVICE_TYPE.LAMP) {
+            return new LampHolder(realContentView);
+        } else if (viewType == PacketBean.DEVICE_TYPE.SENSOR_TEMPERATURE) {
+            return new TemperatureHolder(realContentView);
+        }
+        return new MyViewHolder(realContentView);
 
     }
 
@@ -70,9 +82,9 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
         byte deviceType = device.getDeviceType();
         byte deviceState = device.getSwitchState();
         if (holder instanceof MyViewHolder) {
+
+
             MyViewHolder holder1 = (MyViewHolder) holder;
-
-
             if (deviceState == 0)
 
                 holder1.switchDeviceItem.setChecked(false);
@@ -80,11 +92,11 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
                 holder1.switchDeviceItem.setChecked(true);
 
 
-            if (deviceType == ParsePacket.DEVICE_TYPE.SOCKET)
+            if (deviceType == PacketBean.DEVICE_TYPE.SOCKET)
                 holder1.imageDeviceItem.setImageResource(socket);
-            else if (deviceType == ParsePacket.DEVICE_TYPE.LAMP) {
+            else if (deviceType == PacketBean.DEVICE_TYPE.LAMP) {
                 holder1.imageDeviceItem.setImageResource(lamp);
-            } else if (deviceType == ParsePacket.DEVICE_TYPE.CURTAIN) {
+            } else if (deviceType == PacketBean.DEVICE_TYPE.CURTAIN) {
                 holder1.imageDeviceItem.setImageResource(curtain);
             }
 
@@ -102,7 +114,7 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
                 @Override
                 public void onClick(View v) {
                     Log.i("AG", "onCheckedChanged: 2");
-                    deviceSetListener.onSwtichClick(position, v, switchState);
+                    deviceSetListener.onSwitchClick(position, v, switchState);
                 }
             });
             holder1.tvDeviceItemName.setOnClickListener(new View.OnClickListener() {
@@ -112,20 +124,7 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
 
                 }
             });
-            holder1.tvDeviceItemCountdown.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    deviceSetListener.onCountdownClick(position);
-                }
-            });
-            holder1.tvDeviceItemTiming.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    deviceSetListener.onTimingClick(position);
 
-
-                }
-            });
         } else if (holder instanceof LampHolder) {
             LampHolder lampHolder = (LampHolder) holder;
             lampHolder.seekBarLamp.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -141,10 +140,9 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    deviceSetListener.onSwtichClick(position, seekBar, lampLuminance);
+                    deviceSetListener.onSwitchClick(position, seekBar, lampLuminance);
                 }
             });
-            //// TODO: 2016/11/3 灯的亮度
             lampHolder.seekBarLamp.setProgress(deviceState & 0xFF);
             Log.i(TAG, "onBindViewHolder: " + deviceState);
             lampHolder.tvDeviceItemNameLamp.setOnClickListener(new View.OnClickListener() {
@@ -153,31 +151,18 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
 
                 }
             });
-            lampHolder.tvDeviceItemCountdownLamp.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    deviceSetListener.onCountdownClick(position);
 
-                }
-            });
-            lampHolder.tvDeviceItemTimingLamp.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    deviceSetListener.onTimingClick(position);
-
-                }
-            });
 
         } else if (holder instanceof TemperatureHolder) {
             final TemperatureHolder temperatureHolder = (TemperatureHolder) holder;
             temperatureHolder.buttonTemperatureRefresh.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    deviceSetListener.onSwtichClick(position, null, (byte) 0);
+                    deviceSetListener.onSwitchClick(position, null, (byte) 0);
                 }
             });
-            temperatureHolder.tvHumidity.setText(device.getHumidity() + "");
-            temperatureHolder.tvTemperature.setText(device.getTemperture() + "");
+            temperatureHolder.tvHumidity.setText((device.getHumidity()& 0xFF)+"");
+            temperatureHolder.tvTemperature.setText((device.getTemperature()& 0xFF)+"");
 
         }
     }
@@ -201,13 +186,9 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
     public interface DeviceSetListener {
         int a = 0;
 
-        void onCountdownClick(int position);
-
-        void onTimingClick(int position);
-
         void onNameClick(int position, View view);
 
-        void onSwtichClick(int position, View view, byte switchState);
+        void onSwitchClick(int position, View view, byte switchState);
 
 
     }
@@ -217,10 +198,6 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
         TextView tvDeviceItemName;
         @BindView(R.id.image_device_item)
         ImageView imageDeviceItem;
-        @BindView(R.id.tv_device_item_timing)
-        TextView tvDeviceItemTiming;
-        @BindView(R.id.tv_device_item_countdown)
-        TextView tvDeviceItemCountdown;
         @BindView(R.id.switch_device_item)
         Switch switchDeviceItem;
 
@@ -235,13 +212,8 @@ public class DeviceItemRecycerViewAdapter extends RecyclerView.Adapter<RecyclerV
     public static class LampHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.tv_item_name_lamp)
         TextView tvDeviceItemNameLamp;
-        @BindView(R.id.tv_item_timing_lamp)
-        TextView tvDeviceItemTimingLamp;
-        @BindView(R.id.tv_item_countdown_lamp)
-        TextView tvDeviceItemCountdownLamp;
         @BindView(R.id.seekBar_lamp)
         SeekBar seekBarLamp;
-
 
         public LampHolder(View itemView) {
             super(itemView);

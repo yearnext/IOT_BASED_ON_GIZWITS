@@ -29,7 +29,7 @@ public class IotRecyclerAdapter extends RecyclerView.Adapter<IotRecyclerAdapter.
     @Override
     public MyViewHodler onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        final View childView = inflater.inflate(R.layout.item_iot_device, parent, false);
+        View childView = inflater.inflate(R.layout.item_iot_device, parent, false);
         MyViewHodler viewHodler = new MyViewHodler(childView);
         return viewHodler;
     }

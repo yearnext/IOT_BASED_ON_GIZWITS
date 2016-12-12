@@ -9,6 +9,7 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -22,6 +23,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import static com.example.xzy.myhome.Setting.PREF_ACCOUNT;
+import static com.example.xzy.myhome.Setting.PREF_DEBUG;
+import static com.example.xzy.myhome.Setting.PREF_PASSWORD;
+
 public class LoginActivity extends BaseActivity {
     @BindView(R.id.login_email)
     EditText eTLoginEmail;
@@ -34,7 +39,11 @@ public class LoginActivity extends BaseActivity {
     @BindView(R.id.login_anonymity)
     TextView loginAnonymity;
     AlertDialog ad;
+    @BindView(R.id.checkbox_debug)
+    CheckBox checkboxDebug;
+
     private SharedPreferences mPreferences;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,8 +54,9 @@ public class LoginActivity extends BaseActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.MyAlertDialog);
         builder.setView(R.layout.logining);
         ad = builder.create();
-        String account = mPreferences.getString("account", "");
-        String password = mPreferences.getString("password", "");
+        String account = mPreferences.getString(PREF_ACCOUNT, "");
+        String password = mPreferences.getString(PREF_PASSWORD, "");
+        checkboxDebug.setChecked(mPreferences.getBoolean(PREF_DEBUG, false));
         eTLoginEmail.setText(account);
         eTLoginPassword.setText(password);
     }
@@ -56,18 +66,8 @@ public class LoginActivity extends BaseActivity {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.login_button://登录
-                String mLoginEmail = eTLoginEmail.getText().toString();
-                String mLoginPassword = eTLoginPassword.getText().toString();
-                if (ExceptionUtil.validateAccount(mLoginEmail, mLoginPassword, LoginActivity.this)) break;
-                ad.show();
-                GizWifiSDK.sharedInstance().userLogin(mLoginEmail, mLoginPassword);
-                SharedPreferences.Editor mEditor = mPreferences.edit();
-                mEditor.putString("account", mLoginEmail);
-                mEditor.putString("password", mLoginPassword);
-                mEditor.putBoolean("loginState", true);
-                mEditor.apply();
+                login();
                 break;
-
             case R.id.login_anonymity:
                 GizWifiSDK.sharedInstance().userLoginAnonymous();
                 ad.show();
@@ -77,6 +77,21 @@ public class LoginActivity extends BaseActivity {
                 startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
                 break;
         }
+    }
+
+    private void login() {
+        String mLoginEmail = eTLoginEmail.getText().toString();
+        String mLoginPassword = eTLoginPassword.getText().toString();
+        if (ExceptionUtil.validateAccount(mLoginEmail, mLoginPassword, LoginActivity.this))
+            return;
+        ad.show();
+        GizWifiSDK.sharedInstance().userLogin(mLoginEmail, mLoginPassword);
+        SharedPreferences.Editor mEditor = mPreferences.edit();
+        mEditor.putBoolean(PREF_DEBUG, checkboxDebug.isChecked());
+        mEditor.putString("account", mLoginEmail);
+        mEditor.putString("password", mLoginPassword);
+        mEditor.putBoolean("loginState", true);
+        mEditor.apply();
     }
 
 
@@ -89,12 +104,13 @@ public class LoginActivity extends BaseActivity {
             intent.putExtra("mToken", token);
             startActivity(intent);
             ToastUtil.showToast(LoginActivity.this, "登录成功");
+            ad.dismiss();
             finish();
         } else {
             ad.dismiss();
             Log.e(TAG, "mDidUserLogin: " + result);
             Snackbar.make(eTLoginEmail, "登录失败", Snackbar.LENGTH_LONG).show();
         }
-    }
+}
 
 }

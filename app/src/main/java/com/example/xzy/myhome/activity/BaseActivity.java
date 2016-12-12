@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.xzy.myhome.R;
 import com.example.xzy.myhome.util.ActivityCollector;
 import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
@@ -16,14 +17,21 @@ import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
 import com.gizwits.gizwifisdk.listener.GizWifiDeviceListener;
 import com.gizwits.gizwifisdk.listener.GizWifiSDKListener;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.example.xzy.myhome.model.GizLog.updateLogcat;
+import static com.mxchip.helper.ProbeReqData.bytesToHex;
 
 
 public abstract class BaseActivity extends AppCompatActivity {
 
 
     protected final String TAG = getClass().getSimpleName();
+    private byte[] emptyData = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    protected String mLogcat;
+
     GizWifiSDKListener mListener = new GizWifiSDKListener() {
 
 
@@ -115,10 +123,40 @@ public abstract class BaseActivity extends AppCompatActivity {
             }
         }
 
-        //数据点更新
+        /**接收到云端数据回调
+         * 根据接收到的数据判断，并更新日志
+         * */
         @Override
         public void didReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn) {
-            mDidReceiveData(result, device, dataMap, sn);
+
+            if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
+                Log.d(TAG, "mDidReceiveData:接收到云端数据");
+                if (result == GizWifiErrorCode.GIZ_SDK_DEVICE_NOT_READY) {
+                    ToastUtil.showToast(BaseActivity.this, "设备处于未就绪状态");
+                    return;
+                }
+                if (dataMap.get("data") != null) {
+                    Log.d(TAG, "mDidReceiveData:有data");
+                    ConcurrentHashMap<String, Object> map = (ConcurrentHashMap<String, Object>) dataMap.get("data");
+                    byte[] bytes = (byte[]) map.get(getApplication().getString(R.string.data_name));
+                    if (bytes == null) {
+                        Log.e(TAG, "mDidReceiveData: " + "bytes为空");
+                    } else if (Arrays.equals(bytes, emptyData)) {
+                        Log.w(TAG, "mDidReceiveData: " + "全为0数据一条");
+                    } else {
+                        mLogcat = mLogcat +updateLogcat(bytes);
+                        receiveSucceedData(bytes);
+                    }
+                } else {
+                    Log.w(TAG, "数据型数据点为空");
+                }
+
+                //无定义数据
+                if (dataMap.get("binary") != null) {
+                    byte[] binary = (byte[]) dataMap.get("binary");
+                    Log.e(TAG, "无定义数据 Binary data:" + bytesToHex(binary));
+                }
+            }
         }
 
         @Override
@@ -127,6 +165,8 @@ public abstract class BaseActivity extends AppCompatActivity {
             Toast.makeText(BaseActivity.this, "设备状态变为:" + netStatus, Toast.LENGTH_SHORT).show();
         }
     };
+
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -166,9 +206,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         Log.i(TAG, "设备状态回调:" + device.getProductName() + "   " + netStatus);
     }
 
-    //数据点更新
-    protected void mDidReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn) {
-    }
 
 
     //登录回调
@@ -193,5 +230,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void mDidDiscovered(GizWifiErrorCode result, List<GizWifiDevice> deviceList) {
     }
 
-    ;
+    protected void receiveSucceedData(byte[] bytes){
+
+    }
 }

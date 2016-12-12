@@ -1,10 +1,12 @@
 package com.example.xzy.myhome.model.bean;
 
+import java.io.Serializable;
+
 /**
  * Created by xzy on 2016/10/24.
  */
 
-public class Device {
+public class Device implements Serializable{
 
 
     byte deviceType;
@@ -13,14 +15,14 @@ public class Device {
     String countdownState;
     byte[] mac;
     byte switchState;
-    byte temperture;
+    byte temperature;
 
-    public byte getTemperture() {
-        return temperture;
+    public byte getTemperature() {
+        return temperature;
     }
 
-    public void setTemperture(byte temperture) {
-        this.temperture = temperture;
+    public void setTemperature(byte temperature) {
+        this.temperature = temperature;
     }
 
     public byte getHumidity() {

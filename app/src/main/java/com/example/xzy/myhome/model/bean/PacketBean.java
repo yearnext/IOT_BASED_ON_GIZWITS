@@ -1,4 +1,4 @@
-package com.example.xzy.myhome.util;
+package com.example.xzy.myhome.model.bean;
 
 import android.util.Log;
 
@@ -8,13 +8,14 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static android.content.ContentValues.TAG;
 import static com.mxchip.helper.ProbeReqData.bytesToHex;
 
 /**
  * Created by xzy on 16/9/18.
  */
 
-public class ParsePacket implements Serializable {
+public class PacketBean implements Serializable {
     static ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
     byte checkSum;
     private byte[] packet = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -26,11 +27,11 @@ public class ParsePacket implements Serializable {
     private byte command;
     private byte[] data = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    public ParsePacket() {
+    public PacketBean() {
 
     }
 
-    public ParsePacket(byte[] packet) {
+    public PacketBean(byte[] packet) {
         type = packet[0];
         eventNumber = packet[1];
         deviceType = packet[2];
@@ -49,6 +50,34 @@ public class ParsePacket implements Serializable {
         checkSum = packet[31];
     }
 
+    public static int receiveDataType(PacketBean packetBean) {
+        if ((packetBean.getType() == PacketBean.TYPE.DEVICE_RESPONSE ||
+                packetBean.getType() == PacketBean.TYPE.DEVICE_REQUEST)
+                && packetBean.getDeviceType() == PacketBean.DEVICE_TYPE.GATEWAY) {
+            Log.d(TAG, "receiveSucceedData: 收到网关数据，准备更新设备列表");
+                return RECEIVE_DEVICE_TYPE.GATEWAY;
+        } else if (packetBean.getType() == PacketBean.TYPE.DEVICE_REQUEST) {
+            Log.d(TAG, "receiveSucceedData: 收到设备请求，准备更新设备数据");
+            return RECEIVE_DEVICE_TYPE.DEVICE;
+        } else {
+            Log.e(TAG, "receiveSucceedData:通讯代号错误：" + packetBean.getType());
+            return RECEIVE_DEVICE_TYPE.UNKNOWN;
+        }
+    }
+
+    public static byte[] getSystemTime() {
+        Calendar _calendar = Calendar.getInstance();
+        byte[] _date = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        _date[0]= (byte)_calendar.get(Calendar.YEAR);
+        _date[1]= (byte) (_calendar.get(Calendar.MONTH)+1);
+        _date[2]= (byte) _calendar.get(Calendar.DAY_OF_MONTH);
+        _date[3]= (byte) _calendar.get(Calendar.DAY_OF_WEEK);
+        _date[4]= (byte) _calendar.get(Calendar.HOUR_OF_DAY);
+        _date[5]= (byte)  _calendar.get(Calendar.MINUTE);
+        _date[6]= (byte) _calendar.get(Calendar.SECOND);
+        return _date;
+    }
+
     public void sendPacket(GizWifiDevice mDevice) {
         packet[0] = type;
         packet[1] = eventNumber;
@@ -58,8 +87,6 @@ public class ParsePacket implements Serializable {
             Log.e("", "sendPacket: " + i);
             packet[3 + i] = mac[i];
         }
-        Log.e("Main2Activity", "sendPacket: " + bytesToHex(mac));
-
         packet[11] = command;
         packet[12] = dataLength;
 
@@ -70,7 +97,7 @@ public class ParsePacket implements Serializable {
         packet[31] = getCheckSum();
         dataMap.put("Packet", packet);
         mDevice.write(dataMap, 0);
-        Log.e("Main2Activity", "sendPacket: " + bytesToHex(packet));
+        Log.e("发送数据", bytesToHex(packet));
 
     }
 
@@ -83,7 +110,7 @@ public class ParsePacket implements Serializable {
         packet[31] = getCheckSum();
         dataMap.put("Packet", packet);
         mDevice.write(dataMap, 0);
-        Log.e("Main2Activity", "sendPacket: " + bytesToHex(packet));
+        Log.e("发送数据", bytesToHex(packet));
     }
 
     //各种get set方法
@@ -108,13 +135,13 @@ public class ParsePacket implements Serializable {
 
     }
 
-    public ParsePacket setDataState(byte dataState) {
+    public PacketBean setDataState(byte dataState) {
         data[0] = dataState;
         return this;
 
     }
 
-    public ParsePacket setDataCountdown(int hour, int minute) {
+    public PacketBean setDataCountdown(int hour, int minute) {
         long time = System.currentTimeMillis();
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(time);
@@ -132,7 +159,7 @@ public class ParsePacket implements Serializable {
         return this;
     }
 
-    public ParsePacket setDataTimeState(byte state) {
+    public PacketBean setDataTimeState(byte state) {
         data[6] = state;
         return this;
     }
@@ -141,7 +168,7 @@ public class ParsePacket implements Serializable {
         return type;
     }
 
-    public ParsePacket setType(byte type) {
+    public PacketBean setType(byte type) {
         this.type = type;
         return this;
     }
@@ -150,7 +177,7 @@ public class ParsePacket implements Serializable {
         return eventNumber;
     }
 
-    public ParsePacket setEventNumber(byte eventNumber) {
+    public PacketBean setEventNumber(byte eventNumber) {
         this.eventNumber = eventNumber;
         return this;
 
@@ -160,7 +187,7 @@ public class ParsePacket implements Serializable {
         return command;
     }
 
-    public ParsePacket setCommand(byte command) {
+    public PacketBean setCommand(byte command) {
         this.command = command;
         return this;
 
@@ -170,7 +197,7 @@ public class ParsePacket implements Serializable {
         return mac;
     }
 
-    public ParsePacket setMac(byte[] mac) {
+    public PacketBean setMac(byte[] mac) {
         if (mac != null)
             this.mac = mac;
         return this;
@@ -181,7 +208,7 @@ public class ParsePacket implements Serializable {
         return dataLength;
     }
 
-    public ParsePacket setDataLength(byte dataLength) {
+    public PacketBean setDataLength(byte dataLength) {
         this.dataLength = dataLength;
         return this;
 
@@ -200,7 +227,7 @@ public class ParsePacket implements Serializable {
         return data;
     }
 
-    public ParsePacket setData(byte[] data) {
+    public PacketBean setData(byte[] data) {
         this.data = data;
         return this;
 
@@ -210,51 +237,59 @@ public class ParsePacket implements Serializable {
         return deviceType;
     }
 
-    public ParsePacket setDeviceType(byte deviceType) {
+    public PacketBean setDeviceType(byte deviceType) {
         this.deviceType = deviceType;
         return this;
     }
 
-    public ParsePacket setDataTiming(byte[] data) {
+    public PacketBean setDataTiming(byte[] data) {
         for (int i = 0; i < 8; i++) {
             if (i == 6) i++;
             this.data[i] = data[i];
         }
         return this;
-
     }
 
     public byte getDataTemperature() {
         return data[0];
-
     }
 
     public byte getDataHumidity() {
         return data[1];
+    }
+
+    public static void updateDeviceTime(byte[] mac, byte deviceType, GizWifiDevice device) {
+        PacketBean _packetBean = new PacketBean();
+        _packetBean.setType(TYPE.APP_RESPONSE)
+                .setDeviceType(deviceType)
+                .setMac(mac)
+                .setCommand(COMMAND.TIME_WRITE)
+                .setDataLength(DATA_LENGTH.TIME)
+                .setData(getSystemTime())
+                .sendPacket(device);
 
     }
 
+
     public interface TYPE {
-        byte APP_REQUEST = 1;
-        byte DEVICE_RESPONSE = 2;
-        byte DEVICE_REQUEST = 3;
-        byte APP_RESPONSE = 4;
+        byte APP_REQUEST = 0x1;
+        byte DEVICE_RESPONSE = 0x2;
+        byte DEVICE_REQUEST = 0x3;
+        byte APP_RESPONSE = 0x4;
     }
 
     public interface DEVICE_TYPE {
-        byte GATEWAY = 0;
-        byte LAMP = 1;
-        byte SOCKET = 2;
-        byte CURTAIN = 3;
-        byte SENSOR_TEMPERATURE = 4;
-    }
-
-    public interface MAC {
-
+        byte GATEWAY = 0x0;
+        byte LAMP = 0x1;
+        byte SOCKET = 0x2;
+        byte CURTAIN = 0x3;
+        byte SENSOR_TEMPERATURE = 0x4;
     }
 
     public interface COMMAND {
         byte RESPONSE = 0;
+        byte TIME_READ = 0x04;
+        byte TIME_WRITE = 0x05;
         byte STATE_READ = 0x10;
         byte STATE_WRITE = 0x11;
         byte TIMING_READ = 0x14;
@@ -266,17 +301,18 @@ public class ParsePacket implements Serializable {
         byte DEVICE_RESPONSE_APP_COUNT = 0x10;
         byte UPDATE_DEVICE_COUNT = 0x11;
         byte UPDATE_DEVICE_MESSAGE = 0x12;
-
-
-    }
-
-    public interface DATA_LENGTH {
-
-    }
-
-    public interface DATA {
-
     }
 
 
+    public interface RECEIVE_DEVICE_TYPE {
+        byte GATEWAY = 0x1;
+        byte DEVICE = 0x2;
+        byte UNKNOWN = 0x3;
+        byte TIME = 0x4;
+
+    }
+    public interface DATA_LENGTH{
+        byte TIME = 0x7;
+    }
 }
+

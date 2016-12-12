@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.v7.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
 
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_marginTop="5dp"
-    android:layout_marginLeft="3dp"
-    android:layout_marginRight="3dp"
-    android:layout_width="match_parent"
-    android:layout_height="70dp"
-    android:id="@+id/device_item">
 
     <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:background="#FFF"
         android:layout_width="match_parent"
         android:layout_height="65dp">
 
@@ -101,7 +95,7 @@
     </RelativeLayout>
 
 
-</android.support.v7.widget.CardView>
+
 
 
 

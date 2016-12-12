@@ -11,16 +11,15 @@
     <string name="five_wifi">注: 暂不支持5G频道的Wi-Fi网络</string>
     <string name="AirLinkTitle">尝试连接WIFI……</string>
     <string name="AirLinkMessage">大概需要1分钟,请耐心等待</string>
-    <string name="devicelist">设备列表</string>
-    <string name="item_01">刷新设备</string>
+    <string name="item_01">网关设备列表</string>
     <string name="item_02">解绑列表第一个设备</string>
     <string name="menu_add">增加</string>
     <string name="menu_refresh">刷新</string>
     <string name="menu_delete">删除</string>
-    <string name="toolbar">&#160;&#160;设备列表</string>
+    <string name="main_toolbar">设备列表</string>
     <string name="checkbox">CheckBox</string>
     <string name="forget_password">忘记密码?</string>
-    <string name="toolbar1">智能设备</string>
+    <string name="main2_toolbar">智能设备列表</string>
     <string name="empty">n/a</string>
 
     <string name="app_id">d5f2fb27495340fe81efa0682cc37ce6</string>
@@ -33,6 +32,8 @@
     <string name="offline_alert_dialog_title">提示</string>
     <string name="offline_alert_dialog_positive">重新连接</string>
     <string name="offline_alert_dialog_negative">重新登录</string>
+    <string name="setting_title">设置</string>
+    <string name="title_activity_main3">Main3Activity</string>
 
 
 </resources>

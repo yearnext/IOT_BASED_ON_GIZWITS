@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.xzy.myhome">
+          package="com.example.xzy.myhome">
     //基本权限
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     //API23需授权权限
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -20,27 +20,35 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activity.StartActivity">
+        <activity
+            android:name=".activity.StartActivity"
+            android:theme="@style/loginTheme">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".activity.LoginActivity" />
-        <activity android:name=".activity.MainActivity" />
-        <activity android:name=".activity.WIFIActivity" />
-        <activity android:name=".activity.DeviceActivity" />
-        <activity android:name=".activity.RegisterActivity" />
-        <activity android:name=".activity.Main2Activity" />
-        <activity android:name=".activity.AlarmActivity" />
+        <activity
+            android:name=".activity.LoginActivity"
+            android:theme="@style/loginTheme"/>
+        <activity android:name=".activity.MainActivity"/>
+        <activity android:name=".activity.WIFIActivity"/>
+        <activity android:name=".activity.DeviceActivity"/>
+        <activity android:name=".activity.RegisterActivity"/>
+        <activity android:name=".activity.Main2Activity"
+                  android:exported="true"/>
 
-        <receiver
-            android:name=".broadcast.ForceOfflineReceiver">
+        <receiver android:name=".broadcast.ForceOfflineReceiver">
             <intent-filter>
-                <action android:name="com.example.xzy.myhome.FORCE_OFFLINE" />
+                <action android:name="com.example.xzy.myhome.FORCE_OFFLINE"/>
             </intent-filter>
         </receiver>
+
+        <activity
+            android:name=".activity.SettingsActivity"
+            android:exported="true">
+        </activity>
     </application>
 
 </manifest>

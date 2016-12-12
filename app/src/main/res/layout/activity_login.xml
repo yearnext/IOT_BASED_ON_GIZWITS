@@ -1,99 +1,111 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:paddingTop="8dp"
-    tools:context="com.example.xzy.myhome.activity.LoginActivity"
-    android:baselineAligned="false">
+    tools:context="com.example.xzy.myhome.activity.LoginActivity">
 
 
     <ImageView
-        android:layout_marginTop="20dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:src="@drawable/qid" />
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/aa12"/>
 
 
     <LinearLayout
-        android:layout_marginTop="30dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:baselineAligned="false">
+        android:layout_margin="12dp"
+        android:layout_marginTop="30dp"
+        android:baselineAligned="false"
+        android:orientation="vertical">
 
 
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp">
 
             <EditText
+                android:id="@+id/login_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/prompt_email"
-                android:id="@+id/login_email"
-                android:inputType="textEmailAddress" />
+                android:inputType="textEmailAddress"/>
         </android.support.design.widget.TextInputLayout>
 
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
 
             <EditText
+                android:id="@+id/login_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/prompt_password"
-                android:inputType="textPassword"
-                android:id="@+id/login_password" />
+                android:inputType="textPassword"/>
         </android.support.design.widget.TextInputLayout>
+
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            >
+
 
 
 
             <TextView
-                android:layout_width="match_parent"
-                android:gravity="end"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="end|center_vertical"
                 android:text="@string/forget_password"/>
 
+            <CheckBox
+                android:id="@+id/checkbox_debug"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="调试模式"/>
+        </FrameLayout>
 
 
         <Button
+            android:id="@+id/login_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="登录"
-            android:textColor="#eeeeee"
-            android:background="@drawable/button_shape"
-            android:layout_marginTop="40dp"
             android:layout_marginBottom="40dp"
-            android:id="@+id/login_button" />
+            android:layout_marginTop="20dp"
+            android:background="@drawable/button_shape"
+            android:text="登录"
+            android:textColor="#eeeeee"/>
 
     </LinearLayout>
 
     <LinearLayout
-        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <TextView
-            android:layout_marginLeft="50dp"
+            android:id="@+id/register_start"
             android:layout_width="80dp"
             android:layout_height="80dp"
+            android:layout_marginLeft="50dp"
+            android:background="@drawable/ripple"
             android:gravity="center"
-            android:id="@+id/register_start"
-            android:text="注册"
-            android:background="@drawable/ripple"/>
+            android:text="注册"/>
 
         <TextView
-            android:layout_marginLeft="80dp"
+            android:id="@+id/login_anonymity"
             android:layout_width="80dp"
             android:layout_height="80dp"
+            android:layout_marginLeft="80dp"
+            android:background="@drawable/ripple"
             android:gravity="center"
-            android:id="@+id/login_anonymity"
-            android:text="匿名登录"
-            android:background="@drawable/ripple"/>
+            android:text="匿名登录"/>
 
     </LinearLayout>
 </LinearLayout>

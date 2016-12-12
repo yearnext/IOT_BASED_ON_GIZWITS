@@ -2,7 +2,6 @@ package com.example.xzy.myhome.activity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -15,6 +14,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.example.xzy.myhome.R;
+import com.example.xzy.myhome.Setting;
 import com.example.xzy.myhome.adapter.IotRecyclerAdapter;
 import com.example.xzy.myhome.model.bean.IotDevice;
 import com.example.xzy.myhome.util.BooleanTranslateUtil;
@@ -31,7 +31,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class MainActivity extends BaseActivity {
-    GizWifiDevice mDevice = null;
+    GizWifiDevice mGizDevice = null;
     @BindView(R.id.tb_device_list)
     Toolbar tbDeviceList;
     @BindView(R.id.rv_device_list)
@@ -44,7 +44,7 @@ public class MainActivity extends BaseActivity {
     private List<IotDevice> iotDeviceList= new ArrayList<>();
     private IotRecyclerAdapter mIotAdapter;
 
-    List<GizWifiDevice> devices = GizWifiSDK.sharedInstance().getDeviceList();
+    List<GizWifiDevice> mGizDevicesList = GizWifiSDK.sharedInstance().getDeviceList();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,25 +70,22 @@ public class MainActivity extends BaseActivity {
         mIotAdapter.setOnItemClickLitener(new IotRecyclerAdapter.OnItemClickLitener() {
             @Override
             public void onItemClick(View view, int position) {
-                mDevice = devices.get(position);
-                if (mDevice.getNetStatus() != GizWifiDeviceNetStatus.GizDeviceOffline) {
-                    mDevice.setListener(mDeviceListener);
-                    mDevice.setSubscribe(true);
+                mGizDevice = mGizDevicesList.get(position);
+                if (mGizDevice.getNetStatus() != GizWifiDeviceNetStatus.GizDeviceOffline|| Setting.TEST) {
+                    mGizDevice.setListener(mDeviceListener);
+                    mGizDevice.setSubscribe(true);
                     Intent intent = new Intent(MainActivity.this, Main2Activity.class);
-                    Bundle bundle = new Bundle();
-                    bundle.putParcelable("mDevice", mDevice);
-                    intent.putExtras(bundle);
+                    intent.putExtra("gizDevice", mGizDevice);
                     startActivityForResult(intent, 0);
                 } else {
                     ToastUtil.showToast(MainActivity.this, "当前设备处于离线状态");
                 }
+
             }
         });
     }
 
     private void initToolbar() {
-        tbDeviceList.setTitle(R.string.toolbar);
-        tbDeviceList.setTitleTextColor(Color.WHITE);
         tbDeviceList.inflateMenu(R.menu.devicelist_toolbar_menu);
         tbDeviceList.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
@@ -103,8 +100,8 @@ public class MainActivity extends BaseActivity {
                         refresh();
                         break;
                     case R.id.delete_item:
-                        if (devices.size() != 0) {
-                            GizWifiSDK.sharedInstance().unbindDevice(mUid, mToken, devices.get(0).getDid());
+                        if (mGizDevicesList.size() != 0) {
+                            GizWifiSDK.sharedInstance().unbindDevice(mUid, mToken, mGizDevicesList.get(0).getDid());
                         }
                         break;
                 }
@@ -115,10 +112,10 @@ public class MainActivity extends BaseActivity {
     }
 
     protected void refresh() {
-        Log.i(TAG, "refresh: " + devices.size());
-        if (devices.size() != 0 || iotDeviceList != null) {
+        Log.i(TAG, "refresh: " + mGizDevicesList.size());
+        if (mGizDevicesList.size() != 0 || iotDeviceList != null) {
             iotDeviceList.removeAll(iotDeviceList);
-            for (GizWifiDevice device : devices) {
+            for (GizWifiDevice device : mGizDevicesList) {
                 IotDevice iotDevice = new IotDevice();
                 iotDevice
                         .setBind(BooleanTranslateUtil.translateString(device.isBind()))
@@ -142,7 +139,7 @@ public class MainActivity extends BaseActivity {
         if (result != GizWifiErrorCode.GIZ_SDK_SUCCESS) {
             Log.e("", "result: " + result.name());
         }
-        devices = deviceList;
+        mGizDevicesList = deviceList;
         refresh();
     }
 
@@ -159,7 +156,6 @@ public class MainActivity extends BaseActivity {
                         }
                     }).show();
         }
-
     }
 
     private void showHelp() {
@@ -171,11 +167,11 @@ public class MainActivity extends BaseActivity {
                 .setPositiveButton("再次连接", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDevice.setListener(mDeviceListener);
-                        mDevice.setSubscribe(true);
+                        mGizDevice.setListener(mDeviceListener);
+                        mGizDevice.setSubscribe(true);
                         Intent intent = new Intent(MainActivity.this, Main2Activity.class);
                         Bundle bundle = new Bundle();
-                        bundle.putParcelable("mDevice", mDevice);
+                        bundle.putParcelable("sGizDevice", mGizDevice);
                         intent.putExtras(bundle);
                         startActivityForResult(intent, 0);
                     }

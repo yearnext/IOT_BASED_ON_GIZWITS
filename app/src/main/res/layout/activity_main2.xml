@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,12 +10,19 @@
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/tb_device_list1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/colorPrimary">
+        app:title="@string/main2_toolbar"
+        style="@style/AllToolbar">
     </android.support.v7.widget.Toolbar>
 
+    <com.yanzhenjie.recyclerview.swipe.SwipeMenuRecyclerView
+        android:id="@+id/rv_device_item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+    </com.yanzhenjie.recyclerview.swipe.SwipeMenuRecyclerView>
+
     <ScrollView
+        android:id="@+id/layout_debug"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -22,29 +31,29 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/rv_device_item"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-            </android.support.v7.widget.RecyclerView>
-
             <Button
                 android:id="@+id/button_error"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="获取第一台设备消息" />
+                android:text="获取第一台设备消息"/>
+
             <Button
                 android:id="@+id/button_error1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="获取设备列表" />
+                android:text="获取设备列表"/>
+
+            <Button
+                android:id="@+id/button_clear"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="清理日志"/>
+
 
             <TextView
                 android:id="@+id/text_view_logcat"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"/>
         </LinearLayout>
     </ScrollView>
 

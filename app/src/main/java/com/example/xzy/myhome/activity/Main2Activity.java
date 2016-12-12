@@ -1,50 +1,47 @@
 package com.example.xzy.myhome.activity;
 
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.v7.app.AlertDialog;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.TimePicker;
 
 import com.example.xzy.myhome.R;
-import com.example.xzy.myhome.adapter.DeviceItemRecycerViewAdapter;
+import com.example.xzy.myhome.Setting;
+import com.example.xzy.myhome.adapter.DeviceItemRecycleViewAdapter;
 import com.example.xzy.myhome.model.bean.Device;
-import com.example.xzy.myhome.util.ParsePacket;
+import com.example.xzy.myhome.model.bean.PacketBean;
 import com.example.xzy.myhome.util.ToastUtil;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
 import com.gizwits.gizwifisdk.enumration.GizWifiDeviceNetStatus;
-import com.gizwits.gizwifisdk.enumration.GizWifiErrorCode;
+import com.yanzhenjie.recyclerview.swipe.Closeable;
+import com.yanzhenjie.recyclerview.swipe.OnSwipeMenuItemClickListener;
+import com.yanzhenjie.recyclerview.swipe.SwipeMenu;
+import com.yanzhenjie.recyclerview.swipe.SwipeMenuCreator;
+import com.yanzhenjie.recyclerview.swipe.SwipeMenuItem;
+import com.yanzhenjie.recyclerview.swipe.SwipeMenuRecyclerView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-import static com.example.xzy.myhome.util.ParsePacket.COMMAND.UPDATE_DEVICE_COUNT;
+import static com.example.xzy.myhome.model.bean.PacketBean.COMMAND.UPDATE_DEVICE_COUNT;
 import static com.mxchip.helper.ProbeReqData.bytesToHex;
 
-public class Main2Activity extends BaseActivity implements DeviceItemRecycerViewAdapter.DeviceSetListener {
+public class Main2Activity extends BaseActivity implements DeviceItemRecycleViewAdapter.DeviceSetListener {
 
-    private static final int ON = 0;
-    private static final int OFF = 1;
-    static ConcurrentHashMap<String, Object> dataMap = new ConcurrentHashMap<String, Object>();
-    private static String MAC;
     @BindView(R.id.tb_device_list1)
     Toolbar tbDeviceList;
 
@@ -52,21 +49,16 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
     TextView textViewLogcat;
 
     @BindView(R.id.rv_device_item)
-    RecyclerView rvDeviceItem;
+    SwipeMenuRecyclerView rvDeviceItem;
+    @BindView(R.id.button_error1)
+    Button buttonError1;
+    @BindView(R.id.layout_debug)
+    ScrollView layoutDebug;
 
-
-    private GizWifiDevice mDevice;
-    private byte mEventNumber = 0;
-    private String logcat;
-    private int i = 0;
-    private List<Device> deviceList;
-    private DeviceItemRecycerViewAdapter deviceRVAdapter;
-    private byte count = 0;
-    private byte lampuminance = (byte) 150;
-    AlertDialog alertDialog;
-    private boolean controlled = false;
-    //长度为32的byte数组
-    private byte[] emptyacket = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    static int sLampLuminance=150;
+    private GizWifiDevice mGizDevice;
+    private List<Device> mDeviceList;
+    private DeviceItemRecycleViewAdapter deviceRVAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -74,53 +66,26 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
         setContentView(R.layout.activity_main2);
         ButterKnife.bind(this);
         Intent intent = getIntent();
-        mDevice = intent.getParcelableExtra("mDevice");
-        mDevice.setListener(mDeviceListener);
-        mDevice.getDeviceStatus();
-        deviceList = new ArrayList<Device>();
-
-        if (mDevice.getNetStatus() == GizWifiDeviceNetStatus.GizDeviceOnline) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(Main2Activity.this, R.style.MyAlertDialog);
-            alertDialog = builder.setView(R.layout.logining)
-                    .setCancelable(false)
-                    .create();
-            alertDialog.show();
-        }
-        //initData();
-        initView();
-        setResult(RESULT_OK);
-
+        mGizDevice = intent.getParcelableExtra("gizDevice");
+        mGizDevice.setListener(mDeviceListener);
+        mGizDevice.getDeviceStatus();
+        mDeviceList = new ArrayList<>();
+        if (Setting.TEST) testInitData();
+        if (!PreferenceManager.getDefaultSharedPreferences(this)
+                .getBoolean(Setting.PREF_DEBUG, false))
+            layoutDebug.setVisibility(View.GONE);
+        iniToolbarList();
+        initRecycleView();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mDevice.setSubscribe(false);
-
+        mGizDevice.setSubscribe(false);
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (controlled == false) {
-                    finish();
-                }
-            }
-        }, 20000);
-    }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
-    private void initView() {
-        //toolbarList
-        tbDeviceList.setTitle(R.string.toolbar1);
-        tbDeviceList.setTitleTextColor(Color.WHITE);
+    private void iniToolbarList() {
         tbDeviceList.inflateMenu(R.menu.devicelist_toolbar_menu);
         tbDeviceList.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
@@ -130,301 +95,156 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
                     case R.id.add_item:
                         break;
                     case R.id.refresh_item:
-                        if (mDevice != null) {
-                        }
                         break;
                     case R.id.delete_item:
                         break;
                 }
                 return true;
-
             }
         });
+    }
 
-
-        //RecyclerView
-        initData();
-        deviceRVAdapter = new DeviceItemRecycerViewAdapter(deviceList);
+    private void initRecycleView() {
+        final int _width = getResources().getDimensionPixelSize(R.dimen.item_width);
+        final int _height = ViewGroup.LayoutParams.MATCH_PARENT;
+        deviceRVAdapter = new DeviceItemRecycleViewAdapter(mDeviceList);
         deviceRVAdapter.setDeviceSetListener(this);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         rvDeviceItem.setLayoutManager(linearLayoutManager);
         rvDeviceItem.setAdapter(deviceRVAdapter);
+        rvDeviceItem.setSwipeMenuCreator(new SwipeMenuCreator() {
+            @Override
+            public void onCreateMenu(SwipeMenu swipeLeftMenu, SwipeMenu swipeRightMenu, int viewType) {
+                SwipeMenuItem setItem = new SwipeMenuItem(Main2Activity.this)
+                        .setBackgroundColor(getResources().getColor(R.color.colorPrimary))
+                        .setImage(R.drawable.ic_settings_white_24dp)
+                        .setHeight(_height)
+                        .setWidth(_width);
+                swipeLeftMenu.addMenuItem(setItem);
+            }
+        });
+        rvDeviceItem.setSwipeMenuItemClickListener(new OnSwipeMenuItemClickListener() {
+            @Override
+            public void onItemClick(Closeable closeable, int adapterPosition, int menuPosition, int direction) {
+                closeable.smoothCloseMenu();
+                Intent intent = new Intent(Main2Activity.this, SettingsActivity.class);
+                intent.putExtra("device", mDeviceList.get(adapterPosition));
+                intent.putExtra("gizDevice", mGizDevice);
+                startActivity(intent);
+            }
+        });
 
     }
 
     @Override
-    public void mDidReceiveData(GizWifiErrorCode result, GizWifiDevice device, ConcurrentHashMap<String, Object> dataMap, int sn) {
-        if (result == GizWifiErrorCode.GIZ_SDK_SUCCESS) {
-            Log.d(TAG, "mDidReceiveData:接收到云端数据");
-            if (dataMap.get("data") != null) {
-                Log.d(TAG, "mDidReceiveData:有data");
-                ConcurrentHashMap<String, Object> map = (ConcurrentHashMap<String, Object>) dataMap.get("data");
-                byte[] bytes = (byte[]) map.get(getApplication().getString(R.string.data_name));
-                if (bytes == null) {
-                    Log.i(TAG, "mDidReceiveData: " + "bytes为空");
-                } else if (Arrays.equals(bytes, emptyacket)) {
-                    Log.d(TAG, "mDidReceiveData: " + "全为0数据一条");
-                } else {
-                    updateLogcat(bytes);
-                    assessDataType(bytes);
-                }
-            } else {
-                logcat = logcat + "第" + i + "次:数据型数据点为空" + "\n";
-                Log.i(TAG, "第" + i++ + "次:数据型数据点为空");
-            }
-            textViewLogcat.setText(logcat);
-            //无定义数据
-            if (dataMap.get("binary") != null) {
-                byte[] binary = (byte[]) dataMap.get("binary");
-                Log.i(TAG, "无定义数据 Binary data:" + bytesToHex(binary));
-            }
-        }
-
-
-        if (result == GizWifiErrorCode.GIZ_SDK_DEVICE_NOT_READY) {
-            ToastUtil.showToast(Main2Activity.this, "设备处于未就绪状态");
+    protected void receiveSucceedData(byte[] b) {
+        textViewLogcat.setText(mLogcat);
+        PacketBean packetBean = new PacketBean(b);
+        switch (PacketBean.receiveDataType(packetBean)) {
+            case PacketBean.RECEIVE_DEVICE_TYPE.DEVICE:
+                updateDeviceData(packetBean);
+                break;
+            case PacketBean.RECEIVE_DEVICE_TYPE.GATEWAY:
+                updateDeviceList(packetBean);
+                break;
         }
     }
 
 
-    private void updateLogcat(byte[] data) {
-        int aa = 0;
-        String a = bytesToHex(data);
-        //// TODO: 2016/10/29 以后用 StringBuff 优化
-        StringBuffer s = new StringBuffer();
-        Log.i(TAG, "原始数据包" + bytesToHex(data));
-        Log.w(TAG, "第" + i + "次:" +
-                "通讯类型：=" + a.substring(0, 2) + "；" +
-                "事件序号：=" + a.substring(2, 4) + "；" +
-                "设备类型：=" + a.substring(4, 6) + "；" +
-                "mac：=" + a.substring(6, 23) + "；" +
-                "命令：=" + a.substring(22, 24) + "；" +
-                "数据长度：=" + a.substring(24, 26) + "；" +
-                "数据：=" + a.substring(26, 61) + "；" +
-                "校验和：=" + a.substring(62, 64));
-        //logcat = logcat + "第" + i++ + "次:" + a + "\n";
-        logcat = logcat + "第" + i++ + "次:" +
-                "通讯类型：=" + a.substring(0, 2) + "；" + "\n" +
-                "事件序号：=" + a.substring(2, 4) + "；" + "\n" +
-                "设备类型：=" + a.substring(4, 6) + "；" + "\n" +
-                "mac：=" + a.substring(6, 23) + "；" + "\n" +
-                "命令：=" + a.substring(22, 24) + "；" + "\n" +
-                "数据长度：=" + a.substring(24, 26) + "；" + "\n" +
-                "数据：=" + a.substring(26, 61) + "；" + "\n" +
-                "校验和：=" + a.substring(62, 64)
-                + "\n";
-
-    }
-
-    private void assessDataType(byte[] b) {
-        //// TODO: 2016/10/25 接收数据解析 
-        ParsePacket parsePacket = new ParsePacket(b);
-        if ((parsePacket.getType() == ParsePacket.TYPE.DEVICE_RESPONSE &&
-                parsePacket.getDeviceType() == ParsePacket.DEVICE_TYPE.GATEWAY) ||
-                (parsePacket.getType() == ParsePacket.TYPE.DEVICE_REQUEST &&
-                        parsePacket.getDeviceType() == ParsePacket.DEVICE_TYPE.GATEWAY)) {
-            Log.d(TAG, "assessDataType: 收到网关数据，准备更新设备列表");
-            updateDeviceList(parsePacket);
-        } else if (parsePacket.getType() == ParsePacket.TYPE.DEVICE_REQUEST) {
-            Log.d(TAG, "assessDataType: 收到设备请求，准备更新设备数据");
-            updateDeviceData(parsePacket);
-        } else {
-            Log.e(TAG, "assessDataType:通讯代号错误：" + parsePacket.getType());
-        }
-    }
-
-    private void updateDeviceData(ParsePacket parsePacket) {
-        int index = getListIndex(parsePacket.getMac());
+    private void updateDeviceData(PacketBean packetBean) {
+        int index = getListIndex(packetBean.getMac());
         if (index == -1) {
             Log.e(TAG, "processReceiveData: " + "收到未知设备的神秘请求");
             return;
         }
-        if (parsePacket.getCommand() == ParsePacket.COMMAND.STATE_READ) {
-
-            if (parsePacket.getDeviceType() == ParsePacket.DEVICE_TYPE.SENSOR_TEMPERATURE) {
-                deviceList.get(index).setTemperture(parsePacket.getDataTemperature());
-                deviceList.get(index).setHumidity(parsePacket.getDataHumidity());
-                Log.i(TAG, "温度传感器数据" + deviceList.get(index) + "    " + parsePacket.getDataState());
-                deviceRVAdapter.notifyDataSetChanged();
-            } else {
-                deviceList.get(index).setSwitchState(parsePacket.getDataState());
-                Log.i(TAG, "接收到设备数据（温度传感器以外）" + deviceList.get(index) + "    " + parsePacket.getDataState());
-                deviceRVAdapter.notifyDataSetChanged();
-            }
-
-
+        switch (packetBean.getCommand()) {
+            case PacketBean.COMMAND.STATE_READ:
+                updateDeviceState(index, packetBean);
+                break;
+            case PacketBean.COMMAND.TIME_READ:
+                byte[] _mac = mDeviceList.get(index).getMac();
+                byte _deviceType = mDeviceList.get(index).getDeviceType();
+                PacketBean.updateDeviceTime(_mac, _deviceType, mGizDevice);
+                break;
         }
+    }
 
+    private void updateDeviceState(int index, PacketBean packetBean) {
+        if (packetBean.getDeviceType() == PacketBean.DEVICE_TYPE.SENSOR_TEMPERATURE) {
+            mDeviceList.get(index).setTemperature(packetBean.getDataTemperature());
+            mDeviceList.get(index).setHumidity(packetBean.getDataHumidity());
+            Log.i(TAG, "温度传感器数据" + mDeviceList.get(index) + "    " + packetBean.getDataState());
+            deviceRVAdapter.notifyItemChanged(index);
+        } else {
+            mDeviceList.get(index).setSwitchState(packetBean.getDataState());
+            Log.i(TAG, "接收到设备状态" + mDeviceList.get(index) + "    " + packetBean.getDataState());
+            deviceRVAdapter.notifyDataSetChanged();
+        }
     }
 
     private int getListIndex(byte[] mac) {
-        for (int a = 0; a < deviceList.size(); a++) {
-            Log.i(TAG, "判断位  " + "deviceList.size():" + deviceList.size() + "\n" +
-                    "deviceList.get(a).getMac()" + bytesToHex(deviceList.get(a).getMac()) + "\n" +
-                    "mac" + bytesToHex(mac) + "\n" +
-                    "Arrays.equals(deviceList.get(a).getMac(),mac)" + Arrays.equals(deviceList.get(a).getMac(), mac)
-            );
-
-            if (Arrays.equals(deviceList.get(a).getMac(), mac))
+        for (int a = 0; a < mDeviceList.size(); a++) {
+            if (Arrays.equals(mDeviceList.get(a).getMac(), mac))
                 return a;
-
         }
         return -1;
     }
 
-    private void updateDeviceList(ParsePacket parsePacket) {
+    private void updateDeviceList(PacketBean packetBean) {
         //请求设备数
-        if (parsePacket.getCommand() == ParsePacket.COMMAND.UPDATE_DEVICE_COUNT ||
-                parsePacket.getCommand() == ParsePacket.COMMAND.DEVICE_RESPONSE_APP_COUNT) {
-            count = 0;
-            byte[] data = parsePacket.getData();
+        if (packetBean.getCommand() == PacketBean.COMMAND.UPDATE_DEVICE_COUNT ||
+                packetBean.getCommand() == PacketBean.COMMAND.DEVICE_RESPONSE_APP_COUNT) {
+            byte count;
+            byte[] data = packetBean.getData();
             count = data[0];
             Log.i(TAG, "updateDeviceList: 接收到设备列表更新，有" + count + "台设备");
-            deviceList.removeAll(deviceList);
+            mDeviceList.removeAll(mDeviceList);
             for (byte i = 0; i < count; i++) {
-                new ParsePacket().requestDeviceList(mDevice, i);
+                new PacketBean().requestDeviceList(mGizDevice, i);
             }
             //获取设备信息
-        } else if (parsePacket.getCommand() == ParsePacket.COMMAND.UPDATE_DEVICE_MESSAGE) {
+        } else if (packetBean.getCommand() == PacketBean.COMMAND.UPDATE_DEVICE_MESSAGE) {
             Device device = new Device();
-            int index = getListIndex(parsePacket.getDataMac());
+            int index = getListIndex(packetBean.getDataMac());
             Log.w(TAG, "index:" + index);
             if (index != -1) {
-                device = deviceList.get(index);
-                device.setMac(parsePacket.getDataMac());
-                device.setDeviceType(parsePacket.getDataDeviceType());
+                device = mDeviceList.get(index);
+                device.setMac(packetBean.getDataMac());
+                device.setDeviceType(packetBean.getDataDeviceType());
             } else {
-                device.setMac(parsePacket.getDataMac());
-                device.setDeviceType(parsePacket.getDataDeviceType());
-                deviceList.add(device);
+                device.setMac(packetBean.getDataMac());
+                device.setDeviceType(packetBean.getDataDeviceType());
+                mDeviceList.add(device);
             }
 
-            Log.i(TAG, "获取到的设备MAC：" + bytesToHex(parsePacket.getDataMac()) +
-                    "类型" + parsePacket.getDataDeviceType());
+            Log.i(TAG, "获取到的设备MAC：" + bytesToHex(packetBean.getDataMac()) +
+                    "类型" + packetBean.getDataDeviceType());
             deviceRVAdapter.notifyDataSetChanged();
-
         }
     }
 
 
-    private void showCountdownDialog(final ParsePacket parsePacket) {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(Main2Activity.this);
-        DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case 0:
-                        parsePacket.setDataCountdown(00, 10);
-                        parsePacket.sendPacket(mDevice);
-                        break;
-                    case 1:
-                        parsePacket.setDataCountdown(00, 20);
-                        parsePacket.sendPacket(mDevice);
-                        break;
-                    case 2:
-                        parsePacket.setDataCountdown(00, 30);
-                        parsePacket.sendPacket(mDevice);
-                        break;
-                    case 3:
-                        parsePacket.setDataCountdown(00, 60);
-                        parsePacket.sendPacket(mDevice);
-                        break;
-                    case 4:
-                        parsePacket.setDataCountdown(00, 90);
-                        parsePacket.sendPacket(mDevice);
-                        break;
-                    case 5:
-                        AlertDialog.Builder builder1 = new AlertDialog.Builder(Main2Activity.this, R.style.AlertDialog_AppCompat_mTime);
-                        LayoutInflater inflater = LayoutInflater.from(Main2Activity.this);
-                        final View view = inflater.inflate(R.layout.custom_countdown_layout, null);
-                        AlertDialog alertDialog = builder1.setView(view)
-                                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        TimePicker timePicker = (TimePicker) view.findViewById(R.id.timePicker);
-                                        int i = timePicker.getCurrentHour();
-                                        int i1 = timePicker.getCurrentMinute();
-                                        parsePacket.setDataCountdown(i, i1);
-                                        parsePacket.sendPacket(mDevice);
 
-                                    }
-                                })
-                                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-
-                                    }
-                                }).setMessage("几小时几分后关闭？")
-                                .show();
-
-                        Window window = alertDialog.getWindow();
-                        TimePicker timePicker = (TimePicker) window.findViewById(R.id.timePicker);
-                        timePicker.setIs24HourView(true);
-                        timePicker.setCurrentHour(0);
-                        timePicker.setCurrentMinute(0);
-                        break;
-                }
-
-            }
-        };
-
-        builder.setItems(R.array.countdown_data_off, clickListener).show();
-
-
-    }
-
-    @OnClick({R.id.button_error, R.id.button_error1})
+    @OnClick({R.id.button_error, R.id.button_error1, R.id.button_clear})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.button_error:
-                new ParsePacket().requestDeviceList(mDevice, (byte) 0);
+                new PacketBean().requestDeviceList(mGizDevice, (byte) 0);
                 break;
             case R.id.button_error1:
-                ParsePacket parsePacket = new ParsePacket();
-                parsePacket.setType(ParsePacket.TYPE.APP_REQUEST);
-                parsePacket.setCommand(UPDATE_DEVICE_COUNT);
-                parsePacket.sendPacket(mDevice);
+                PacketBean packetBean = new PacketBean();
+                packetBean.setType(PacketBean.TYPE.APP_REQUEST);
+                packetBean.setCommand(UPDATE_DEVICE_COUNT);
+                packetBean.sendPacket(mGizDevice);
+                break;
+            case R.id.button_clear:
+                mLogcat = "";
+                textViewLogcat.setText(mLogcat);
                 break;
         }
     }
 
 
-    @Override
-    public void onCountdownClick(int position) {
-        ParsePacket parsePacket = new ParsePacket();
-
-        Device device = deviceList.get(position);
-        parsePacket.setType(ParsePacket.TYPE.APP_REQUEST)
-                .setDeviceType(device.getDeviceType())
-                .setMac(device.getMac())
-                .setDataLength((byte) 8)
-                .setCommand(ParsePacket.COMMAND.COUNTDOWN_WRITE);
-        if (device.getDeviceType() == ParsePacket.DEVICE_TYPE.LAMP) {
-            parsePacket.setDataTimeState(lampuminance);
-        } else {
-            parsePacket.setDataTimeState((byte) 1);
-        }
-        showCountdownDialog(parsePacket);
-    }
-
-    @Override
-    public void onTimingClick(int position) {
-        ParsePacket parsePacket = new ParsePacket();
-        Device device = deviceList.get(position);
-        parsePacket.setType(ParsePacket.TYPE.APP_REQUEST)
-                .setDeviceType(device.getDeviceType())
-                .setMac(device.getMac())
-                .setDataLength((byte) 8)
-                .setCommand(ParsePacket.COMMAND.TIMING_WRITE);
-        if (device.getDeviceType() == ParsePacket.DEVICE_TYPE.LAMP) {
-            parsePacket.setDataTimeState(lampuminance);
-        } else {
-            parsePacket.setDataTimeState((byte) 1);
-        }
-        Intent intent = new Intent(this, AlarmActivity.class);
-        intent.putExtra("mParsePacket", parsePacket);
-        startActivity(intent);
-    }
 
     @Override
     public void onNameClick(int position, View view) {
@@ -433,39 +253,39 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
     }
 
     @Override
-    public void onSwtichClick(int position, View view, byte switchState) {
-        ParsePacket parsePacket = new ParsePacket();
-        parsePacket.setMac(deviceList.get(position).getMac())
-                .setDeviceType(deviceList.get(position).getDeviceType())
-                .setType(ParsePacket.TYPE.APP_REQUEST)
-                .setCommand(ParsePacket.COMMAND.STATE_WRITE)
+    public void onSwitchClick(int position, View view, byte switchState) {
+        PacketBean packetBean = new PacketBean();
+        packetBean.setMac(mDeviceList.get(position).getMac())
+                .setDeviceType(mDeviceList.get(position).getDeviceType())
+                .setType(PacketBean.TYPE.APP_REQUEST)
+                .setCommand(PacketBean.COMMAND.STATE_WRITE)
                 .setDataState(switchState)
                 .setDataLength((byte) 1)
-                .sendPacket(mDevice);
-        lampuminance = switchState;
+                .sendPacket(mGizDevice);
+        sLampLuminance = switchState;
     }
 
-    private void initData() {
+    private void testInitData() {
         Device device1 = new Device();
-        device1.setDeviceType(ParsePacket.DEVICE_TYPE.SENSOR_TEMPERATURE);
+        device1.setDeviceType(PacketBean.DEVICE_TYPE.SENSOR_TEMPERATURE);
         device1.setMac(new byte[]{0, 0, 0, 0, 0, 0, 0, 1});
         Device device2 = new Device();
-        device2.setDeviceType(ParsePacket.DEVICE_TYPE.LAMP);
+        device2.setDeviceType(PacketBean.DEVICE_TYPE.LAMP);
         device2.setMac(new byte[]{0, 0, 0, 0, 0, 0, 0, 2});
 
         Device device3 = new Device();
-        device3.setDeviceType(ParsePacket.DEVICE_TYPE.CURTAIN);
+        device3.setDeviceType(PacketBean.DEVICE_TYPE.CURTAIN);
         device3.setMac(new byte[]{0, 0, 0, 0, 0, 0, 0, 3});
 
         Device device4 = new Device();
-        device4.setDeviceType(ParsePacket.DEVICE_TYPE.SOCKET);
+        device4.setDeviceType(PacketBean.DEVICE_TYPE.SOCKET);
         device4.setMac(new byte[]{0, 0, 0, 0, 0, 0, 0, 4});
 
         Device device5 = new Device();
-        device5.setDeviceType(ParsePacket.DEVICE_TYPE.SOCKET);
+        device5.setDeviceType(PacketBean.DEVICE_TYPE.SOCKET);
         device5.setMac(new byte[]{0, 0, 0, 0, 0, 0, 0, 5});
 
-        Collections.addAll(deviceList, device1, device2, device3, device4, device5);
+        Collections.addAll(mDeviceList, device1, device2, device3, device4, device5);
     }
 
     @Override
@@ -480,21 +300,15 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycerView
                 ToastUtil.showToast(Main2Activity.this, device.getProductName() + "设备状态变为:离线");
                 break;
             case GizDeviceControlled:
-                if (alertDialog != null) {
-                    alertDialog.cancel();
-
-                }
-                controlled = true;
-                ParsePacket parsePacket = new ParsePacket();
-                parsePacket.setType(ParsePacket.TYPE.APP_REQUEST);
-                parsePacket.setCommand(UPDATE_DEVICE_COUNT);
-                parsePacket.sendPacket(mDevice);
+                PacketBean packetBean = new PacketBean();
+                packetBean.setType(PacketBean.TYPE.APP_REQUEST);
+                packetBean.setCommand(UPDATE_DEVICE_COUNT);
+                packetBean.sendPacket(mGizDevice);
                 ToastUtil.showToast(Main2Activity.this, device.getProductName() + "设备状态变为:可控");
                 break;
             case GizDeviceUnavailable:
                 ToastUtil.showToast(Main2Activity.this, device.getProductName() + "设备状态变为:难以获得的");
                 break;
         }
-
     }
 }

@@ -1,69 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.v7.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_marginTop="5dp"
-    android:layout_marginLeft="3dp"
-    android:layout_marginRight="3dp"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:id="@+id/device_item">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="70dp">
+        android:layout_height="70dp"
+        android:background="#FFF"
+        xmlns:android="http://schemas.android.com/apk/res/android">
 
         <ImageView
-            android:layout_marginTop="5dp"
+            android:id="@+id/image_item_lamp"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:src="@drawable/lamp"
-            android:id="@+id/image_item_lamp"/>
+            android:layout_marginTop="5dp"
+            android:src="@drawable/lamp"/>
+
         <TextView
+            android:id="@+id/tv_item_name_lamp"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:gravity="center"
             android:layout_marginLeft="12dp"
-            android:text="lamp"
             android:layout_toRightOf="@id/image_item_lamp"
-            android:textSize="30sp"
-            android:id="@+id/tv_item_name_lamp" />
+            android:gravity="center"
+            android:text="灯"
+            android:textSize="30sp"/>
+
         <SeekBar
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
             android:id="@+id/seekBar_lamp"
-            android:max="100"
-            android:layout_marginLeft="12dp"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
             android:layout_alignBottom="@id/image_item_lamp"
+            android:layout_marginLeft="12dp"
+            android:layout_marginStart="19dp"
             android:layout_toEndOf="@id/tv_item_name_lamp"
-            android:layout_marginStart="19dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@id/seekBar_lamp"
-            android:layout_toRightOf="@id/tv_item_name_lamp"
-            android:layout_marginLeft="30dp"
-            android:layout_marginBottom="8dp"
-            android:text="倒计时"
-            android:id="@+id/tv_item_countdown_lamp"/>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@id/seekBar_lamp"
-            android:layout_toRightOf="@id/tv_item_countdown_lamp"
-            android:layout_marginLeft="30dp"
-            android:layout_marginBottom="8dp"
-            android:id="@+id/tv_item_timing_lamp"
-            android:text="定时"/>
-
-
-
-
-
+            android:max="100"/>
 
     </RelativeLayout>
-</android.support.v7.widget.CardView>
 
 
 

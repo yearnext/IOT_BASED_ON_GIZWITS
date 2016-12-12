@@ -36,6 +36,10 @@ public class StartActivity extends BaseActivity {
         }
     }
 
+
+
+
+
     @TargetApi(Build.VERSION_CODES.M)
     private void insertDummyContactWrapper() {
         int hasWriteContactsPermission = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
