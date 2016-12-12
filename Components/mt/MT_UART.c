@@ -48,7 +48,7 @@
 #include "OSAL_Memory.h"
 #include <string.h>
 
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+#if MYPROTOCOL_DEVICE_IS_COORD
 #include "gizwits_protocol.h"
 #endif
 
@@ -109,7 +109,7 @@ void MT_UartInit ()
 
   /* UART Configuration */
   uartConfig.configured           = TRUE;
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+#if MYPROTOCOL_DEVICE_IS_COORD
   uartConfig.baudRate             = HAL_UART_BR_9600;
 #else
   uartConfig.baudRate             = HAL_UART_BR_115200;
@@ -216,7 +216,7 @@ byte MT_UartCalcFCS( uint8 *msg_ptr, uint8 len )
  ***************************************************************************************************/
 void MT_UartProcessZToolData ( uint8 port, uint8 event )
 {
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+#if MYPROTOCOL_DEVICE_IS_COORD
     uint8 data = 0;
     (void)event;  // Intentionally unreferenced parameter
 

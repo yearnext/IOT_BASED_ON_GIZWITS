@@ -149,11 +149,11 @@ bool MyprotocolInit( uint8 *taskId )
  */
 void MyprotocolPutLog( uint8 *log, uint16 size )
 {
-	#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
-		HalUARTWrite(HAL_UART_PORT_1,log,size);
-	#else
-		HalUARTWrite(HAL_UART_PORT_0,log,size);
-	#endif
+#if MYPROTOCOL_DEVICE_IS_COORD
+    HalUARTWrite(HAL_UART_PORT_1,log,size);
+#else
+    HalUARTWrite(HAL_UART_PORT_0,log,size);
+#endif
 }
 
 #else
@@ -372,7 +372,7 @@ bool MyprotocolSendData( void *ctx, void *dstaddr, packet_type packet_func, send
     
 //    memset(&packet,0,sizeof(MYPROTOCOL_FORMAT_t));
 
-    packet.device.device = SMART_DEVICE_TYPE;
+    packet.device.device = MYPROTOCOL_DEVICE;
     memcpy(&packet.device.mac,&aExtendedAddress,sizeof(packet.device.mac));
     
     packet_func(ctx, &packet);

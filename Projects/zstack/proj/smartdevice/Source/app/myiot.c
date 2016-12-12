@@ -32,28 +32,26 @@
 //#include <string.h>
 //#include "NLMEDE.h"
 //#include "onboard.h"
-//#include "hal_led.h"
+#include "hal_led.h"
 //#include "hal_timer.h"
 //#include "app_save.h"
 //#include "OSAL_Nv.h"
 //#include "hal_key.h"
 //#include "devicelist.h"
-#include "MT.h"
 #include "MT_UART.h"
-#include "hal_uart.h"
 #include "myprotocol.h"
 //#include "mcu_timer.h"
 //#include "bsp_key.h"
 //#include "app_time.h"
 //
-//#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+//#if MYPROTOCOL_DEVICE_IS_COORD
 //#include "gizwits_protocol.h"
-//#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+//#elif MYPROTOCOL_DEVICE_IS_LIGHT
 //#include "bsp_light.h"
-//#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+//#elif MYPROTOCOL_DEVICE_IS_SOCKET
 //#include "bsp_socket.h"
-//#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
-//#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+//#elif MYPROTOCOL_DEVICE_IS_CURTAIN
+//#elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
 //#include "bsp_htsensor.h"
 //#else
 //#endif
@@ -62,7 +60,7 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 //// 机智云数据点
-//#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+//#if MYPROTOCOL_DEVICE_IS_COORD
 //dataPoint_t currentDataPoint;
 //#endif
 
@@ -71,7 +69,7 @@
 #define USE_SMARTDEVICE_DEBUG 1
 
 #if USE_SMARTDEVICE_DEBUG
-    #if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+    #if MYPROTOCOL_DEVICE_IS_COORD
         #define DEVICE_LOG(n) HalUARTWrite(1,n,sizeof(n))  ///<运行日志打印
     #else
         #define DEVICE_LOG(n) HalUARTWrite(0,n,sizeof(n))  ///<运行日志打印
@@ -81,11 +79,12 @@
 #endif
      
 /** 设备定时时间 */
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+#if MYPROTOCOL_DEVICE_IS_COORD
     #define DEVICE_LIST_TIME            (15000)
 #else
     #define DEVICE_LIST_TIME            (15000)
 #endif
+   
 /** 设备定时事件 */
 #define DEVICE_LIST_TIMER_EVEN          (0x0002)
 
@@ -103,8 +102,8 @@
 #define TIMER_1MIN_COUNT  (6000)
 
 /** Smart Device 通讯状态指示灯 */
-#define SMARTDEVICE_LED_DISCONNED_STATE (0x00)
-#define SMARTDEVICE_LED_CONNED_STATE    (0x01)
+#define MYIOT_DISCONNED_STATE (0x00)
+#define MYIOT_CONNED_STATE    (0x01)
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -117,8 +116,8 @@ static devStates_t myIotNwkState;
 /* functions statement -------------------------------------------------------*/
 void SmartDevice_Key_Handler( uint8 keys, uint8 state );
 void ZDO_STATE_CHANGE_CB( devStates_t status );
-void SmartDevice_CommLED_Control( uint8 state );
-void device_timer_cb( void );
+void myiotCommLedControl( uint8 state );
+void deviceTimerCallBack( void );
 
 /* Exported functions --------------------------------------------------------*/
 /**
@@ -138,30 +137,30 @@ void myIotInit( byte task_id )
     MT_UartRegisterTaskID(myIotTaskID);
     
     MyprotocolInit( &myIotTaskID );
-//    
+    
 //    hal_key_init();
 //    
 //    app_time_init();
 //
-//#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+//#if MYPROTOCOL_DEVICE_IS_COORD
 //    gizwitsInit();
-//#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+//#elif MYPROTOCOL_DEVICE_IS_LIGHT
 //    bsp_light_init();
-//#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+//#elif MYPROTOCOL_DEVICE_IS_SOCKET
 //    bsp_socket_init();
-//#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
-//#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+//#elif MYPROTOCOL_DEVICE_IS_CURTAIN
+//#elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
 //	ht_sensor_init();
 //#else
 //#endif
 //    
-//    osal_start_timerEx( myIotTaskID, 
-//                        DEVICE_TIMER_EVEN, 
-//                        DEVICE_BACKSTAGE_TIME );
-//
-//    SmartDevice_CommLED_Control(SMARTDEVICE_LED_DISCONNED_STATE);
-//    
-//    DEVICE_LOG("Smart device init finish!\n");
+    osal_start_timerEx( myIotTaskID, 
+                        DEVICE_TIMER_EVEN, 
+                        DEVICE_BACKSTAGE_TIME );
+
+    myiotCommLedControl(MYIOT_DISCONNED_STATE);
+    
+    DEVICE_LOG("Smart device init finish!\n");
 }
 
 /**
@@ -186,9 +185,9 @@ uint16 myIotProcessEven( uint8 task_id, uint16 events )
         {
             switch( MSGpkt->hdr.event )
             {
-//                case AF_INCOMING_MSG_CMD:
+                case AF_INCOMING_MSG_CMD:
 //                    SmartDevice_Message_Handler(MSGpkt);
-//                    break;
+                    break;
                 case ZDO_STATE_CHANGE:
                     myIotNwkState = (devStates_t)(MSGpkt->hdr.status);
                     ZDO_STATE_CHANGE_CB(myIotNwkState);
@@ -203,10 +202,10 @@ uint16 myIotProcessEven( uint8 task_id, uint16 events )
         // return unprocessed events
         return (events ^ SYS_EVENT_MSG);
     }
-//    
-//    if( events & DEVICE_LIST_TIMER_EVEN )
-//    {   
-//#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+    
+    if( events & DEVICE_LIST_TIMER_EVEN )
+    {   
+//#if MYPROTOCOL_DEVICE_IS_COORD
 //        if( Del_ZombieDevice_ForList() == true )
 //        {
 //            MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_devicelist_update_packet,NULL);
@@ -218,26 +217,26 @@ uint16 myIotProcessEven( uint8 task_id, uint16 events )
 //        MYPROTOCO_S2H_MSG_SEND(create_tick_packet,NULL);
 //        DEVICE_LOG("DEVICE SEND TICK PACKET!\n");
 //#endif
-//
-//        osal_start_timerEx( myIotTaskID, 
-//                            DEVICE_LIST_TIMER_EVEN, 
-//                            DEVICE_LIST_TIME );
-//        
-//        return (events ^ DEVICE_LIST_TIMER_EVEN);
-//    }
-//    
-//    if( events & DEVICE_TIMER_EVEN )
-//    {
-//        device_timer_cb();
-//        
-//        osal_start_timerEx( myIotTaskID, 
-//                            DEVICE_TIMER_EVEN, 
-//                            DEVICE_BACKSTAGE_TIME );
-//        
-//        return (events ^ DEVICE_TIMER_EVEN);
-//    }
-//    
-//    // Discard unknown events
+
+        osal_start_timerEx( myIotTaskID, 
+                            DEVICE_LIST_TIMER_EVEN, 
+                            DEVICE_LIST_TIME );
+        
+        return (events ^ DEVICE_LIST_TIMER_EVEN);
+    }
+    
+    if( events & DEVICE_TIMER_EVEN )
+    {
+        deviceTimerCallBack();
+        
+        osal_start_timerEx( myIotTaskID, 
+                            DEVICE_TIMER_EVEN, 
+                            DEVICE_BACKSTAGE_TIME );
+        
+        return (events ^ DEVICE_TIMER_EVEN);
+    }
+    
+    // Discard unknown events
     return 0;
 }
  
@@ -251,65 +250,65 @@ uint16 myIotProcessEven( uint8 task_id, uint16 events )
  */
 void ZDO_STATE_CHANGE_CB( devStates_t status )
 {
-//    switch( status )
-//    {
-//        case DEV_ROUTER:
-//            DEVICE_LOG("I am Router Device!\n");
-//            SmartDevice_CommLED_Control(SMARTDEVICE_LED_CONNED_STATE);
-//            osal_start_timerEx( myIotTaskID, 
-//                                DEVICE_LIST_TIMER_EVEN, 
-//                                DEVICE_LIST_TIME );
-//                break;
-//        case DEV_END_DEVICE:
-//            DEVICE_LOG("I am End Device!\n");
-//            SmartDevice_CommLED_Control(SMARTDEVICE_LED_CONNED_STATE);
-//            osal_start_timerEx( myIotTaskID, 
-//                                DEVICE_LIST_TIMER_EVEN, 
-//                                DEVICE_LIST_TIME );
-//                break;
-//        case DEV_ZB_COORD:
-//            DEVICE_LOG("I am Coord Device!\n");
-//            SmartDevice_CommLED_Control(SMARTDEVICE_LED_CONNED_STATE);
-//            osal_start_timerEx( myIotTaskID, 
-//                                DEVICE_LIST_TIMER_EVEN, 
-//                                DEVICE_LIST_TIME );
-//                break;
-//        case DEV_NWK_DISC:
-//            DEVICE_LOG("Discovering PAN's to join!\n");
-//            SmartDevice_CommLED_Control(SMARTDEVICE_LED_DISCONNED_STATE);
-//            osal_stop_timerEx( myIotTaskID, DEVICE_LIST_TIMER_EVEN);
-//            break;
-//        default:
-//            break;
-//    }
+    switch( status )
+    {
+        case DEV_ROUTER:
+            DEVICE_LOG("I am Router Device!\n");
+            myiotCommLedControl(MYIOT_CONNED_STATE);
+            osal_start_timerEx( myIotTaskID, 
+                                DEVICE_LIST_TIMER_EVEN, 
+                                DEVICE_LIST_TIME );
+                break;
+        case DEV_END_DEVICE:
+            DEVICE_LOG("I am End Device!\n");
+            myiotCommLedControl(MYIOT_CONNED_STATE);
+            osal_start_timerEx( myIotTaskID, 
+                                DEVICE_LIST_TIMER_EVEN, 
+                                DEVICE_LIST_TIME );
+                break;
+        case DEV_ZB_COORD:
+            DEVICE_LOG("I am Coord Device!\n");
+            myiotCommLedControl(MYIOT_CONNED_STATE);
+            osal_start_timerEx( myIotTaskID, 
+                                DEVICE_LIST_TIMER_EVEN, 
+                                DEVICE_LIST_TIME );
+                break;
+        case DEV_NWK_DISC:
+            DEVICE_LOG("Discovering PAN's to join!\n");
+            myiotCommLedControl(MYIOT_DISCONNED_STATE);
+            osal_stop_timerEx( myIotTaskID, DEVICE_LIST_TIMER_EVEN);
+            break;
+        default:
+            break;
+    }
 }
 
 /**
  *******************************************************************************
- * @brief       Smart Device 通讯状态指示灯控制
+ * @brief       myiot通讯状态指示灯控制
  * @param       [in/out]  state    通讯状态
  * @return      [in/out]  void
  * @note        None
  *******************************************************************************
  */
-//void SmartDevice_CommLED_Control( uint8 state )
-//{
-//    if( state == SMARTDEVICE_LED_DISCONNED_STATE )
-//    {
-//        HalLedSet(HAL_LED_1,HAL_LED_MODE_ON);
-//        HalLedSet(HAL_LED_2,HAL_LED_MODE_OFF);
-//    }
-//    else if( state == SMARTDEVICE_LED_CONNED_STATE )
-//    {
-//        HalLedSet(HAL_LED_1,HAL_LED_MODE_OFF);
-//        HalLedSet(HAL_LED_2,HAL_LED_MODE_ON);
-//    }
-//    else
-//    {
-//        HalLedSet(HAL_LED_1,HAL_LED_MODE_OFF);
-//        HalLedSet(HAL_LED_2,HAL_LED_MODE_OFF);
-//    }
-//}
+static void myiotCommLedControl( uint8 state )
+{
+    if( state == MYIOT_DISCONNED_STATE )
+    {
+        HalLedSet(HAL_LED_1,HAL_LED_MODE_ON);
+        HalLedSet(HAL_LED_2,HAL_LED_MODE_OFF);
+    }
+    else if( state == MYIOT_CONNED_STATE )
+    {
+        HalLedSet(HAL_LED_1,HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_2,HAL_LED_MODE_ON);
+    }
+    else
+    {
+        HalLedSet(HAL_LED_1,HAL_LED_MODE_OFF);
+        HalLedSet(HAL_LED_2,HAL_LED_MODE_OFF);
+    }
+}
 
 /**
  *******************************************************************************
@@ -319,8 +318,8 @@ void ZDO_STATE_CHANGE_CB( devStates_t status )
  * @note        执行周期为10MS
  *******************************************************************************
  */
-//void device_timer_cb( void )
-//{
+void deviceTimerCallBack( void )
+{
 //    static uint8 timer_20ms  = 0;
 //    static uint8 timer_50ms  = 0;
 //    static uint8 timer_100ms = 0;
@@ -335,7 +334,7 @@ void ZDO_STATE_CHANGE_CB( devStates_t status )
 //    
 //    if( ++timer_50ms >= TIMER_50MS_COUNT )
 //    {
-//#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+//#if MYPROTOCOL_DEVICE_IS_COORD
 //        gizTimer50Ms();
 //#endif
 //        key_handler();
@@ -344,7 +343,7 @@ void ZDO_STATE_CHANGE_CB( devStates_t status )
 //    
 //    if( ++timer_100ms >= TIMER_100MS_COUNT )
 //    {
-//#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+//#if MYPROTOCOL_DEVICE_IS_COORD
 //        gizwitsHandle(&currentDataPoint);
 //#endif
 //        timer_100ms = 0;
@@ -352,10 +351,10 @@ void ZDO_STATE_CHANGE_CB( devStates_t status )
 //    
 //    if( ++timer_350ms >= TIMER_350MS_COUNT )
 //    {
-//#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+//#if MYPROTOCOL_DEVICE_IS_LIGHT
 //        app_time_update();
 //        light_working_handler();
-//#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+//#elif MYPROTOCOL_DEVICE_IS_SOCKET
 //        app_time_update();
 //        socket_working_handler();
 //#else
@@ -365,12 +364,12 @@ void ZDO_STATE_CHANGE_CB( devStates_t status )
 //    
 //    if( ++timer_1min >= TIMER_1MIN_COUNT )
 //    {
-//#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+//#if MYPROTOCOL_DEVICE_IS_HT_SENSOR
 //		report_ht_sensor_data();
 //#endif
 //        timer_1min = 0;
 //    }
-//}
+}
 
 /** @}*/     /* smartlight模块 */
 
