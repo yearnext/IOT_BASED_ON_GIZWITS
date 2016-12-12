@@ -46,7 +46,7 @@
 #define KEY_ACTIVE_HIGH !!
 
 // Íø¹Ø°´¼ü¶Ë¿ÚÅäÖÃ
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+#if MYPROTOCOL_DEVICE_IS_COORD
 /** KEY1 P0_4 */
 #define KEY1_PORT        P0_4
 #define KEY1_PORT_SEL    P0SEL
@@ -62,7 +62,7 @@
 #define KEY2_PORT_INIT() st(KEY2_PORT_SEL &= ~KEY2_PORT_BIT; KEY2_PORT_DIR &= ~KEY2_PORT_BIT;)
 #define KEY2_READ()      KEY_ACTIVE_LOW(KEY2_PORT)
 // µçµÆµÆ°´¼ü¶Ë¿ÚÅäÖÃ
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+#elif MYPROTOCOL_DEVICE_IS_LIGHT
 /** KEY1 P0_4 */
 #define KEY1_PORT        P0_4
 #define KEY1_PORT_SEL    P0SEL
@@ -78,7 +78,7 @@
 #define KEY2_PORT_INIT() st(KEY2_PORT_SEL &= ~KEY2_PORT_BIT; KEY2_PORT_DIR &= ~KEY2_PORT_BIT;)
 #define KEY2_READ()      KEY_ACTIVE_LOW(KEY2_PORT)
 // ²å×ù°´¼ü¶Ë¿ÚÅäÖÃ
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+#elif MYPROTOCOL_DEVICE_IS_SOCKET
 /** KEY1 P0_4 */
 #define KEY1_PORT        P0_4
 #define KEY1_PORT_SEL    P0SEL
@@ -94,7 +94,7 @@
 #define KEY2_PORT_INIT() st(KEY2_PORT_SEL &= ~KEY2_PORT_BIT; KEY2_PORT_DIR &= ~KEY2_PORT_BIT;)
 #define KEY2_READ()      KEY_ACTIVE_LOW(KEY2_PORT)
 // ´°Á±°´¼ü¶Ë¿ÚÅäÖÃ
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+#elif MYPROTOCOL_DEVICE_IS_CURTAIN
 /** KEY1 P1_0 */
 #define KEY1_PORT        P1_0
 #define KEY1_PORT_SEL    P1SEL
@@ -112,7 +112,7 @@
 #define KEY2_READ()      KEY_ACTIVE_LOW(KEY2_PORT)
 
 // ÎÂÊª¶È´«¸ÐÆ÷°´¼ü¶Ë¿ÚÅäÖÃ
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+#elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
 
 #else
 /** KEY1 */
@@ -175,27 +175,27 @@ extern key_value_t get_key_value(void);
 extern void key_scan(void);
 extern void key_handler(void);
 
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+#if MYPROTOCOL_DEVICE_IS_COORD
 extern void key1_handler(key_message_t);
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+#elif MYPROTOCOL_DEVICE_IS_LIGHT
 extern void key1_handler(key_message_t);
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+#elif MYPROTOCOL_DEVICE_IS_SOCKET
 extern void key1_handler(key_message_t);
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+#elif MYPROTOCOL_DEVICE_IS_CURTAIN
 extern void key1_handler(key_message_t);
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+#elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
 #else
 #endif
 
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+#if MYPROTOCOL_DEVICE_IS_COORD
 extern void key2_handler(key_message_t);
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+#elif MYPROTOCOL_DEVICE_IS_LIGHT
 extern void key2_handler(key_message_t);
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+#elif MYPROTOCOL_DEVICE_IS_SOCKET
 extern void key2_handler(key_message_t);
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+#elif MYPROTOCOL_DEVICE_IS_CURTAIN
 extern void key2_handler(key_message_t);
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+#elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
 #else
 #endif
 

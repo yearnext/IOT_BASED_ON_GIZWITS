@@ -220,30 +220,30 @@ bool key_message_read(key_value_t *value, key_message_t *message)
  */
 void hal_key_init(void)
 {
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+#if MYPROTOCOL_DEVICE_IS_COORD
     /** KEY1 P0_4 */
     KEY1_PORT_INIT();
     /** KEY2 P0_5 */
     KEY2_PORT_INIT();
 
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+#elif MYPROTOCOL_DEVICE_IS_LIGHT
     /** KEY1 P0_4 */
     KEY1_PORT_INIT();
     /** KEY2 P0_5 */
     KEY2_PORT_INIT();
 
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+#elif MYPROTOCOL_DEVICE_IS_SOCKET
     /** KEY1 P0_4 */
     KEY1_PORT_INIT();
     /** KEY2 P0_5 */
     KEY2_PORT_INIT();
 
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+#elif MYPROTOCOL_DEVICE_IS_CURTAIN
     /** KEY1 P1_0 */
     KEY1_PORT_INIT();
     /** KEY2 P0_6 */
     KEY2_PORT_INIT();
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+#elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
 
 #else
     /** KEY1 */ 
@@ -268,7 +268,7 @@ void hal_key_init(void)
  */
 key_value_t get_key_value(void)
 {
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+#if MYPROTOCOL_DEVICE_IS_COORD
     /** KEY1 P0_4 */
 	if (KEY1_READ())
 	{
@@ -280,7 +280,7 @@ key_value_t get_key_value(void)
 	{
 		return KEY_VALUE_K2;
 	}
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+#elif MYPROTOCOL_DEVICE_IS_LIGHT
     /** KEY1 P0_4 */
 	if (KEY1_READ())
 	{
@@ -292,7 +292,7 @@ key_value_t get_key_value(void)
 	{
 		return KEY_VALUE_K2;
 	}  
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+#elif MYPROTOCOL_DEVICE_IS_SOCKET
     /** KEY1 P0_4 */
 	if (KEY1_READ())
 	{
@@ -304,7 +304,7 @@ key_value_t get_key_value(void)
 	{
 		return KEY_VALUE_K2;
 	}
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+#elif MYPROTOCOL_DEVICE_IS_CURTAIN
     /** KEY1 P0_4 */
 	if (KEY1_READ())
 	{
@@ -317,7 +317,7 @@ key_value_t get_key_value(void)
 		return KEY_VALUE_K2;
 	}
     
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+#elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
 #else
 #endif
     
@@ -411,28 +411,28 @@ void key_handler(void)
 		switch (message.value)
 		{
 			case KEY_VALUE_K1:
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+#if MYPROTOCOL_DEVICE_IS_COORD
 //                key1_handler(message.message);
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+#elif MYPROTOCOL_DEVICE_IS_LIGHT
                 key1_handler(message.message);
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+#elif MYPROTOCOL_DEVICE_IS_SOCKET
                 key1_handler(message.message);
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+#elif MYPROTOCOL_DEVICE_IS_CURTAIN
                 key1_handler(message.message);
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+#elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
 #else
 #endif
 				break;
 			case KEY_VALUE_K2:
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_COORD)
+#if MYPROTOCOL_DEVICE_IS_COORD
 //                key2_handler(message.message);
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
+#elif MYPROTOCOL_DEVICE_IS_LIGHT
                 key2_handler(message.message);
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+#elif MYPROTOCOL_DEVICE_IS_SOCKET
                 key2_handler(message.message);
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+#elif MYPROTOCOL_DEVICE_IS_CURTAIN
                 key2_handler(message.message);
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
+#elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
 #else
 #endif
 				break;
