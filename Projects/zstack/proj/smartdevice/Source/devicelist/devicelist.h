@@ -51,7 +51,7 @@ extern bool addDeviceToList( MYPROTOCOL_DEVICE_INFO_t* );
 extern bool clrDeviceInList( MYPROTOCOL_DEVICE_INFO_t * );
 extern uint8 deviceNumGet( void );
 extern bool deviceIsExists( MYPROTOCOL_DEVICE_INFO_t* );
-extern bool deviceInfoGet( uint8, MYPROTOCOL_DEVICE_INFO_t* );
+extern bool deviceInfoGet( uint8, MYPROTOCOL_DEVICE_INFO_t** );
 extern bool addDeviceTick( MYPROTOCOL_DEVICE_INFO_t * );
 extern bool allDeviceTickClr( void );
 extern bool allZombieDeviceClr( void );

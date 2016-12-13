@@ -80,12 +80,6 @@ bool DeviceNumAckPacket( void *ctx, void *packet )
         MYPROTOCOL_LOG("Device Num Ack Packet info is invalid! \r\n");
         return false;
     }
-    
-    if( ctx == NULL )
-    {
-        MYPROTOCOL_LOG("tick ack device info  is invalid! \r\n");
-        return false;
-    }
 #endif    
 
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype      = MYPROTOCOL_W2D_ACK;
@@ -108,7 +102,8 @@ bool DeviceNumAckPacket( void *ctx, void *packet )
 bool DeviceInfoAckPacket( void *ctx, void *packet )
 {
     uint8 id = *((uint8 *)(ctx));
-    MYPROTOCOL_DEVICE_INFO_t info;
+    MYPROTOCOL_DEVICE_INFO_t info; 
+    MYPROTOCOL_DEVICE_INFO_t *device = &info;
     
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
@@ -124,11 +119,20 @@ bool DeviceInfoAckPacket( void *ctx, void *packet )
     }
 #endif    
 
+    memset(&info, 0, sizeof(MYPROTOCOL_DEVICE_INFO_t));
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype      = MYPROTOCOL_W2D_ACK;
     ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.cmd = COORD_RD_DEVICE_INFO_CMD; 
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[0] = id;
-    deviceInfoGet(id, &info);
-    memcpy(&(((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[1]), &info, sizeof(MYPROTOCOL_DEVICE_INFO_t));
+    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[0] = id;   
+    
+    if( deviceInfoGet(id, &device) == true )
+    {
+        memcpy(&(((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[1]), device, sizeof(MYPROTOCOL_DEVICE_INFO_t));
+    }
+    else
+    {
+        memcpy(&(((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[1]), &info, sizeof(MYPROTOCOL_DEVICE_INFO_t));
+    }
+
     ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.len = sizeof(MYPROTOCOL_DEVICE_INFO_t)+1;
     
     return true;
@@ -347,7 +351,7 @@ static void coordW2DMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
                     }
                     case COORD_RD_DEVICE_INFO_CMD:
                     {
-                        MyprotocolSendData((void **)&recPacket, NULL, DeviceInfoAckPacket, MyprotocolD2WSendData);
+                        MyprotocolSendData((void **)&recPacket->user_data.data[0], NULL, DeviceInfoAckPacket, MyprotocolD2WSendData);
                         break;
                     } 
                     default:
@@ -396,11 +400,10 @@ bool coordMessageHandler( void *recPacket )
     switch( packet->commtype )
     {
         case MYPROTOCOL_W2D_WAIT:
-        case MYPROTOCOL_W2D_ACK:
-        case MYPROTOCOL_D2W_WAIT:
         case MYPROTOCOL_D2W_ACK:
             coordW2DMessageHandler(recPacket);
             break;
+        case MYPROTOCOL_D2W_WAIT:
         case MYPROTOCOL_H2S_WAIT:
         case MYPROTOCOL_H2S_ACK:
         case MYPROTOCOL_S2H_WAIT:

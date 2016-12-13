@@ -116,7 +116,7 @@ static bool listDeviceFindForId( void **ctx, void **list, void **expand )
 
 	if (*list != NULL)
 	{
-		if (--(*id))
+		if (!--(*id))
 		{
             if( expand != NULL )
             {
@@ -150,7 +150,8 @@ static bool listDeviceFindOperaForId( void **ctx, void **list, void **expand )
 		{
             if( expand != NULL )
             {
-                ((node_func)((uint16)*expand))(ctx,list,NULL);
+                uint16 func = (uint16)expand; 
+                ((node_func)((uint16)func))(ctx,list,NULL);
             }
             
 			return true;
@@ -409,14 +410,14 @@ bool deviceIsExists( MYPROTOCOL_DEVICE_INFO_t *info )
  * @note        None
  *******************************************************************************
  */
-bool deviceInfoGet( uint8 id, MYPROTOCOL_DEVICE_INFO_t *info )
+bool deviceInfoGet( uint8 id, MYPROTOCOL_DEVICE_INFO_t **info )
 {
     if( id == 0 )
     {
         return false;
     }
     
-    if ( nodeTraverse((void **)&listHead, listDeviceFindForInfo, (void **)&id, (void **)&info) == true )
+    if ( nodeTraverse((void **)&listHead, listDeviceFindForId, (void **)&id, (void **)info) == true )
     {
         return true;
     }

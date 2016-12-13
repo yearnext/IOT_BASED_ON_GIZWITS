@@ -68,6 +68,7 @@ bool gizwitsEventProcess( eventInfo_t *info, uint8 *data, uint8 len )
     {
       case EVENT_PACKET:
         GIZWITS_LOG("Evt: EVENT_PACKET\n");
+        MyprotocolW2DReceiveData((void *)data,coordMessageHandler);
         break;
       case WIFI_SOFTAP:
         break;

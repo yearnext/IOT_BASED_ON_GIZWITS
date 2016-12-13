@@ -293,7 +293,11 @@ bool MyprotocolPacketCheck( void *packet )
  */
 bool MyprotocolW2DRecDeviceCheck( MYPROTOCOL_FORMAT_t *recPacket )
 {
+#if MYPROTOCOL_DEVICE_IS_COORD
+    return ( recPacket->device.device == MYPROTOCOL_DEVICE_COORD ) ? (true) : (false);
+#else
     return (memcmp( &recPacket->device.mac, &aExtendedAddress, sizeof(aExtendedAddress) ) == 0) ? (true) : (false);
+#endif
 } 
 
 /**

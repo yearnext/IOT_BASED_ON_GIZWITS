@@ -1,5 +1,5 @@
 [Stack]
-FillEnabled=1
+FillEnabled=0
 OverflowWarningsEnabled=1
 WarningThreshold=90
 SpWarningsEnabled=1
@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=1676740278
+Checksum=-1224969781
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -66,14 +66,13 @@ Fmt4=protocolNetTime_t-month	3	0
 Fmt5=protocolNetTime_t-ntp	4	0
 Fmt6=protocolNetTime_t-second	4	0
 Fmt7=protocolNetTime_t-year	4	0
-Fmt8=struct __Unnamed_2_2235-device	3	0
-Fmt9=user_time-day	3	0
-Fmt10=user_time-hour	3	0
-Fmt11=user_time-minute	3	0
-Fmt12=user_time-month	3	0
-Fmt13=user_time-second	3	0
-Fmt14=user_time-week	3	0
-Fmt15=user_time-year	3	0
+Fmt8=user_time-day	3	0
+Fmt9=user_time-hour	3	0
+Fmt10=user_time-minute	3	0
+Fmt11=user_time-month	3	0
+Fmt12=user_time-second	3	0
+Fmt13=user_time-week	3	0
+Fmt14=user_time-year	3	0
 [array_types]
 Fmt0=byte [8]	4	0
 Fmt1=uint8 [128]	4	0
@@ -110,9 +109,7 @@ Bp2=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\Components\hal\target\CC2530EB\hal_
 Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_curtain.c}.533.13" 0 0 0 0 "" 0 ""
 Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\Source\hal\hal_dht11.c}.172.21" 0 0 0 0 "" 0 ""
 Bp5=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_htsensor.c}.89.13" 0 0 0 0 "" 0 ""
-Bp6=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_key.c}.409.2" 0 0 0 0 "" 0 ""
-Bp7=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_coord.c}.345.25" 1 0 0 0 "" 0 ""
-Count=8
+Count=6
 [ChipconEmu]
 Stop timers on halt=0
 Leave target running=1
