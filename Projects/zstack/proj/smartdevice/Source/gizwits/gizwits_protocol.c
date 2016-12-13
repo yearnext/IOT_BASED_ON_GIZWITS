@@ -102,13 +102,13 @@ static bool rbCreate( rb_t* rb )
  * @note        None
  *******************************************************************************
  */
-static uint8 rbCapacity( rb_t *rb )
+static int16 rbCapacity( rb_t *rb )
 {
 #if USE_MYPROTOCOL_DEBUG
     if(NULL == rb)
     {
         GIZWITS_LOG("rbCapacity ERROR: input rb is NULL\n");
-        return 0;
+        return -1;
     }
 #endif
 
@@ -123,13 +123,13 @@ static uint8 rbCapacity( rb_t *rb )
  * @note        None
  *******************************************************************************
  */
-static uint8 rbCanRead( rb_t *rb )
+static int16 rbCanRead( rb_t *rb )
 {
 #if USE_MYPROTOCOL_DEBUG
     if(NULL == rb)
     {
         GIZWITS_LOG("rbCanRead ERROR: input rb is NULL\n");
-        return 0;
+        return -1;
     }
 #endif
 
@@ -143,7 +143,7 @@ static uint8 rbCanRead( rb_t *rb )
         return rb->rbTail - rb->rbHead;
     }
 
-    return rbCapacity(rb) - (rb->rbHead - rb->rbTail);
+    return rb->rbCapacity - (rb->rbHead - rb->rbTail);
 }
 
 /**
@@ -154,17 +154,17 @@ static uint8 rbCanRead( rb_t *rb )
  * @note        None
  *******************************************************************************
  */
-static uint8 rbCanWrite( rb_t *rb )
+static int16 rbCanWrite( rb_t *rb )
 {
 #if USE_MYPROTOCOL_DEBUG
     if(NULL == rb)
     {
         GIZWITS_LOG("rbCanWrite ERROR: input rb is NULL\n");
-        return 0;
+        return -1;
     }
 #endif
 
-    return rbCapacity(rb) - rbCanRead(rb);
+    return rb->rbCapacity - rbCanRead(rb);
 }
 
 /**
@@ -177,7 +177,7 @@ static uint8 rbCanWrite( rb_t *rb )
  * @note        None
  *******************************************************************************
  */
-static uint8 rbRead( rb_t *rb, void *data, uint8 count )
+static int16 rbRead( rb_t *rb, void *data, uint16 count )
 {
     int copySz = 0;
     
@@ -185,13 +185,13 @@ static uint8 rbRead( rb_t *rb, void *data, uint8 count )
     if(NULL == rb)
     {
         GIZWITS_LOG("rbRead ERROR: input rb is NULL\n");
-        return 0;
+        return -1;
     }
 
     if(NULL == data)
     {
         GIZWITS_LOG("rbRead ERROR: input data is NULL\n");
-        return 0;
+        return -1;
     }
 #endif
 
@@ -200,6 +200,7 @@ static uint8 rbRead( rb_t *rb, void *data, uint8 count )
         copySz = min(count, rbCanRead(rb));
         memcpy(data, rb->rbHead, copySz);
         rb->rbHead += copySz;
+        return copySz;
     }
     else
     {
@@ -208,17 +209,19 @@ static uint8 rbRead( rb_t *rb, void *data, uint8 count )
             copySz = count;
             memcpy(data, rb->rbHead, copySz);
             rb->rbHead += copySz;
+            return copySz;
         }
         else
         {
             copySz = rbCapacity(rb) - (rb->rbHead - rb->rbBuff);
             memcpy(data, rb->rbHead, copySz);
             rb->rbHead = rb->rbBuff;
-            copySz += rbRead(rb, (char*)data+copySz, count-copySz);
+            copySz += rbRead(rb, (uint8 *)data+copySz, count-copySz);
+            return copySz;
         }
     }
     
-    return copySz;
+//    return copySz;
 }
 
 /**
@@ -231,7 +234,7 @@ static uint8 rbRead( rb_t *rb, void *data, uint8 count )
  * @note        None
  *******************************************************************************
  */
-static uint8 rbWrite( rb_t *rb, const void *data, uint8 count )
+static int16 rbWrite( rb_t *rb, const void *data, uint16 count )
 {
     int tailAvailSz = 0;
 
@@ -239,13 +242,13 @@ static uint8 rbWrite( rb_t *rb, const void *data, uint8 count )
     if( NULL == rb )
     {
         GIZWITS_LOG("rbWrite ERROR: rb is empty \n");
-        return 0;
+        return -1;
     }
 
     if( NULL == data )
     {
         GIZWITS_LOG("rbWrite ERROR: data is empty \n");
-        return 0;
+        return -1;
     }
 
 #endif
@@ -253,7 +256,7 @@ static uint8 rbWrite( rb_t *rb, const void *data, uint8 count )
     if ( count >= rbCanWrite(rb) )
     {
         GIZWITS_LOG("rbWrite ERROR: no memory \n");
-        return 0;
+        return -1;
     }
 
     if ( rb->rbHead <= rb->rbTail )
@@ -275,7 +278,7 @@ static uint8 rbWrite( rb_t *rb, const void *data, uint8 count )
             memcpy(rb->rbTail, data, tailAvailSz);
             rb->rbTail = rb->rbBuff;
 
-            return tailAvailSz + rbWrite(rb, (char*)data+tailAvailSz, count-tailAvailSz);
+            return tailAvailSz + rbWrite(rb, (uint8 *)data+tailAvailSz, count-tailAvailSz);
         }
     }
     else
@@ -297,7 +300,7 @@ static uint8 rbWrite( rb_t *rb, const void *data, uint8 count )
  * @note        None
  *******************************************************************************
  */
-bool gizPutData( uint8 *buf, uint8 len )
+bool gizPutData( uint8 *buf, uint16 len )
 {
 #if USE_MYPROTOCOL_DEBUG    
 	if( NULL == buf )
@@ -472,7 +475,7 @@ static bool gizByteOrderExchange( uint8 *buf, uint8 dataLen )
  *******************************************************************************
  */
 #if 1
-static int8 gizProtocolGetOnePacket( rb_t *rb, uint8 *data, uint8 *len )
+static int8 gizProtocolGetOnePacket( rb_t *rb, uint8 *data, uint16 *len )
 {
 	static uint8 lastData = 0;
 	static uint8 dataLen = 0;
@@ -488,7 +491,7 @@ static int8 gizProtocolGetOnePacket( rb_t *rb, uint8 *data, uint8 *len )
     }
 #endif
 	
-	while( rbRead( rb, &nowData, 1 ) == 0 )
+	while( rbRead( rb, &nowData, 1 ) != 0 )
 	{
 		if( lastData == 0xFF && nowData == 0xFF )
 		{
@@ -549,16 +552,16 @@ static int8 gizProtocolGetOnePacket( rb_t *rb, uint8 *data, uint8 *len )
 *
 * @return : 0,正确返回;-1，错误返回;-2，数据校验失败
 */
-static int8_t gizProtocolGetOnePacket(rb_t *rb, uint8 *data, uint16_t *len)
+static int8 gizProtocolGetOnePacket(rb_t *rb, uint8 *data, uint16 *len)
 {
     uint8 ret = 0;
     uint8 sum = 0;
     uint8 i = 0;
     uint8 tmpData;
     uint8 tmpLen = 0;
-    uint16_t tmpCount = 0;
+    uint16 tmpCount = 0;
     static uint8 protocolFlag = 0;
-    static uint16_t protocolCount = 0;
+    static uint16 protocolCount = 0;
     static uint8 lastData = 0;
     static uint8 debugCount = 0;
     uint8 *protocolBuff = data;
@@ -1619,7 +1622,7 @@ bool gizwitsSendData( void *packet )
 bool gizwitsHandle( void )
 {
 	int8 ret = 0;
-    uint8 protocolLen = 0;
+    uint16 protocolLen = 0;
     uint8 ackLen = 0;
     protocolHead_t *recvHead = NULL;
 

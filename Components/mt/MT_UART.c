@@ -47,6 +47,7 @@
 #include "MT_UART.h"
 #include "OSAL_Memory.h"
 #include <string.h>
+#include "myprotocol.h"
 
 #if MYPROTOCOL_DEVICE_IS_COORD
 #include "gizwits_protocol.h"

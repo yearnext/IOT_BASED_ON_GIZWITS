@@ -42,7 +42,7 @@ extern "C"
  * @{
  */
 /** 数据缓冲区最大长度 */
-#define MAX_PACKAGE_LEN    (256)                    
+#define MAX_PACKAGE_LEN    (200)                    
 
 /** 获取最小值 宏 */
 #define min(a, b)          (a)<(b)?(a):(b)        
@@ -405,7 +405,7 @@ extern void gizProtocolReboot(void);
 extern uint32 gizGetTimerCount(void);
 extern void gizTimer50Ms(void);
 extern void gizTimerMs(void);
-extern bool gizPutData( uint8*, uint8 );
+extern bool gizPutData( uint8*, uint16 );
 extern bool gizwitsHandle( void );
 extern bool gizwitsSendData( void* );
 extern bool gizwitsWrTime( user_time* );
