@@ -401,12 +401,14 @@ typedef struct
  *@name Gizwits 用户API接口
  * @{
  */
+extern void gizProtocolReboot(void);
 extern uint32 gizGetTimerCount(void);
 extern void gizTimer50Ms(void);
 extern void gizTimerMs(void);
 extern bool gizPutData( uint8*, uint8 );
 extern bool gizwitsHandle( void );
 extern bool gizwitsSendData( void* );
+extern bool gizwitsWrTime( user_time* );
 extern user_time gizwitsGetTime( void );
 extern bool gizUpdateTime( protocolUTT_t* );
 extern bool getGizwitsM2MStatus( void );

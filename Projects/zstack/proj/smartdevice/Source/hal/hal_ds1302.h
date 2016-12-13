@@ -24,6 +24,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
 #include "myprotocol.h"
+#include "app_time.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -40,7 +41,7 @@ typedef struct
 
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT) || (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
+#if MYPROTOCOL_DEVICE_IS_LIGHT || MYPROTOCOL_DEVICE_IS_SOCKET
 // SCK端口寄存器定义
 #define DS1302_SCK_PORT     P0_6
 #define DS1302_SCK_BV       BV(6)
@@ -62,7 +63,7 @@ typedef struct
 // 启用DS1302
 #define USE_HAL_DS1302      (1)
 
-#elif (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
+#elif MYPROTOCOL_DEVICE_IS_CURTAIN
 // SCK端口寄存器定义
 #define DS1302_SCK_PORT     P2_0
 #define DS1302_SCK_BV       BV(0)
@@ -112,8 +113,8 @@ typedef struct
 extern void hal_ds1302_init( void );
 extern void ds1302_wr_data( uint8 wr_addr, uint8 wr_data );
 extern uint8 ds1302_rd_data( uint8 rd_addr );
-extern void ds1302_rd_time( void *time );
-extern void ds1302_wr_time( void *time );
+extern void ds1302_rd_time( user_time *time );
+extern void ds1302_wr_time( user_time *time );
 
 #else
 #define hal_ds1302_init() 

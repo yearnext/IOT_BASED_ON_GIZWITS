@@ -218,7 +218,7 @@ bool key_message_read(key_value_t *value, key_message_t *message)
  * @note        None
  *******************************************************************************
  */
-void hal_key_init(void)
+void bsp_key_init(void)
 {
 #if MYPROTOCOL_DEVICE_IS_COORD
     /** KEY1 P0_4 */

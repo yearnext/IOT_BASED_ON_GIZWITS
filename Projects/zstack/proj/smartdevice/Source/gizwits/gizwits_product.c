@@ -31,6 +31,7 @@
 #include <string.h>
 #include "gizwits_product.h"
 #include "myprotocol.h"
+#include "bsp_coord.h"
 #include "devicelist.h"
 
 /* Exported macro ------------------------------------------------------------*/
@@ -86,13 +87,7 @@ bool gizwitsEventProcess( eventInfo_t *info, uint8 *data, uint8 len )
         break;
       case WIFI_CON_APP:
       {
-//        uint8 num = Get_DeviceNum_ForList();
-//        MYPROTOCOL_SEND_MSG(MYPROTOCOL_DIR_D2W,NULL,create_devicelist_update_packet,(void *)&num);
-        
-//        GIZWITS_LOG("DEVICE NUM IS ");
-//        num += 0x30;
-//        GIZWITS_LOG(&num);
-//        GIZWITS_LOG("! \n");
+        MyprotocolSendData(NULL,NULL, DeviceListChangePacket, MyprotocolD2WSendData);
         break;
       }
       case WIFI_DISCON_APP:

@@ -7904,9 +7904,27 @@
     <name>App</name>
     <group>
       <name>app</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\app\app_time.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\app\app_time.h</name>
+      </file>
     </group>
     <group>
       <name>bsp</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_coord.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_coord.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_key.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_key.h</name>
+      </file>
     </group>
     <group>
       <name>DeviceList</name>
@@ -7940,6 +7958,12 @@
     </group>
     <group>
       <name>hal</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\hal\hal_ds1302.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\hal\hal_ds1302.h</name>
+      </file>
     </group>
     <group>
       <name>myiot</name>

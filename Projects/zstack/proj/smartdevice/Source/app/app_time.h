@@ -41,7 +41,7 @@ typedef struct
     uint8 day;
     uint8 month;
     uint8 week;
-    uint8 year;
+    uint16 year;
 }user_time;
 
 /* Exported variables --------------------------------------------------------*/
@@ -50,9 +50,12 @@ typedef struct
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 extern void app_time_init( void );
-extern void app_time_update( void );
+extern void app_time_update( user_time* );
 extern user_time app_get_time( void );
-extern uint8 app_cal_week( user_time );
+extern bool IsLeapYear( uint16 );
+extern uint32 TimeConverTimeStamp( user_time* );
+extern user_time TimeStampConverTime( uint32 );
+extern uint8 app_cal_week( user_time* );
 
 #endif      /* __APP_USER_TIME_H__ */
 

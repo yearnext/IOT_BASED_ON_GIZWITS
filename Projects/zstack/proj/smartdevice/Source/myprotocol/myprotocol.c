@@ -190,11 +190,27 @@ void MyprotocolInit( uint8 *taskId )
 
 #endif
 
+/**
+ *******************************************************************************
+ * @brief       计算用户数据的大小
+ * @param       [in/out]  packet    数据包地址
+ * @return      [in/out]  uint8     数据大小
+ * @note        已进行加速化处理
+ *******************************************************************************
+ */
 static uint8 MyprotocolCalUserDataSize( MYPROTOCOL_USER_DATA_t *packet )
 {
     return MYPROTOCOL_USER_DATA_DATA_OFFSET + packet->len;
 }
 
+/**
+ *******************************************************************************
+ * @brief       计算整个数据包的大小
+ * @param       [in/out]  packet    数据包地址
+ * @return      [in/out]  uint8     数据大小
+ * @note        已进行加速化处理
+ *******************************************************************************
+ */
 static uint8 MyprotocolCalPacketDataSize( MYPROTOCOL_FORMAT_t *packet )
 {
     return MYPROTOCOL_USER_DATA_OFFSET + MyprotocolCalUserDataSize( &packet->user_data );
@@ -246,7 +262,7 @@ static uint8 MyprotocolCalChecksum( uint8 *packet )
  * @note        None
  *******************************************************************************
  */
-static bool MyprotocolPacketCheck( void *packet )
+bool MyprotocolPacketCheck( void *packet )
 {
     if( packet == NULL )
     {
@@ -267,6 +283,40 @@ static bool MyprotocolPacketCheck( void *packet )
     return true;
 } 
 
+/**
+ *******************************************************************************
+ * @brief       检测W2D数据包发送目标是否为本机
+ * @param       [in/out]  recPacket    数据包
+ * @return      [in/out]  bool         校验结果
+ * @note        None
+ *******************************************************************************
+ */
+bool MyprotocolW2DRecDeviceCheck( MYPROTOCOL_FORMAT_t *recPacket )
+{
+    return (memcmp( &recPacket->device.mac, &aExtendedAddress, sizeof(aExtendedAddress) ) == 0) ? (true) : (false);
+} 
+
+/**
+ *******************************************************************************
+ * @brief       检测D2D数据包发送目标是否为本机
+ * @param       [in/out]  recPacket    数据包
+ * @return      [in/out]  bool         校验结果
+ * @note        None
+ *******************************************************************************
+ */
+bool MyprotocolD2DRecDeviceCheck( MYPROTOCOL_FORMAT_t *recPacket )
+{
+    if( recPacket->commtype == MYPROTOCOL_H2S_WAIT \
+        || recPacket->commtype == MYPROTOCOL_H2S_ACK \
+        || recPacket->commtype == MYPROTOCOL_S2H_WAIT \
+        || recPacket->commtype == MYPROTOCOL_S2H_ACK )
+    {
+        return true;
+    }
+    
+    return false;
+} 
+        
 /**
  *******************************************************************************
  * @brief       发送D2D数据包
@@ -349,17 +399,7 @@ bool MyprotocolSendData( void *ctx, void *dstaddr, packet_type packet_func, send
 	MYPROTOCOL_FORMAT_t packet;
 	
 #if USE_MYPROTOCOL_DEBUG
-    if( dstaddr == NULL )
-    {
-        MYPROTOCOL_LOG("MyprotocolSendData intput param dstaddr is invalid! \r\n");
-        return false;
-    }
-    else if( packet_func == NULL )
-    {
-        MYPROTOCOL_LOG("MyprotocolSendData intput param packet_func is invalid! \r\n");
-        return false;
-    }
-    else if( send_func == NULL )
+    if( send_func == NULL )
     {
         MYPROTOCOL_LOG("MyprotocolSendData intput param send_func is invalid! \r\n");
         return false;
@@ -380,6 +420,62 @@ bool MyprotocolSendData( void *ctx, void *dstaddr, packet_type packet_func, send
     packet.sum = MyprotocolCalChecksum((uint8 *)&packet);
      
     return send_func(dstaddr, &packet);
+}
+
+/**
+ *******************************************************************************
+ * @brief       Myprotocol 回复错误数据包
+ * @param       [in/out]  recPacket      接收到的数据包
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool MyprotocolReplyErrPacket( MYPROTOCOL_FORMAT_t *recPacket )
+{
+    MYPROTOCOL_FORMAT_t packet;
+    
+#if USE_MYPROTOCOL_DEBUG
+    if( recPacket == NULL )
+    {
+        MYPROTOCOL_LOG("MyprotocolReplyErrPacket intput param recPacket is invalid! \r\n");
+        return false;
+    }
+#endif
+    
+//    memset(&packet,0,sizeof(MYPROTOCOL_FORMAT_t));
+
+    packet.device.device = MYPROTOCOL_DEVICE;
+    memcpy(&packet.device.mac,&aExtendedAddress,sizeof(packet.device.mac));
+    
+    if( recPacket->device.device != MYPROTOCOL_COMM_END \
+        && recPacket->device.device != MYPROTOCOL_COMM_ERROR )
+    {
+        packet.commtype = MYPROTOCOL_COMM_ERROR;
+    }
+    else
+    {
+        return true;
+    }
+    
+    packet.sum = MyprotocolCalChecksum((uint8 *)&packet);
+    
+    switch( recPacket->device.device )
+    {
+        // COORD 设备
+        case MYPROTOCOL_W2D_WAIT:
+        case MYPROTOCOL_D2W_ACK:
+            return MyprotocolD2WSendData(NULL,&packet);
+            break;
+        case MYPROTOCOL_H2S_ACK:
+        case MYPROTOCOL_H2S_WAIT:
+            return MyprotocolD2DSendData(&recPacket->device.mac,&packet);
+            break;
+        default:
+            return true;
+            break;
+    }
+    
+//    return false;
 }
 
 /**
@@ -477,7 +573,7 @@ bool CommErrorPacket( void *ctx, void *packet )
 
 /**
  *******************************************************************************
- * @brief       通讯结束数据包
+ * @brief       通讯错误数据包
  * @param       [in/out]  ctx            上下文数据(上一个数据包)
  * @param       [in/out]  packet         创建数据包函数
  * @return      [in/out]  bool           程序运行状态
@@ -489,12 +585,12 @@ bool CommEndPacket( void *ctx, void *packet )
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
     {
-        MYPROTOCOL_LOG("comm end packet intput param is invalid! \r\n");
+        MYPROTOCOL_LOG("comm error packet intput param is invalid! \r\n");
         return false;
     }
 #endif 
 
-    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_COMM_END;
+    (((MYPROTOCOL_FORMAT_t *)packet)->commtype) = MYPROTOCOL_COMM_END;
     
     return true;
 }
@@ -554,7 +650,7 @@ bool DeviceTickAckPacket( void *ctx, void *packet )
     ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.cmd = MYPROTOCOL_TICK_CMD; 
     ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.len = 0;
     
-    memcpy(&(((MYPROTOCOL_FORMAT_t *)packet)->device), ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
+//    memcpy(&(((MYPROTOCOL_FORMAT_t *)packet)->device), ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
     
     return true;
 }

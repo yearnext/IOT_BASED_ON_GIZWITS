@@ -141,9 +141,9 @@
  */
 typedef enum
 {
-	KEY_VALUE_NOP = 0x00,
-	KEY_VALUE_K1,
-	KEY_VALUE_K2,
+    KEY_VALUE_NOP = 0x00,
+    KEY_VALUE_K1,
+    KEY_VALUE_K2,
 }key_value_t;
 
 /**
@@ -154,13 +154,13 @@ typedef enum
  */
 typedef enum
 {
-	KEY_MESSAGE_NONE,
-	KEY_MESSAGE_PRESS_EDGE,
-	KEY_MESSAGE_PRESS,
-	KEY_MESSAGE_LONG_PRESS,
+    KEY_MESSAGE_NONE,
+    KEY_MESSAGE_PRESS_EDGE,
+    KEY_MESSAGE_PRESS,
+    KEY_MESSAGE_LONG_PRESS,
     KEY_MESSAGE_MULTI_PRESS,
-	KEY_MESSAGE_RELEASE_EDGE,
-	KEY_MESSAGE_RELEASE,
+    KEY_MESSAGE_RELEASE_EDGE,
+    KEY_MESSAGE_RELEASE,
 }key_message_t;
 
 /* Exported variables --------------------------------------------------------*/
@@ -170,7 +170,7 @@ typedef enum
 /* Exported functions --------------------------------------------------------*/
 extern bool key_message_send(key_value_t, key_message_t);
 extern bool key_message_read(key_value_t*, key_message_t*);
-extern void hal_key_init(void);
+extern void bsp_key_init(void);
 extern key_value_t get_key_value(void);
 extern void key_scan(void);
 extern void key_handler(void);

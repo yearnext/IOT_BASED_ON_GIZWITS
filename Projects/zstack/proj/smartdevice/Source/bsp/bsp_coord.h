@@ -28,7 +28,6 @@ extern "C"
 
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
-#include "myprotocol.h"
 #include "bsp_key.h"
 
 /* Exported macro ------------------------------------------------------------*/
@@ -39,10 +38,18 @@ extern "C"
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 extern void bspCoordInit(void);
+
 #if MYPROTOCOL_DEVICE_IS_COORD
-#define coordKey1Handler key1_handler
-extern void coordKey1Handler( key_message_t );
+#define coordKey1Handler          key1_handler
+#define coordUpdateTimeKeyHandler key2_handler
+
+extern void coordRstWIFIKeyHandler( key_message_t );
+extern void coordUpdateTimeKeyHandler( key_message_t );
 #endif
+
+extern bool coordMessageHandler( void* );
+
+extern bool DeviceListChangePacket( void*, void* );
 
 #ifdef __cplusplus
 extern "C" 

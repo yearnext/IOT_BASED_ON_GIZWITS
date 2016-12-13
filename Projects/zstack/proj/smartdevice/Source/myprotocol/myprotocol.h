@@ -35,6 +35,7 @@ extern "C"
 #define USE_MYPROTOCOL_DEBUG 1
 
 /** 定义支持设备清单 */
+#define MYPROTOCOL_DEVICE_PHONE     (0x00)
 #define MYPROTOCOL_DEVICE_COORD     (0x00)
 #define MYPROTOCOL_DEVICE_LIGHT     (0x01)
 #define MYPROTOCOL_DEVICE_SOCKET    (0x02)
@@ -210,14 +211,27 @@ extern void MyprotocolPutLog( uint8*, uint16 );
 /**@} */
 
 /**
+ * @name 数据包校验宏 宏定义
+ * @{
+ */
+extern bool MyprotocolPacketCheck( void* );
+extern bool MyprotocolW2DRecDeviceCheck( MYPROTOCOL_FORMAT_t* );
+extern bool MyprotocolD2DRecDeviceCheck( MYPROTOCOL_FORMAT_t* );
+/**@} */
+
+/**
  * @name 发送数据API
  * @note 建议使用函数MyprotocolSendData发送数据
  * @{
  */
+// 通用发送数据包函数
 extern bool MyprotocolD2DSendData( void*, void* );
 extern bool MyprotocolD2WSendData( void*, void* );
 extern bool MyprotocolForwardData( void*, void*, send_type );
 extern bool MyprotocolSendData( void*, void*, packet_type, send_type );
+
+// 专用发送数据包函数
+extern bool MyprotocolReplyErrPacket( MYPROTOCOL_FORMAT_t* );
 /**@} */
 
 /**
@@ -238,6 +252,7 @@ extern bool MyprotocolReceiveData( void*, void*, receive_type, receive_type );
  * @{
  */
 extern bool CommErrorPacket( void*, void* );
+extern bool CommEndPacket( void*, void* );
 extern bool DeviceTickPacket( void*, void* );
 extern bool DeviceTickAckPacket( void*, void* );
 extern bool S2HWaitPacket( void*, void* );

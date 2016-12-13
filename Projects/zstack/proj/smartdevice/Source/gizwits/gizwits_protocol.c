@@ -1046,7 +1046,7 @@ static bool gizProtocolNTP(protocolHead_t *head)
  * @note        None
  *******************************************************************************
  */
-static void gizProtocolReboot( void )
+void gizProtocolReboot( void )
 {
 	GIZWITS_LOG("gizProtocolReboot\n");
 	
@@ -1555,9 +1555,30 @@ user_time gizwitsGetTime( void )
     time.hour   = gizwitsProtocol.TimeNTP.hour;
     time.minute = gizwitsProtocol.TimeNTP.minute;
     time.second = gizwitsProtocol.TimeNTP.second;
-    time.week   = app_cal_week(time);
+    time.week   = app_cal_week(&time);
 	
     return time;
+}
+
+/**
+ *******************************************************************************
+ * @brief       写入时间
+ * @param       [in/out]  void 
+ * @return      [in/out]  user_time    设备时间
+ * @note        用户可以调用该接口刷新本地时间
+ *******************************************************************************
+ */
+bool gizwitsWrTime( user_time *time )
+{
+	gizwitsProtocol.TimeNTP.year   = time->year;
+    gizwitsProtocol.TimeNTP.month  = time->month;
+    gizwitsProtocol.TimeNTP.day    = time->day;
+    gizwitsProtocol.TimeNTP.hour   = time->hour;
+    gizwitsProtocol.TimeNTP.minute = time->minute;
+    gizwitsProtocol.TimeNTP.second = time->second;
+    gizwitsProtocol.TimeNTP.ntp    =  TimeConverTimeStamp(time);
+	
+    return true;
 }
 
 /**

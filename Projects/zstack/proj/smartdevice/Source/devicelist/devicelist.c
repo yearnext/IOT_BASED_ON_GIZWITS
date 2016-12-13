@@ -262,7 +262,6 @@ static bool listDeviceTickAdd( void **ctx, void **list, void **expand )
             
         return true;
 	}
-
 	return false;
 }
 
@@ -338,7 +337,7 @@ bool listZombieDeviceClr( void **ctx, void **list, void **expand )
             osal_mem_free(delNode->data);
             osal_mem_free(delNode);
             
-            return true;
+            (*((uint8 *)ctx))++;
         }
     }
     
@@ -435,8 +434,17 @@ bool deviceInfoGet( uint8 id, MYPROTOCOL_DEVICE_INFO_t *info )
  */
 bool addDeviceTick( MYPROTOCOL_DEVICE_INFO_t *info )
 {
-    uint16 func = ((uint16)&listDeviceTickAdd);
-    return nodeTraverse((void **)&listHead, listDeviceFindOperaForInfo, (void **)&info, (void **)&func);
+    if( deviceIsExists(info) == true )
+    {
+        uint16 func = ((uint16)&listDeviceTickAdd);
+        return nodeTraverse((void **)&listHead, listDeviceFindOperaForInfo, (void **)&info, (void **)func);
+    }
+    else
+    {
+        return nodeTraverse((void **)&listHead, listDeviceAdd, (void **)&info, NULL);
+    }
+    
+//    return false;
 }
 
 /**
@@ -462,7 +470,10 @@ bool allDeviceTickClr( void )
  */
 bool allZombieDeviceClr( void )
 {
-    return nodeTraverse((void **)&listHead, listZombieDeviceClr, NULL, NULL);
+    uint8 num = 0x00;
+    nodeTraverse((void **)&listHead, listZombieDeviceClr, (void **)&num, NULL);
+    
+    return (num == 0) ? (false) : (true);
 }
 
 /** @}*/     /* devicelist 模块 */
