@@ -173,7 +173,7 @@ static bool listDeviceFindOperaForId( void **ctx, void **list, void **expand )
 static bool listDeviceAdd(void **ctx, void **list, void **expand)
 {
 	listInfo_t *node_info = ((myList_t)(*list))->data;
-	listInfo_t *device_info = (listInfo_t *)ctx;
+	listInfo_t *device_info = (listInfo_t *)*ctx;
 
 	if (*list != NULL)
 	{
@@ -189,8 +189,8 @@ static bool listDeviceAdd(void **ctx, void **list, void **expand)
 
 		if (newDevice != NULL && newNode != NULL)
 		{
-            memcpy(device_info,device_info,sizeof(listInfo_t));
-            newDevice->tick++;
+            memcpy(newDevice,device_info,sizeof(listInfo_t));
+            newDevice->tick = 1;
             
 			newNode->data = (void *)newDevice;
 			newNode->next = NULL;

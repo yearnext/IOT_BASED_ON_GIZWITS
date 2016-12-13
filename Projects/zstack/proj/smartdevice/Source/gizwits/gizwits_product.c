@@ -93,7 +93,7 @@ bool gizwitsEventProcess( eventInfo_t *info, uint8 *data, uint8 len )
       case WIFI_DISCON_APP:
         break;
 	  case WIFI_NTP:
-		gizUpdateTime((protocolUTT_t *)data);
+//		gizUpdateTime((protocolUTT_t *)data);
 	    break;
       case TRANSPARENT_DATA:
         break;

@@ -380,7 +380,7 @@ typedef struct
     
     eventInfo_t issuedProcessEvent;               ///< 控制事件
     eventInfo_t wifiStatusEvent;                  ///< WIFI状态 事件
-    eventInfo_t NTPEvent;                         ///< NTP 事件
+//    eventInfo_t NTPEvent;                         ///< NTP 事件
     
     dataPoint_t gizCurrentDataPoint;              ///< 当前设备状态数据
     dataPoint_t gizLastDataPoint;                 ///< 上次上报的设备状态数据

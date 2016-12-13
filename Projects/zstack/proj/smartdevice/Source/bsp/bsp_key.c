@@ -139,7 +139,7 @@ static bool key_press_timer_handler(key_value_t value)
 		if (++press_detect.press_long.count >= KEY_LONG_RRESS_TIME)
         {
             press_detect.press_long.status = 1;	
-            key_message_send(value, KEY_MESSAGE_LONG_PRESS);
+            key_message_send(value, KEY_MESSAGE_LONG_PRESS_EDGE);
             return true;
         }
 	}
@@ -412,7 +412,7 @@ void key_handler(void)
 		{
 			case KEY_VALUE_K1:
 #if MYPROTOCOL_DEVICE_IS_COORD
-//                key1_handler(message.message);
+                key1_handler(message.message);
 #elif MYPROTOCOL_DEVICE_IS_LIGHT
                 key1_handler(message.message);
 #elif MYPROTOCOL_DEVICE_IS_SOCKET
@@ -425,7 +425,7 @@ void key_handler(void)
 				break;
 			case KEY_VALUE_K2:
 #if MYPROTOCOL_DEVICE_IS_COORD
-//                key2_handler(message.message);
+                key2_handler(message.message);
 #elif MYPROTOCOL_DEVICE_IS_LIGHT
                 key2_handler(message.message);
 #elif MYPROTOCOL_DEVICE_IS_SOCKET

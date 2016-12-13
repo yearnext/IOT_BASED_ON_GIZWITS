@@ -40,7 +40,7 @@ extern "C"
 extern void bspCoordInit(void);
 
 #if MYPROTOCOL_DEVICE_IS_COORD
-#define coordKey1Handler          key1_handler
+#define coordRstWIFIKeyHandler    key1_handler
 #define coordUpdateTimeKeyHandler key2_handler
 
 extern void coordRstWIFIKeyHandler( key_message_t );

@@ -474,7 +474,7 @@ static bool gizByteOrderExchange( uint8 *buf, uint8 dataLen )
  * @note        None
  *******************************************************************************
  */
-#if 1
+#if 0
 static int8 gizProtocolGetOnePacket( rb_t *rb, uint8 *data, uint16 *len )
 {
 	static uint8 lastData = 0;
@@ -491,7 +491,7 @@ static int8 gizProtocolGetOnePacket( rb_t *rb, uint8 *data, uint16 *len )
     }
 #endif
 	
-	while( rbRead( rb, &nowData, 1 ) != 0 )
+	while( rbRead( rb, &nowData, 1 ) == 1 )
 	{
 		if( lastData == 0xFF && nowData == 0xFF )
 		{
@@ -1033,10 +1033,10 @@ static bool gizProtocolNTP(protocolHead_t *head)
     gizwitsProtocol.TimeNTP.year = gizProtocolExchangeBytes(gizwitsProtocol.TimeNTP.year);
     gizwitsProtocol.TimeNTP.ntp = gizExchangeWord(gizwitsProtocol.TimeNTP.ntp);
 
-    gizwitsProtocol.NTPEvent.event[gizwitsProtocol.NTPEvent.num] = WIFI_NTP;
-    gizwitsProtocol.NTPEvent.num++;
+//    gizwitsProtocol.NTPEvent.event[gizwitsProtocol.NTPEvent.num] = WIFI_NTP;
+//    gizwitsProtocol.NTPEvent.num++;
     
-    gizwitsProtocol.issuedFlag = GET_NTP_TYPE;
+//    gizwitsProtocol.issuedFlag = GET_NTP_TYPE;
     
     return true;
 }
@@ -1706,9 +1706,9 @@ bool gizwitsHandle( void )
 //            gizwitsEventProcess(&gizwitsProtocol.issuedProcessEvent, (uint8 *)gizwitsProtocol.transparentBuff, gizwitsProtocol.transparentLen);
             break;
         case GET_NTP_TYPE:
-            gizwitsProtocol.issuedFlag = STATELESS_TYPE;
-            gizwitsEventProcess(&gizwitsProtocol.NTPEvent, (uint8 *)&gizwitsProtocol.TimeNTP, sizeof(gizwitsProtocol.TimeNTP));
-            memset((uint8 *)&gizwitsProtocol.NTPEvent,0x0,sizeof(gizwitsProtocol.NTPEvent));
+//            gizwitsProtocol.issuedFlag = STATELESS_TYPE;
+//            gizwitsEventProcess(&gizwitsProtocol.NTPEvent, (uint8 *)&gizwitsProtocol.TimeNTP, sizeof(gizwitsProtocol.TimeNTP));
+//            memset((uint8 *)&gizwitsProtocol.NTPEvent,0x0,sizeof(gizwitsProtocol.NTPEvent));
             break;      
     }
 

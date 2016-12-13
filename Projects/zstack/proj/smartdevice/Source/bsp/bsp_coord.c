@@ -220,7 +220,10 @@ void coordRstWIFIKeyHandler( key_message_t msg )
 {
     switch( msg )
     {
-        case KEY_MESSAGE_LONG_PRESS:
+        case KEY_MESSAGE_LONG_PRESS_EDGE:
+#if USE_MYPROTOCOL_DEBUG
+            MYPROTOCOL_LOG("coord press k1 to rst wifi mode \r\n");
+#endif
             gizwitsSetMode(0x00);
             break;
         default:
@@ -241,6 +244,9 @@ void coordUpdateTimeKeyHandler( key_message_t msg )
     switch( msg )
     {
         case KEY_MESSAGE_RELEASE_EDGE:
+#if USE_MYPROTOCOL_DEBUG
+            MYPROTOCOL_LOG("coord press k2 to update time \r\n");
+#endif
             gizwitsGetNTP();
             break;
         default:
@@ -262,7 +268,7 @@ static void coordD2DMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
     {
         switch(recPacket->commtype)
         {
-            case MYPROTOCOL_W2D_WAIT:
+            case MYPROTOCOL_S2H_WAIT:
                 switch( recPacket->user_data.cmd )
                 {
                     case MYPROTOCOL_TICK_CMD:
@@ -280,7 +286,7 @@ static void coordD2DMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
                         break;
                 }
                 break;
-            case MYPROTOCOL_D2W_ACK:
+            case MYPROTOCOL_H2S_ACK:
                 break;
             default:
                 break;
@@ -390,10 +396,14 @@ bool coordMessageHandler( void *recPacket )
     switch( packet->commtype )
     {
         case MYPROTOCOL_W2D_WAIT:
+        case MYPROTOCOL_W2D_ACK:
+        case MYPROTOCOL_D2W_WAIT:
         case MYPROTOCOL_D2W_ACK:
             coordW2DMessageHandler(recPacket);
             break;
         case MYPROTOCOL_H2S_WAIT:
+        case MYPROTOCOL_H2S_ACK:
+        case MYPROTOCOL_S2H_WAIT:
         case MYPROTOCOL_S2H_ACK:
             coordD2DMessageHandler(recPacket);
             break;
