@@ -40,7 +40,6 @@
 #define COORD_RD_DEVICE_INFO_CMD (0x12)
 #define COORD_RD_LIST_ERROR_CMD  (0x13)
 /**
- * @name MYPROTOCOL数据包格式定义
  * @}
  */
 
@@ -314,7 +313,7 @@ static void coordW2DMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
                     case MYPROTOCOL_RESET_CMD:
                     case MYPROTOCOL_REBOOT_CMD:
                     {
-                        MyprotocolSendData(NULL, NULL, CommEndPacket, MyprotocolD2WSendData);
+                        MyprotocolSendData(recPacket, NULL, W2DAckPacket, MyprotocolD2WSendData);
                         gizProtocolReboot();
                         break;
                     }
@@ -332,7 +331,7 @@ static void coordW2DMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
                     case MYPROTOCOL_WR_TIME_CMD:
                     {
                         gizwitsWrTime((user_time *)(&recPacket->user_data.data));
-                        MyprotocolSendData(NULL, NULL, CommEndPacket, MyprotocolD2WSendData);
+                        MyprotocolSendData(recPacket, NULL, W2DAckPacket, MyprotocolD2WSendData);
                          break;
                     } 
                     case COORD_RD_DEVICE_NUM_CMD:
@@ -359,6 +358,7 @@ static void coordW2DMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
     {
         // 转发数据包
         MyprotocolForwardData(&recPacket->device.mac, recPacket, MyprotocolD2DSendData);
+        MyprotocolSendData((void **)&recPacket, NULL, W2DAckPacket, MyprotocolD2WSendData);
     }
 }
 

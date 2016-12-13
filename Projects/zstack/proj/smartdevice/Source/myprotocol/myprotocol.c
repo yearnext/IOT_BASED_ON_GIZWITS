@@ -676,7 +676,7 @@ bool S2HWaitPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memcpy(&(((MYPROTOCOL_FORMAT_t *)packet)->user_data), ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->device,&((MYPROTOCOL_FORMAT_t *)ctx)->device, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->device) );
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_S2H_WAIT;
@@ -705,7 +705,7 @@ bool S2HAckPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memcpy(&(((MYPROTOCOL_FORMAT_t *)packet)->user_data), ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->device,&((MYPROTOCOL_FORMAT_t *)ctx)->device, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->device) );
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_S2H_ACK;
@@ -734,7 +734,7 @@ bool H2SWaitPacket( void *ctx, void *packet )
     
     if( ctx != NULL )
     {
-        memcpy(&((MYPROTOCOL_FORMAT_t *)(packet))->user_data, ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->device,&((MYPROTOCOL_FORMAT_t *)ctx)->device, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->device) );
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_H2S_WAIT;
@@ -763,7 +763,7 @@ bool H2SAckPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memcpy(&(((MYPROTOCOL_FORMAT_t *)packet)->user_data), ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->device,&((MYPROTOCOL_FORMAT_t *)ctx)->device, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->device) );
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_H2S_ACK;
@@ -792,7 +792,7 @@ bool D2WWaitPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->device,&((MYPROTOCOL_FORMAT_t *)ctx)->device, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->device) );
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_D2W_WAIT;
@@ -821,7 +821,7 @@ bool D2WAckPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->device,&((MYPROTOCOL_FORMAT_t *)ctx)->device, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->device) );
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_D2W_ACK;
@@ -850,7 +850,7 @@ bool W2DWaitPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->device,&((MYPROTOCOL_FORMAT_t *)ctx)->device, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->device) );
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_W2D_WAIT;
@@ -879,7 +879,7 @@ bool W2DAckPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->device,&((MYPROTOCOL_FORMAT_t *)ctx)->device, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->device) );
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_W2D_ACK;
