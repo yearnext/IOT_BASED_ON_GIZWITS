@@ -43,11 +43,8 @@ typedef DHT11_DATA_t ht_sensor_t;
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 // 温湿度传感器控制命令
-typedef enum
-{
-    RP_HT_SENSOR_DATA = 0x10,
-    RD_HT_SENSOR_DATA = 0x11,
-}DEVICE_HT_SENSOR_CMD;
+#define REPOER_HT_SENSOR_DATA (0x10)
+#define READ_HT_SENSOR_DATA   (0x11)
 
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -60,7 +57,7 @@ typedef enum
  * @note        None
  *******************************************************************************
  */
-void ht_sensor_init(void)
+void bspHTSensorInit(void)
 {
 	hal_dht11_init();
 }
@@ -73,9 +70,9 @@ void ht_sensor_init(void)
  * @note        None
  *******************************************************************************
  */
-void report_ht_sensor_data( void )
+void reportHTSensorData( void )
 {
-	MYPROTOCOL_USER_DATA user_data;
+	MYPROTOCOL_USER_DATA_t user_data;
     uint8 timeout = 0;
     
     while(1)
@@ -98,25 +95,48 @@ void report_ht_sensor_data( void )
     }
 
 	user_data.len = sizeof(DHT11_DATA_t);
-	user_data.cmd = RP_HT_SENSOR_DATA;
+	user_data.cmd = REPOER_HT_SENSOR_DATA;
     
-	MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
+    MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData );
 }
 
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
-///**
-// *******************************************************************************
-// * @brief       按键处理
-// * @param       [in]   message    按键信息
-// * @return      [out]  void
-// * @note        None
-// *******************************************************************************
-// */
-//void htsensor_key_handler( key_message_t message )
-//{   
-//}
+/**
+ *******************************************************************************
+ * @brief       上报温湿度数据
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void readHTSensorData( void )
+{
+	MYPROTOCOL_USER_DATA_t user_data;
+    uint8 timeout = 0;
+    
+    while(1)
+    {
+        if( dht11_rd_data((DHT11_DATA_t *)&user_data.data) == true )
+        {
+            break;
+        }
+        else
+        {
+            if( timeout++ >= RD_HT_DATA_TIMEOUT_COUNT )
+            {
+                ((DHT11_DATA_t *)&user_data.data)->hum = 0xFE;
+                ((DHT11_DATA_t *)&user_data.data)->temp = 0xFE;
+                break;
+            }
+            
+            HT_SENSOR_SCAN_DELAY();
+        }
+    }
 
-#endif
+	user_data.len = sizeof(DHT11_DATA_t);
+	user_data.cmd = READ_HT_SENSOR_DATA;
+    
+	MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData );
+}
 
 /**
  *******************************************************************************
@@ -126,19 +146,21 @@ void report_ht_sensor_data( void )
  * @note        None
  *******************************************************************************
  */
-bool ht_sensor_cmd_resolve(MYPROTOCOL_USER_DATA *data)
+bool htsensorMessageHandler(MYPROTOCOL_FORMAT_t *recPacket)
 {
-	switch(data->cmd)
+	switch(recPacket->user_data.cmd)
 	{
-        case DEVICE_TICK:
+        case MYPROTOCOL_TICK_CMD:
             break;
-        case DEVICE_RESET:
-            break;
-        case DEVICE_REBOOT:
+        case MYPROTOCOL_RESET_CMD:
+        case MYPROTOCOL_REBOOT_CMD:
             Onboard_soft_reset();
             break;
-        case RD_HT_SENSOR_DATA:
-            report_ht_sensor_data();
+        case READ_HT_SENSOR_DATA:
+#if USE_MYPROTOCOL_DEBUG
+        MYPROTOCOL_LOG("htsensor need send data! \r\n");
+#endif
+            readHTSensorData();
 			break;
 		default:
             return false;

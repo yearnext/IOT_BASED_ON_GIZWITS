@@ -31,7 +31,15 @@ extern "C"
 #include "bsp_key.h"
 
 /* Exported macro ------------------------------------------------------------*/
-/* Exported types ------------------------------------------------------------*/
+#if MYPROTOCOL_DEVICE_IS_COORD
+#define bspDeviceInit bspCoordInit
+#endif
+
+/* E#xported types ------------------------------------------------------------*/
+#if MYPROTOCOL_DEVICE_IS_COORD
+#define deviceMessageHandler coordMessageHandler
+#endif
+    
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/

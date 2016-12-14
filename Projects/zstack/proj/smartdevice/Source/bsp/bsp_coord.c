@@ -114,7 +114,7 @@ bool DeviceInfoAckPacket( void *ctx, void *packet )
     
     if( ctx == NULL )
     {
-        MYPROTOCOL_LOG("tick ack device info  is invalid! \r\n");
+        MYPROTOCOL_LOG("Device Num is invalid! \r\n");
         return false;
     }
 #endif    
@@ -157,12 +157,6 @@ bool DeviceRdTimeAckPacket( void *ctx, void *packet )
         MYPROTOCOL_LOG("Device Num Ack Packet info is invalid! \r\n");
         return false;
     }
-    
-    if( ctx == NULL )
-    {
-        MYPROTOCOL_LOG("tick ack device info  is invalid! \r\n");
-        return false;
-    }
 #endif    
 
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype      = MYPROTOCOL_W2D_ACK;
@@ -196,18 +190,12 @@ bool DeviceListChangePacket( void *ctx, void *packet )
         MYPROTOCOL_LOG("Device Num Ack Packet info is invalid! \r\n");
         return false;
     }
-    
-    if( ctx == NULL )
-    {
-        MYPROTOCOL_LOG("tick ack device info  is invalid! \r\n");
-        return false;
-    }
 #endif    
 
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype      = MYPROTOCOL_D2W_WAIT;
     ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.cmd = COORD_LIST_CHANGE_CMD; 
     ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[0] = deviceNumGet();
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.len = sizeof(user_time);
+    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.len = 1;
     
     return true;
 }
@@ -276,9 +264,28 @@ static void coordD2DMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
                 switch( recPacket->user_data.cmd )
                 {
                     case MYPROTOCOL_TICK_CMD:
-                    {
+                    {            
+                        switch( recPacket->device.device )
+                        {
+                            case MYPROTOCOL_DEVICE_LIGHT:
+                                MYPROTOCOL_LOG("Coord get a tick from LIGHT!\r\n");
+                                break;
+                            case MYPROTOCOL_DEVICE_SOCKET:
+                                MYPROTOCOL_LOG("Coord get a tick from SOCKET!\r\n");
+                                break;
+                            case MYPROTOCOL_DEVICE_CURTAIN:
+                                MYPROTOCOL_LOG("Coord get a tick from CURTAIN!\r\n");
+                                break;
+                            case MYPROTOCOL_DEVICE_HT_SENSOR:
+                                MYPROTOCOL_LOG("Coord get a tick from HT_SENSOR!\r\n");
+                                break;
+                            default:
+                                MYPROTOCOL_LOG("Coord get a tick from NO SUPPORT DEVICE!\r\n");
+                                break;
+                        }
+        
                         addDeviceTick(&recPacket->device);
-                        MyprotocolSendData(NULL,&recPacket->device.mac, DeviceTickAckPacket, MyprotocolD2DSendData);
+                        MyprotocolSendData(recPacket,&recPacket->device.mac, createDeviceTickAckPacket, MyprotocolD2DSendData);
                         break;
                     }
                     case MYPROTOCOL_RD_TIME_CMD:
@@ -299,7 +306,10 @@ static void coordD2DMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
     else
     {
         // 转发数据包
-        MyprotocolForwardData(&recPacket->device.mac, recPacket, MyprotocolD2WSendData);
+        MyprotocolForwardData(NULL, recPacket, MyprotocolD2WSendData);
+#if USE_MYPROTOCOL_DEBUG
+        MYPROTOCOL_LOG("coord get packet from device!");
+#endif 
     }
 }
 
@@ -323,7 +333,7 @@ static void coordW2DMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
                     case MYPROTOCOL_RESET_CMD:
                     case MYPROTOCOL_REBOOT_CMD:
                     {
-                        MyprotocolSendData(recPacket, NULL, W2DAckPacket, MyprotocolD2WSendData);
+                        MyprotocolSendData(recPacket, NULL, createW2DAckPacket, MyprotocolD2WSendData);
                         gizProtocolReboot();
                         break;
                     }
@@ -341,17 +351,23 @@ static void coordW2DMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
                     case MYPROTOCOL_WR_TIME_CMD:
                     {
                         gizwitsWrTime((user_time *)(&recPacket->user_data.data));
-                        MyprotocolSendData(recPacket, NULL, W2DAckPacket, MyprotocolD2WSendData);
+                        MyprotocolSendData(recPacket, NULL, createW2DAckPacket, MyprotocolD2WSendData);
                          break;
                     } 
                     case COORD_RD_DEVICE_NUM_CMD:
                     {
+#if USE_MYPROTOCOL_DEBUG
+                        MYPROTOCOL_LOG("app get device num!");
+#endif 
                         MyprotocolSendData(NULL, NULL, DeviceNumAckPacket, MyprotocolD2WSendData);
                         break;
                     }
                     case COORD_RD_DEVICE_INFO_CMD:
                     {
-                        MyprotocolSendData((void **)&recPacket->user_data.data[0], NULL, DeviceInfoAckPacket, MyprotocolD2WSendData);
+#if USE_MYPROTOCOL_DEBUG
+                        MYPROTOCOL_LOG("app get device info!");
+#endif 
+                        MyprotocolSendData((void *)&recPacket->user_data.data, NULL, DeviceInfoAckPacket, MyprotocolD2WSendData);
                         break;
                     } 
                     default:
@@ -368,7 +384,10 @@ static void coordW2DMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
     {
         // 转发数据包
         MyprotocolForwardData(&recPacket->device.mac, recPacket, MyprotocolD2DSendData);
-        MyprotocolSendData((void **)&recPacket, NULL, W2DAckPacket, MyprotocolD2WSendData);
+        MyprotocolSendData(recPacket, NULL, createW2DAckPacket, MyprotocolD2WSendData);
+#if USE_MYPROTOCOL_DEBUG
+        MYPROTOCOL_LOG("coord forward packet to else device!");
+#endif 
     }
 }
 

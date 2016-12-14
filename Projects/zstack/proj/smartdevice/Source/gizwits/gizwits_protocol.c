@@ -345,7 +345,7 @@ void gizTimerMs(void)
  * @note        None
  *******************************************************************************
  */
-void gizTimer50Ms(void)
+void gizTimer100Ms(void)
 {
     gizwitsProtocol.timerMsCount++;
 }
@@ -1720,7 +1720,7 @@ bool gizwitsHandle( void )
         // memcpy((uint8 *)&gizwitsProtocol.gizLastDataPoint, (uint8 *)currentData, sizeof(dataPoint_t));
     // }    
 	
-	if(0 == (gizGetTimerCount() % (100)))
+	if(0 == (gizGetTimerCount() % (UPDATE_NTP_TIME)))
     {
         gizwitsGetNTP();
 	}

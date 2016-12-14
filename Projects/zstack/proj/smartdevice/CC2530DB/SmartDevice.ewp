@@ -7920,6 +7920,12 @@
         <name>$PROJ_DIR$\..\Source\bsp\bsp_coord.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_htsensor.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_htsensor.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\Source\bsp\bsp_key.c</name>
       </file>
       <file>
@@ -7958,6 +7964,12 @@
     </group>
     <group>
       <name>hal</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\hal\hal_dht11.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\hal\hal_dht11.h</name>
+      </file>
       <file>
         <name>$PROJ_DIR$\..\Source\hal\hal_ds1302.c</name>
       </file>

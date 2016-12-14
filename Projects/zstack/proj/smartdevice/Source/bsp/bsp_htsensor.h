@@ -24,23 +24,23 @@
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
 #include "myprotocol.h"
-#include "bsp_key.h"
 
 /* Exported macro ------------------------------------------------------------*/
+#if MYPROTOCOL_DEVICE_IS_HT_SENSOR
+#define bspDeviceInit() bspHTSensorInit()
+#define deviceMessageHandler htsensorMessageHandler
+#endif
+
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern void ht_sensor_init(void);
-extern void report_ht_sensor_data( void );
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_HT_SENSOR)
-//#define htsensor_key_handler key1_handler
-//
-//extern void htsensor_key_handler( key_message_t );
-#endif
-extern bool ht_sensor_cmd_resolve(MYPROTOCOL_USER_DATA *data);
+extern void bspHTSensorInit(void);
+extern void reportHTSensorData( void );
+extern void readHTSensorData( void );
+extern bool htsensorMessageHandler(MYPROTOCOL_FORMAT_t *);
 
 #endif      /* __SMART_DEVICE_HT_SENSOR_H__ */
 

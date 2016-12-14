@@ -80,8 +80,8 @@ static uint8 DeviceTransID = 0;
 /** 设备组别 */
 static aps_Group_t DeviceGroup;
 
-/** 目标地址 */
-static afAddrType_t DeviceDstAddr;
+///** 目标地址 */
+//static afAddrType_t DeviceDstAddr;
 
 /**@} */
 
@@ -118,10 +118,10 @@ bool MyprotocolInit( uint8 *taskId )
 	/** 初始化发送ID */
     DeviceTransID = 0;
 	
-	/** 初始化目标接收地址 */
-	memset(&DeviceDstAddr.addr,0,sizeof(DeviceDstAddr.addr));
-	DeviceDstAddr.addrMode = afAddr64Bit;
-    DeviceDstAddr.endPoint = DeviceEndPoint;
+//	/** 初始化目标接收地址 */
+//	memset(&DeviceDstAddr.addr,0,sizeof(DeviceDstAddr.addr));
+//	DeviceDstAddr.addrMode = afAddr64Bit;
+//    DeviceDstAddr.endPoint = DeviceEndPoint;
 	
     /** 注册AF层应用对象 */
     DeviceEpDesc.endPoint = DeviceEndPoint;
@@ -190,6 +190,7 @@ void MyprotocolInit( uint8 *taskId )
 
 #endif
 
+#if 0
 /**
  *******************************************************************************
  * @brief       计算用户数据的大小
@@ -253,7 +254,29 @@ static uint8 MyprotocolCalChecksum( uint8 *packet )
     
     return checksum;
 }
+#else 
+/**
+ *******************************************************************************
+ * @brief       计算数据包的校验和
+ * @param       [in/out]  packet    数据包地址
+ * @return      [in/out]  checksum  校验和
+ * @note        None
+ *******************************************************************************
+ */
+static uint8 MyprotocolCalChecksum( uint8 *packet )
+{
+    uint8 i;
+    uint8 checksum;
 
+    for( i=0, checksum=0; i<MYPROTOCOL_PACKET_SIZE-1; i++ )
+    {
+        checksum += packet[i];
+    }
+    
+    return checksum;
+}
+
+#endif
 /**
  *******************************************************************************
  * @brief       校验数据包
@@ -332,35 +355,41 @@ bool MyprotocolD2DRecDeviceCheck( MYPROTOCOL_FORMAT_t *recPacket )
  */
 bool MyprotocolD2DSendData( void *ctx, void *packet )
 {
+  afAddrType_t DeviceDstAddr;
 #if USE_MYPROTOCOL_DEBUG
-    if( ctx == NULL )
-    {
-        MYPROTOCOL_LOG("MyprotocolD2DSendData intput param ctx is invalid! \r\n");
-        return false;
-    }
-    else if( packet == NULL )
+    if( packet == NULL )
     {
         MYPROTOCOL_LOG("MyprotocolD2DSendData intput param packet is invalid! \r\n");
         return false;
     }
+#endif
+        
+    memset(&DeviceDstAddr,0,sizeof(DeviceDstAddr));
+   
+    if( ctx != NULL )
+    {
+        memcpy(&DeviceDstAddr.addr.extAddr,(uint8 *)ctx,sizeof(DeviceDstAddr.addr.extAddr));
+        DeviceDstAddr.addrMode = afAddr64Bit;
+    }
     else
     {
-        
+        DeviceDstAddr.addr.shortAddr = 0x0000;
+        DeviceDstAddr.addrMode = afAddr16Bit;
     }
-#endif
-
-	memcpy(&DeviceDstAddr.addr,(uint8 *)ctx,sizeof(DeviceDstAddr.addr));
-	
-	return AF_DataRequest(&DeviceDstAddr,
+    
+	DeviceDstAddr.endPoint = DeviceEndPoint;
+    
+    return AF_DataRequest(&DeviceDstAddr,
 					      &DeviceEpDesc,
 					      DeviceCommClustersID,
 					      MYPROTOCOL_PACKET_SIZE,
-					      (uint8 *)&packet,
+					      (uint8 *)packet,
 					      &DeviceTransID,
 					      AF_DISCV_ROUTE,
 					      AF_DEFAULT_RADIUS);
 }
 
+#if MYPROTOCOL_DEVICE_IS_COORD
 /**
  *******************************************************************************
  * @brief       发送D2W数据包
@@ -378,14 +407,11 @@ bool MyprotocolD2WSendData( void *ctx, void *packet )
         MYPROTOCOL_LOG("MyprotocolD2WSendData intput param packet is invalid! \r\n");
         return false;
     }
-    else
-    {
-        
-    }
 #endif
-
 	return gizwitsSendData(packet);
 }
+
+#endif
 
 /**
  *******************************************************************************
@@ -408,13 +434,9 @@ bool MyprotocolSendData( void *ctx, void *dstaddr, packet_type packet_func, send
         MYPROTOCOL_LOG("MyprotocolSendData intput param send_func is invalid! \r\n");
         return false;
     }
-    else
-    {
-        
-    }
 #endif
     
-//    memset(&packet,0,sizeof(MYPROTOCOL_FORMAT_t));
+    memset(&packet,0,sizeof(MYPROTOCOL_FORMAT_t));
 
     packet.device.device = MYPROTOCOL_DEVICE;
     memcpy(&packet.device.mac,&aExtendedAddress,sizeof(packet.device.mac));
@@ -496,12 +518,7 @@ bool MyprotocolReplyErrPacket( MYPROTOCOL_FORMAT_t *recPacket )
 bool MyprotocolForwardData( void *dstaddr, void *packet, send_type send_func )
 {
 #if USE_MYPROTOCOL_DEBUG
-    if( dstaddr == NULL )
-    {
-        MYPROTOCOL_LOG("MyprotocolSendData intput param dstaddr is invalid! \r\n");
-        return false;
-    }
-    else if( packet == NULL )
+    if( packet == NULL )
     {
         MYPROTOCOL_LOG("MyprotocolSendData intput param packet is invalid! \r\n");
         return false;
@@ -560,7 +577,7 @@ bool MyprotocolReceiveData( void *ctx, void *packet, receive_type error, receive
  * @note        None
  *******************************************************************************
  */
-bool CommErrorPacket( void *ctx, void *packet )
+bool createCommErrorPacket( void *ctx, void *packet )
 {
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
@@ -584,7 +601,7 @@ bool CommErrorPacket( void *ctx, void *packet )
  * @note        None
  *******************************************************************************
  */
-bool CommEndPacket( void *ctx, void *packet )
+bool createCommEndPacket( void *ctx, void *packet )
 {
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
@@ -608,7 +625,7 @@ bool CommEndPacket( void *ctx, void *packet )
  * @note        None
  *******************************************************************************
  */
-bool DeviceTickPacket( void *ctx, void *packet )
+bool createDeviceTickPacket( void *ctx, void *packet )
 {
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
@@ -634,7 +651,7 @@ bool DeviceTickPacket( void *ctx, void *packet )
  * @note        None
  *******************************************************************************
  */
-bool DeviceTickAckPacket( void *ctx, void *packet )
+bool createDeviceTickAckPacket( void *ctx, void *packet )
 {
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
@@ -642,17 +659,13 @@ bool DeviceTickAckPacket( void *ctx, void *packet )
         MYPROTOCOL_LOG("tick ack packet is invalid! \r\n");
         return false;
     }
-    
-    if( ctx == NULL )
-    {
-        MYPROTOCOL_LOG("tick ack device info  is invalid! \r\n");
-        return false;
-    }
 #endif    
 
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype      = MYPROTOCOL_S2H_ACK;
     ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.cmd = MYPROTOCOL_TICK_CMD; 
     ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.len = 0;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->device.device = ((MYPROTOCOL_FORMAT_t *)(ctx))->device.device;
+    memcpy(&((MYPROTOCOL_FORMAT_t *)(packet))->device.mac, &((MYPROTOCOL_FORMAT_t *)(ctx))->device.mac,sizeof(((MYPROTOCOL_FORMAT_t *)(ctx))->device.mac));
     
 //    memcpy(&(((MYPROTOCOL_FORMAT_t *)packet)->device), ctx, MyprotocolCalUserDataSize((MYPROTOCOL_USER_DATA_t *)ctx) );
     
@@ -668,7 +681,7 @@ bool DeviceTickAckPacket( void *ctx, void *packet )
  * @note        None
  *******************************************************************************
  */
-bool S2HWaitPacket( void *ctx, void *packet )
+bool createS2HWaitPacket( void *ctx, void *packet )
 {
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
@@ -697,7 +710,7 @@ bool S2HWaitPacket( void *ctx, void *packet )
  * @note        None
  *******************************************************************************
  */
-bool S2HAckPacket( void *ctx, void *packet )
+bool createS2HAckPacket( void *ctx, void *packet )
 {
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
@@ -726,7 +739,7 @@ bool S2HAckPacket( void *ctx, void *packet )
  * @note        None
  *******************************************************************************
  */
-bool H2SWaitPacket( void *ctx, void *packet )
+bool createH2SWaitPacket( void *ctx, void *packet )
 {
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
@@ -755,7 +768,7 @@ bool H2SWaitPacket( void *ctx, void *packet )
  * @note        None
  *******************************************************************************
  */
-bool H2SAckPacket( void *ctx, void *packet )
+bool createH2SAckPacket( void *ctx, void *packet )
 {
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
@@ -784,7 +797,7 @@ bool H2SAckPacket( void *ctx, void *packet )
  * @note        None
  *******************************************************************************
  */
-bool D2WWaitPacket( void *ctx, void *packet )
+bool createD2WWaitPacket( void *ctx, void *packet )
 {
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
@@ -813,7 +826,7 @@ bool D2WWaitPacket( void *ctx, void *packet )
  * @note        None
  *******************************************************************************
  */
-bool D2WAckPacket( void *ctx, void *packet )
+bool createD2WAckPacket( void *ctx, void *packet )
 {
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
@@ -842,7 +855,7 @@ bool D2WAckPacket( void *ctx, void *packet )
  * @note        None
  *******************************************************************************
  */
-bool W2DWaitPacket( void *ctx, void *packet )
+bool createW2DWaitPacket( void *ctx, void *packet )
 {
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
@@ -871,7 +884,7 @@ bool W2DWaitPacket( void *ctx, void *packet )
  * @note        None
  *******************************************************************************
  */
-bool W2DAckPacket( void *ctx, void *packet )
+bool createW2DAckPacket( void *ctx, void *packet )
 {
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )

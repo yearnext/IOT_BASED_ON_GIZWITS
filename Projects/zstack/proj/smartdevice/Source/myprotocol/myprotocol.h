@@ -51,6 +51,21 @@ extern "C"
 #define MYPROTOCOL_DEVICE_IS_SOCKET    ( MYPROTOCOL_DEVICE == MYPROTOCOL_DEVICE_SOCKET    )
 #define MYPROTOCOL_DEVICE_IS_CURTAIN   ( MYPROTOCOL_DEVICE == MYPROTOCOL_DEVICE_CURTAIN   )
 #define MYPROTOCOL_DEVICE_IS_HT_SENSOR ( MYPROTOCOL_DEVICE == MYPROTOCOL_DEVICE_HT_SENSOR )
+   
+/** 判断是否存在遵守MYPROTOCOL协议设备的宏 */
+#if MYPROTOCOL_DEVICE_IS_COORD \
+    || MYPROTOCOL_DEVICE_IS_LIGHT \
+    || MYPROTOCOL_DEVICE_IS_SOCKET \
+    || MYPROTOCOL_DEVICE_IS_CURTAIN \
+    || MYPROTOCOL_DEVICE_IS_HT_SENSOR
+        
+#define USE_MYPROTOCOL_DEVICE 1
+        
+#else
+#define USE_MYPROTOCOL_DEVICE 0
+        
+#endif
+        
 /**
  * @name 定义通信相关参数
  * @{
@@ -225,8 +240,16 @@ extern bool MyprotocolD2DRecDeviceCheck( MYPROTOCOL_FORMAT_t* );
  * @{
  */
 // 通用发送数据包函数
+#if MYPROTOCOL_DEVICE_IS_COORD
 extern bool MyprotocolD2DSendData( void*, void* );
 extern bool MyprotocolD2WSendData( void*, void* );
+
+#else
+extern bool MyprotocolD2DSendData( void*, void* );
+#define MyprotocolD2WSendData MyprotocolD2DSendData
+
+#endif
+
 extern bool MyprotocolForwardData( void*, void*, send_type );
 extern bool MyprotocolSendData( void*, void*, packet_type, send_type );
 
@@ -251,18 +274,18 @@ extern bool MyprotocolReceiveData( void*, void*, receive_type, receive_type );
  * @name    数据包函数
  * @{
  */
-extern bool CommErrorPacket( void*, void* );
-extern bool CommEndPacket( void*, void* );
-extern bool DeviceTickPacket( void*, void* );
-extern bool DeviceTickAckPacket( void*, void* );
-extern bool S2HWaitPacket( void*, void* );
-extern bool S2HAckPacket( void*, void* );
-extern bool H2SWaitPacket( void*, void* );
-extern bool H2SAckPacket( void*, void* );
-extern bool D2WWaitPacket( void*, void* );
-extern bool D2WAckPacket( void*, void* );
-extern bool W2DWaitPacket( void*, void* );
-extern bool W2DAckPacket( void*, void* );
+extern bool createCommErrorPacket( void*, void* );
+extern bool createCommEndPacket( void*, void* );
+extern bool createDeviceTickPacket( void*, void* );
+extern bool createDeviceTickAckPacket( void*, void* );
+extern bool createS2HWaitPacket( void*, void* );
+extern bool createS2HAckPacket( void*, void* );
+extern bool createH2SWaitPacket( void*, void* );
+extern bool createH2SAckPacket( void*, void* );
+extern bool createD2WWaitPacket( void*, void* );
+extern bool createD2WAckPacket( void*, void* );
+extern bool createW2DWaitPacket( void*, void* );
+extern bool createW2DAckPacket( void*, void* );
 /**@} */
 
 #ifdef __cplusplus

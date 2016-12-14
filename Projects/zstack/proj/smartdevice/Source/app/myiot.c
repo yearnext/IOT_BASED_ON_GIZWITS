@@ -83,26 +83,27 @@
      
 /** 设备定时时间 */
 #if MYPROTOCOL_DEVICE_IS_COORD
-    #define DEVICE_LIST_TIME            (15000)
+    #define DEVICE_LIST_TIME            (10000)
 #else
-    #define DEVICE_LIST_TIME            (15000)
+    #define DEVICE_LIST_TIME            (5000)
 #endif
    
 /** 设备定时事件 */
 #define DEVICE_LIST_TIMER_EVEN          (0x0002)
 
 /** 设备后台运行时间 */
-#define DEVICE_BACKSTAGE_TIME           (10)
+#define DEVICE_BACKSTAGE_TIME           (20)
+#define DEVICE_TIMR_CONVER_TICK(n)      (n/DEVICE_BACKSTAGE_TIME)
 /** 设备定时器事件 */
 #define DEVICE_TIMER_EVEN               (0x0008)
 
 /** 定时器计数值 */
-#define TIMER_20MS_COUNT  (2)
-#define TIMER_50MS_COUNT  (5)
-#define TIMER_100MS_COUNT (10)
-#define TIMER_350MS_COUNT (30)
+#define TIMER_20MS_COUNT  DEVICE_TIMR_CONVER_TICK(20)
+#define TIMER_50MS_COUNT  DEVICE_TIMR_CONVER_TICK(50)
+#define TIMER_100MS_COUNT DEVICE_TIMR_CONVER_TICK(100)
+#define TIMER_350MS_COUNT DEVICE_TIMR_CONVER_TICK(350)
 //#define TIMER_1MIN_COUNT  (600)
-#define TIMER_1MIN_COUNT  (6000)
+#define TIMER_1MIN_COUNT  DEVICE_TIMR_CONVER_TICK(60000)
 
 /** Smart Device 通讯状态指示灯 */
 #define MYIOT_DISCONNED_STATE (0x00)
@@ -143,17 +144,9 @@ void myIotInit( byte task_id )
     bsp_key_init();
     
     app_time_init();
-
-#if MYPROTOCOL_DEVICE_IS_COORD
-    bspCoordInit();
-#elif MYPROTOCOL_DEVICE_IS_LIGHT
-    bsp_light_init();
-#elif MYPROTOCOL_DEVICE_IS_SOCKET
-    bsp_socket_init();
-#elif MYPROTOCOL_DEVICE_IS_CURTAIN
-#elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
-	ht_sensor_init();
-#else
+    
+#if USE_MYPROTOCOL_DEVICE
+    bspDeviceInit();
 #endif
     
     osal_start_timerEx( myIotTaskID, 
@@ -188,7 +181,7 @@ uint16 myIotProcessEven( uint8 task_id, uint16 events )
             switch( MSGpkt->hdr.event )
             {
                 case AF_INCOMING_MSG_CMD:
-                    MyprotocolD2DReceiveData((void *)MSGpkt->cmd.Data,coordMessageHandler);
+                    MyprotocolD2DReceiveData((void *)MSGpkt->cmd.Data,deviceMessageHandler);
 //                    SmartDevice_Message_Handler(MSGpkt);
                     break;
                 case ZDO_STATE_CHANGE:
@@ -218,10 +211,18 @@ uint16 myIotProcessEven( uint8 task_id, uint16 events )
         allDeviceTickClr();
         DEVICE_LOG("COORD FRESH DEVICE LIST!\n");
 #else
-        MyprotocolSendData(NULL,&recPacket->device.mac, DeviceTickPacket, MyprotocolD2DSendData);
-        DEVICE_LOG("DEVICE SEND TICK PACKET!\n");
+        MyprotocolSendData(NULL,NULL, createDeviceTickPacket, MyprotocolD2DSendData);
+#if MYPROTOCOL_DEVICE_IS_SOCKET
+        DEVICE_LOG("SOCKET SEND TICK PACKET!\n");
+#elif MYPROTOCOL_DEVICE_IS_LIGHT
+        DEVICE_LOG("LIGHT SEND TICK PACKET!\n");
+#elif MYPROTOCOL_DEVICE_IS_CURTAIN
+        DEVICE_LOG("CURTAIN SEND TICK PACKET!\n");
+#elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
+        DEVICE_LOG("HT_SENSOR SEND TICK PACKET!\n");
 #endif
 
+#endif
         osal_start_timerEx( myIotTaskID, 
                             DEVICE_LIST_TIMER_EVEN, 
                             DEVICE_LIST_TIME );
@@ -322,6 +323,83 @@ static void myiotCommLedControl( uint8 state )
  * @note        执行周期为10MS
  *******************************************************************************
  */
+#if MYPROTOCOL_DEVICE_IS_COORD
+void deviceTimerCallBack( void )
+{
+    static uint8 timer_20ms  = 0;
+    static uint8 timer_100ms = 0;
+    
+    if( ++timer_20ms >= TIMER_20MS_COUNT )
+    {
+        key_scan();
+        key_handler();
+        
+        timer_20ms = 0;
+    }
+    
+    if( ++timer_100ms >= TIMER_100MS_COUNT )
+    {
+        gizTimer100Ms();
+        gizwitsHandle();
+        
+        timer_100ms = 0;
+    }
+}
+
+#elif MYPROTOCOL_DEVICE_IS_LIGHT
+void deviceTimerCallBack( void )
+{
+    static uint8 timer_20ms  = 0;
+    static uint8 timer_50ms  = 0;
+    static uint8 timer_100ms = 0;
+    static uint8 timer_350ms = 0;
+    static uint16 timer_1min = 0;
+    
+    if( ++timer_20ms >= TIMER_20MS_COUNT )
+    {
+        key_scan();
+        timer_20ms = 0;
+    }
+    
+    if( ++timer_50ms >= TIMER_50MS_COUNT )
+    {
+#if MYPROTOCOL_DEVICE_IS_COORD
+        gizTimer50Ms();
+#endif
+        key_handler();
+        timer_50ms = 0;
+    }
+    
+    if( ++timer_100ms >= TIMER_100MS_COUNT )
+    {
+#if MYPROTOCOL_DEVICE_IS_COORD
+        gizwitsHandle();
+#endif
+        timer_100ms = 0;
+    }
+    
+    if( ++timer_350ms >= TIMER_350MS_COUNT )
+    {
+#if MYPROTOCOL_DEVICE_IS_LIGHT
+        app_time_update();
+        light_working_handler();
+#elif MYPROTOCOL_DEVICE_IS_SOCKET
+        app_time_update();
+        socket_working_handler();
+#else
+#endif  
+        timer_350ms = 0;
+    }
+    
+    if( ++timer_1min >= TIMER_1MIN_COUNT )
+    {
+#if MYPROTOCOL_DEVICE_IS_HT_SENSOR
+		reportHTSensorData();
+#endif
+        timer_1min = 0;
+    }
+}
+#elif MYPROTOCOL_DEVICE_IS_SOCKET
 void deviceTimerCallBack( void )
 {
     static uint8 timer_20ms  = 0;
@@ -374,6 +452,82 @@ void deviceTimerCallBack( void )
         timer_1min = 0;
     }
 }
+#elif MYPROTOCOL_DEVICE_IS_CURTAIN
+void deviceTimerCallBack( void )
+{
+    static uint8 timer_20ms  = 0;
+    static uint8 timer_50ms  = 0;
+    static uint8 timer_100ms = 0;
+    static uint8 timer_350ms = 0;
+    static uint16 timer_1min = 0;
+    
+    if( ++timer_20ms >= TIMER_20MS_COUNT )
+    {
+        key_scan();
+        timer_20ms = 0;
+    }
+    
+    if( ++timer_50ms >= TIMER_50MS_COUNT )
+    {
+#if MYPROTOCOL_DEVICE_IS_COORD
+        gizTimer50Ms();
+#endif
+        key_handler();
+        timer_50ms = 0;
+    }
+    
+    if( ++timer_100ms >= TIMER_100MS_COUNT )
+    {
+#if MYPROTOCOL_DEVICE_IS_COORD
+        gizwitsHandle();
+#endif
+        timer_100ms = 0;
+    }
+    
+    if( ++timer_350ms >= TIMER_350MS_COUNT )
+    {
+#if MYPROTOCOL_DEVICE_IS_LIGHT
+        app_time_update();
+        light_working_handler();
+#elif MYPROTOCOL_DEVICE_IS_SOCKET
+        app_time_update();
+        socket_working_handler();
+#else
+#endif  
+        timer_350ms = 0;
+    }
+    
+    if( ++timer_1min >= TIMER_1MIN_COUNT )
+    {
+#if MYPROTOCOL_DEVICE_IS_HT_SENSOR
+		report_ht_sensor_data();
+#endif
+        timer_1min = 0;
+    }
+}
+
+#elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
+void deviceTimerCallBack( void )
+{
+    static uint16 timer_1min = 0;
+
+    if( ++timer_1min >= TIMER_1MIN_COUNT )
+    {
+#if USE_MYPROTOCOL_DEBUG
+        DEVICE_LOG("HT_SENSOR need report data!\n");
+#endif
+        reportHTSensorData();
+        timer_1min = 0;
+    }
+}
+
+#else
+void deviceTimerCallBack( void )
+{
+}
+
+#endif
+
 
 /** @}*/     /* smartlight模块 */
 

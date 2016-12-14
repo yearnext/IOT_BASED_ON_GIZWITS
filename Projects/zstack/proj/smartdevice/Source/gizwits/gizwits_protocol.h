@@ -52,8 +52,14 @@ extern "C"
  * @name 通讯参数配置
  * @{
  */
+#define GIZWITS_TICK_CYCLE (100)
+     
+#define GIZWITS_TIME_CONVER_TICK(time) (time/GIZWITS_TICK_CYCLE)
+     
  /** 3000ms重发 */
-#define SEND_MAX_TIME   (6)   
+#define SEND_MAX_TIME   GIZWITS_TIME_CONVER_TICK(3000)
+     
+#define UPDATE_NTP_TIME GIZWITS_TIME_CONVER_TICK(1000)
 
 /** 重发次数 */
 #define SEND_MAX_NUM    (2)                     
@@ -403,7 +409,7 @@ typedef struct
  */
 extern void gizProtocolReboot(void);
 extern uint32 gizGetTimerCount(void);
-extern void gizTimer50Ms(void);
+extern void gizTimer100Ms(void);
 extern void gizTimerMs(void);
 extern bool gizPutData( uint8*, uint16 );
 extern bool gizwitsHandle( void );
