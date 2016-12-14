@@ -75,6 +75,8 @@ void reportHTSensorData( void )
 	MYPROTOCOL_USER_DATA_t user_data;
     uint8 timeout = 0;
     
+    memset(&user_data,0,sizeof(user_data));
+    
     while(1)
     {
         if( dht11_rd_data((DHT11_DATA_t *)&user_data.data) == true )
@@ -112,6 +114,8 @@ void readHTSensorData( void )
 {
 	MYPROTOCOL_USER_DATA_t user_data;
     uint8 timeout = 0;
+    
+    memset(&user_data,0,sizeof(user_data));
     
     while(1)
     {

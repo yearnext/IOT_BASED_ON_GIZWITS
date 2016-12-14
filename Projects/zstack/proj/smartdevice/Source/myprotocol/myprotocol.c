@@ -439,7 +439,9 @@ bool MyprotocolSendData( void *ctx, void *dstaddr, packet_type packet_func, send
     memset(&packet,0,sizeof(MYPROTOCOL_FORMAT_t));
 
     packet.device.device = MYPROTOCOL_DEVICE;
+#if !MYPROTOCOL_DEVICE_IS_COORD
     memcpy(&packet.device.mac,&aExtendedAddress,sizeof(packet.device.mac));
+#endif
     
     packet_func(ctx, &packet);
     
@@ -693,7 +695,7 @@ bool createS2HWaitPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->device,&((MYPROTOCOL_FORMAT_t *)ctx)->device, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->device) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->user_data) );
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_S2H_WAIT;
@@ -722,7 +724,7 @@ bool createS2HAckPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->device,&((MYPROTOCOL_FORMAT_t *)ctx)->device, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->device) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->user_data) );
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_S2H_ACK;
@@ -751,7 +753,7 @@ bool createH2SWaitPacket( void *ctx, void *packet )
     
     if( ctx != NULL )
     {
-        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->device,&((MYPROTOCOL_FORMAT_t *)ctx)->device, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->device) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->user_data) );
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_H2S_WAIT;
@@ -780,7 +782,7 @@ bool createH2SAckPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->device,&((MYPROTOCOL_FORMAT_t *)ctx)->device, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->device) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->user_data) );
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_H2S_ACK;
@@ -809,7 +811,7 @@ bool createD2WWaitPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->device,&((MYPROTOCOL_FORMAT_t *)ctx)->device, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->device) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->user_data) );
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_D2W_WAIT;
@@ -838,7 +840,7 @@ bool createD2WAckPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->device,&((MYPROTOCOL_FORMAT_t *)ctx)->device, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->device) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->user_data) );
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_D2W_ACK;
@@ -867,7 +869,7 @@ bool createW2DWaitPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->device,&((MYPROTOCOL_FORMAT_t *)ctx)->device, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->device) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->user_data) );
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_W2D_WAIT;
@@ -896,7 +898,7 @@ bool createW2DAckPacket( void *ctx, void *packet )
 
     if( ctx != NULL )
     {
-        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->device,&((MYPROTOCOL_FORMAT_t *)ctx)->device, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->device) );
+        memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->user_data) );
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_W2D_ACK;
