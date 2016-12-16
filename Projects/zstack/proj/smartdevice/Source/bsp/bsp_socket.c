@@ -28,8 +28,12 @@
 #include "app_save.h"
 #include "bsp_socket.h"
 #include "Onboard.h"
+#include "app_time.h"
 
 /* Exported macro ------------------------------------------------------------*/
+// SOCKET 调试开关
+#define USE_SOCKET_DEBUG (1)
+
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -63,9 +67,11 @@ typedef enum
     WR_SOCKET_LOAD_SET     = 0x17,
 }DEVICE_LIGHT_CMD;
 
-// 灯的开启关闭亮度
-#define SOCKET_ON_CMD        (255)
-#define SOCKET_OFF_CMD       (0)
+// 插座的开启关闭命令
+#define SOCKET_ON_CMD        (SOCKET_CONTROL_POLARITY(1))
+#define SOCKET_OFF_CMD       (SOCKET_CONTROL_POLARITY(0))
+#define SOCKET_ON_STATE      (SOCKET_CONTROL_POLARITY(1))
+#define SOCKET_OFF_STATE     (SOCKET_CONTROL_POLARITY(0))
 
 // 加载掉电前的数据
 #define SOCKET_NO_LOAD_SET   (0x00)
@@ -89,11 +95,6 @@ static struct _DEVICE_SOCKET_SAVE_DATA_
     DEVICE_TIMER timer[SOCKET_USE_TIMER_NUM]; 
     
     // 初始化载入数据
-//    enum
-//    {
-//        LIGHT_NO_LOAD_SET = 0x00,
-//        LIGHT_LOAD_SET    = 0x01,
-//    }load_set;
     uint8 load_set;
 }socket;
 
@@ -107,15 +108,16 @@ static struct _DEVICE_SOCKET_SAVE_DATA_
  * @note        None
  *******************************************************************************
  */
-static void report_socket_value_data( void )
+static void reportSocketState( void )
 {
-    MYPROTOCOL_USER_DATA user_data;
-    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
+    MYPROTOCOL_USER_DATA_t user_data;
+    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
     
     user_data.cmd = RD_SOCKET_STATE;
     user_data.data[0] = socket.status.now;
     user_data.len = 1;
-    MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
+    
+    MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData);
 }
 
 /**
@@ -126,11 +128,11 @@ static void report_socket_value_data( void )
  * @note        None
  *******************************************************************************
  */
-static void report_timer_data( uint8 timer )
+static void reportSocketTimerData( uint8 timer )
 {
-    MYPROTOCOL_USER_DATA user_data;
-    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
-    
+    MYPROTOCOL_USER_DATA_t user_data;
+    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
+
     if( timer == 0 )
     {
         user_data.cmd = RD_SOCKET_SINGLE_TIMER;
@@ -147,7 +149,7 @@ static void report_timer_data( uint8 timer )
     memcpy(&user_data.data,&socket.timer[timer],sizeof(DEVICE_TIMER));
     user_data.len = sizeof(DEVICE_TIMER);
     
-    MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
+    MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData);
 }
 
 /**
@@ -158,16 +160,16 @@ static void report_timer_data( uint8 timer )
  * @note        None
  *******************************************************************************
  */
-static void report_socket_loadset_data( void )
+static void reportSocketLoadSetState( void )
 {
-    MYPROTOCOL_USER_DATA user_data;
-    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
+    MYPROTOCOL_USER_DATA_t user_data;
+    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
     
     user_data.cmd = RD_SOCKET_LOAD_SET;
     memcpy(&user_data.data,&socket.load_set,sizeof(socket.load_set));
     user_data.len = sizeof(socket.load_set);
     
-    MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
+    MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData);
 }
 
 /**
@@ -178,12 +180,14 @@ static void report_socket_loadset_data( void )
  * @note        None
  *******************************************************************************
  */
-static bool save_socket_timer_data( uint8 timer, uint8 *data )
+static bool saveSocketTimerData( uint8 timer, uint8 *data )
 {
+#if USE_SOCKET_DEBUG
     if( timer >= SOCKET_USE_TIMER_NUM )
     {
         return false;
     }
+#endif
     
     memcpy(&socket.timer[timer],data,sizeof(socket.timer[timer]));
     
@@ -204,11 +208,11 @@ static bool save_socket_timer_data( uint8 timer, uint8 *data )
  * @note        None
  *******************************************************************************
  */
-static bool save_socket_loadset_data( uint8 data )
+static bool saveSocketLoadData( uint8 data )
 {
     socket.load_set = data;
     
-    osal_nv_write(DEVICE_LIGHT_SAVE_ID,
+    osal_nv_write(DEVICE_SOCKET_SAVE_ID,
                   (uint32)&socket.load_set-(uint32)&socket,
                   sizeof(socket.load_set),
                   (void *)&socket.load_set);     
@@ -223,7 +227,7 @@ static bool save_socket_loadset_data( uint8 data )
  * @note        None
  *******************************************************************************
  */
-static void socket_rst_set( void )
+static void rstSocketData( void )
 {
     memset(&socket,0,sizeof(socket));
     socket.status.now = SOCKET_OFF_CMD;
@@ -241,16 +245,15 @@ static void socket_rst_set( void )
  * @note        None
  *******************************************************************************
  */
-void bsp_socket_init( void )
+void bspSocketInit( void )
 {
-//    Timer4_PWM_Init( TIM4_CH0_PORT_P2_0 );
     SOCKET_CONTROL_WrMode();
-    set_socket_value(SOCKET_OFF_CMD);
+    setSocketState(SOCKET_OFF_CMD);
     
     // FLASH 数据初始化
-    Device_Load_LastData(DEVICE_SOCKET_SAVE_ID,DEVICE_SOCKET_DATA_SIZE,(void *)&socket,socket_rst_set);
+    deviceLoadDownData(DEVICE_SOCKET_SAVE_ID,DEVICE_SOCKET_DATA_SIZE,(void *)&socket,rstSocketData);
     
-    set_socket_value(socket.status.now);
+    setSocketState(socket.status.now);
 }
 
 /**
@@ -261,9 +264,9 @@ void bsp_socket_init( void )
  * @note        None
  *******************************************************************************
  */
-void set_socket_value( uint8 value )
+void setSocketState( uint8 setCmd )
 {
-    if( value == 0 )
+    if( setCmd == SOCKET_OFF_CMD )
     {
         CLR_SOCKET_CONTROL();
     }
@@ -281,9 +284,9 @@ void set_socket_value( uint8 value )
  * @note        None
  *******************************************************************************
  */
-uint8 get_socket_value( void )
+uint8 getSocketState( void )
 {
-    return RD_SOCKET_CONTROL();
+    return (RD_SOCKET_CONTROL() == SOCKET_ON_STATE) ? (SOCKET_ON_STATE) : (SOCKET_OFF_STATE);
 }
 
 /**
@@ -294,20 +297,22 @@ uint8 get_socket_value( void )
  * @note        None 
  *******************************************************************************
  */
-void socket_control_handler( uint8 value )
+void socketControlHandler( uint8 state )
 {
-    if( value != get_socket_value() )
+    if( state != getSocketState() )
     {
         socket.status.last = socket.status.now;
-        socket.status.now = value;
+        socket.status.now = state;
         
-        set_socket_value( socket.status.now );
+        setSocketState( socket.status.now );
         
         osal_nv_write(DEVICE_SOCKET_SAVE_ID,\
                       (uint16)&socket.status-(uint16)&socket,\
                       sizeof(socket.status),\
                       (void *)&socket.status);
     }
+    
+    reportSocketState();
 }
 
 /**
@@ -318,41 +323,23 @@ void socket_control_handler( uint8 value )
  * @note        None
  *******************************************************************************
  */
-void socket_switch_handler( void )
+void socketSwitchHandler( void )
 {
-    uint8 temp = 0;
-
+    socket.status.last = socket.status.now;
+    
     if( socket.status.now == SOCKET_OFF_CMD )
     {
-        if( socket.status.last != socket.status.now )
-        {
-            temp = socket.status.now;
-            socket.status.now = socket.status.last;
-            socket.status.last = temp;
-        }
-        else
-        {
-            socket.status.last = socket.status.now;
-            socket.status.now = SOCKET_ON_CMD;
-        }
+        
+        socket.status.now = SOCKET_ON_CMD;
     }
     else
     {
-        socket.status.last = socket.status.now;
         socket.status.now = SOCKET_OFF_CMD;
     }
     
-    set_socket_value( socket.status.now );
-    
-    osal_nv_write(DEVICE_SOCKET_SAVE_ID,\
-                 ((uint16)&socket.status - (uint16)&socket),\
-                 sizeof(socket.status),\
-                 (void *)&socket.status); 
-
-    report_socket_value_data();
+    socketControlHandler(socket.status.now);
 }
 
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
 /**
  *******************************************************************************
  * @brief       按键处理
@@ -361,12 +348,12 @@ void socket_switch_handler( void )
  * @note        None
  *******************************************************************************
  */
-void key_switch_key_handler( key_message_t message )
+void socketSwitchKeyHandler( key_message_t message )
 {
     switch (message)
     {
 		case KEY_MESSAGE_PRESS_EDGE:
-            socket_switch_handler();
+            socketSwitchHandler();
 			break;
 		default:
 			break;
@@ -381,18 +368,18 @@ void key_switch_key_handler( key_message_t message )
  * @note        None
  *******************************************************************************
  */
-void key_reset_key_handler( key_message_t message )
+void socketRstKeyHandler( key_message_t message )
 {
     switch (message)
     {
-		case KEY_MESSAGE_PRESS_EDGE:
+		case KEY_MESSAGE_LONG_PRESS_EDGE:
+            rstSocketData();
+            Onboard_soft_reset();
 			break;
 		default:
 			break;
     }
 }
-
-#endif
 
 /**
  *******************************************************************************
@@ -402,13 +389,13 @@ void key_reset_key_handler( key_message_t message )
  * @note        None
  *******************************************************************************
  */
-void socket_working_handler( void )
+void socketWorkingHandler( void )
 {
     uint8 i;
     
     for( i=0; i<SIMPLE_DEVICE_TIMER_NUM; i++ )
     {
-        device_timer_handler((DEVICE_TIMER*)&socket.timer[i],socket_control_handler);
+        device_timer_handler((DEVICE_TIMER*)&socket.timer[i],socketControlHandler);
     }
 }
 
@@ -420,44 +407,50 @@ void socket_working_handler( void )
  * @note        None
  *******************************************************************************
  */
-bool socket_cmd_resolve( MYPROTOCOL_USER_DATA *data )
+bool socketMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
 {    
-    switch( data->cmd )
+    switch( recPacket->user_data.cmd )
     {
-        case DEVICE_TICK:
+        case MYPROTOCOL_TICK_CMD:
             break;
-        case DEVICE_RESET:
-            socket_rst_set();
-        case DEVICE_REBOOT:
+        case MYPROTOCOL_RESET_CMD:
+            rstSocketData();
+        case MYPROTOCOL_REBOOT_CMD:
             Onboard_soft_reset();
             break;
+        case MYPROTOCOL_WR_TIME_CMD:
+            if( recPacket->user_data.data[8] == 1 )
+            {
+                app_time_update((user_time *)&recPacket->user_data.data);
+            }
+            break;
         case RD_SOCKET_STATE:
-            report_socket_value_data();
+            reportSocketState();
             break;
         case WR_SOCKET_STATE:
-            socket_control_handler(data->data[0]);
-            report_socket_value_data();
+            socketControlHandler(recPacket->user_data.data[0]);
+            reportSocketState();
             break;
         case RD_SOCKET_SINGLE_TIMER:
-            report_timer_data(0);
+            reportSocketTimerData(0);
             break;
         case WR_SOCKET_SINGLE_TIMER:
-            save_socket_timer_data(0,data->data);
-            report_timer_data(0);
+            saveSocketTimerData(0,recPacket->user_data.data);
+            reportSocketTimerData(0);
             break;
         case RD_SOCKET_CIRCUL_TIMER:
-            report_timer_data(1);
+            reportSocketTimerData(1);
             break;
         case WR_SOCKET_CIRCUL_TIMER:
-            save_socket_timer_data(1,data->data);
-            report_timer_data(1);
+            saveSocketTimerData(1,recPacket->user_data.data);
+            reportSocketTimerData(1);
             break;
         case RD_SOCKET_LOAD_SET:
-            report_socket_loadset_data();
+            reportSocketLoadSetState();
             break;
         case WR_SOCKET_LOAD_SET:
-            save_socket_loadset_data(data->data[0]);
-            report_socket_loadset_data();
+            saveSocketLoadData(recPacket->user_data.data[0]);
+            reportSocketLoadSetState();
             break;
         default:
             return false;

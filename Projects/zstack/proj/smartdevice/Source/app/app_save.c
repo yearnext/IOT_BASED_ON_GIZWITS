@@ -107,7 +107,7 @@
  * @note        None
  *******************************************************************************
  */
-void Device_FirstWriteKey_Init( void )
+void deviceKeyInit( void )
 {
     uint8 key = 0;
     
@@ -123,7 +123,7 @@ void Device_FirstWriteKey_Init( void )
  * @note        None
  *******************************************************************************
  */
-bool Device_FirstWrite_Check( uint16 id, uint16 size )
+bool deviceKeyCheck( uint16 id, uint16 size )
 {
     uint8 key = 0;
     
@@ -131,7 +131,7 @@ bool Device_FirstWrite_Check( uint16 id, uint16 size )
     {
         osal_nv_item_init(id,size,NULL);
         
-        Device_FirstWriteKey_Init();
+        deviceKeyInit();
         
         return false;
     }
@@ -139,7 +139,7 @@ bool Device_FirstWrite_Check( uint16 id, uint16 size )
     {
         if( key != DEVICE_FIRST_WRIYE_KEY )
         {
-            Device_FirstWriteKey_Init();
+            deviceKeyInit();
             return false;
         }
         else
@@ -161,10 +161,10 @@ bool Device_FirstWrite_Check( uint16 id, uint16 size )
  * @note        None
  *******************************************************************************
  */
-bool Device_Load_LastData( uint16 id, uint16 size, void *ctx, load_flase_handler handler )
+bool deviceLoadDownData( uint16 id, uint16 size, void *ctx, load_flase_handler handler )
 {
     // FLASH 数据初始化
-    if( Device_FirstWrite_Check(id,size) == false \
+    if( deviceKeyCheck(id,size) == false \
         || osal_nv_read(id,0,size,ctx) != SUCCESS )
     {
         handler();

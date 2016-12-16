@@ -90,7 +90,7 @@ static bool listDeviceFindOperaForInfo( void **ctx, void **list, void **expand )
 		{
             if( expand != NULL )
             {
-                ((node_func)((uint16)*expand))(ctx,list,NULL);
+                ((node_func)((uint16)expand))(ctx,list,NULL);
             }
             
 			return true;
@@ -150,8 +150,7 @@ static bool listDeviceFindOperaForId( void **ctx, void **list, void **expand )
 		{
             if( expand != NULL )
             {
-                uint16 func = (uint16)expand; 
-                ((node_func)((uint16)func))(ctx,list,NULL);
+                ((node_func)((uint16)expand))(ctx,list,NULL);
             }
             
 			return true;
@@ -437,8 +436,7 @@ bool addDeviceTick( MYPROTOCOL_DEVICE_INFO_t *info )
 {
     if( deviceIsExists(info) == true )
     {
-        uint16 func = ((uint16)&listDeviceTickAdd);
-        return nodeTraverse((void **)&listHead, listDeviceFindOperaForInfo, (void **)&info, (void **)func);
+        return nodeTraverse((void **)&listHead, listDeviceFindOperaForInfo, (void **)&info, (void **)((uint16)&listDeviceTickAdd));
     }
     else
     {

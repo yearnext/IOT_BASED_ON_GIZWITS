@@ -42,6 +42,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
+#if MYPROTOCOL_DEVICE_IS_COORD
 /**
  *******************************************************************************
  * @brief       事件处理接口
@@ -68,7 +69,7 @@ bool gizwitsEventProcess( eventInfo_t *info, uint8 *data, uint8 len )
     {
       case EVENT_PACKET:
         GIZWITS_LOG("Evt: EVENT_PACKET\n");
-        MyprotocolW2DReceiveData((void *)data,coordMessageHandler);
+        MyprotocolReceiveData((void *)data,deviceMessageHandler);
         break;
       case WIFI_SOFTAP:
         break;
@@ -88,7 +89,11 @@ bool gizwitsEventProcess( eventInfo_t *info, uint8 *data, uint8 len )
         break;
       case WIFI_CON_APP:
       {
-        MyprotocolSendData(NULL,NULL, DeviceListChangePacket, MyprotocolD2WSendData);
+        if( getGizwitsAPPStatus() == false )
+        {
+            MyprotocolSendData(NULL,NULL, createDeviceListChangePacket, MyprotocolD2WSendData);
+            setGizwitsAPPStatus();
+        }
         break;
       }
       case WIFI_DISCON_APP:
@@ -106,6 +111,8 @@ bool gizwitsEventProcess( eventInfo_t *info, uint8 *data, uint8 len )
 
   return true;
 }
+
+#endif
 
 /** @}*/     /** gizwits_product模块 */
 

@@ -42,8 +42,12 @@ extern "C"
 #define MYPROTOCOL_DEVICE_CURTAIN   (0x03)
 #define MYPROTOCOL_DEVICE_HT_SENSOR (0x04)
 
+/**
+ * @name 定义MYPROTOCOL设备信息
+ * @{
+ */
 /** 定义当前设备类型 */
-#define MYPROTOCOL_DEVICE MYPROTOCOL_DEVICE_COORD
+#define MYPROTOCOL_DEVICE MYPROTOCOL_DEVICE_CURTAIN
   
 /** 判断当前设备功能宏 */
 #define MYPROTOCOL_DEVICE_IS_COORD     ( MYPROTOCOL_DEVICE == MYPROTOCOL_DEVICE_COORD     )
@@ -66,6 +70,22 @@ extern "C"
         
 #endif
         
+/** 判断是否存在遵守MYPROTOCOL协议设备的宏 */
+#if MYPROTOCOL_DEVICE_IS_LIGHT \
+    || MYPROTOCOL_DEVICE_IS_SOCKET \
+    || MYPROTOCOL_DEVICE_IS_CURTAIN \
+        
+#define USE_MYPROTOCOL_TIME_DEVICE 1
+        
+#else
+#define USE_MYPROTOCOL_TIME_DEVICE 0
+        
+#endif
+        
+/**
+ * @}
+ */  
+        
 /**
  * @name 定义通信相关参数
  * @{
@@ -73,35 +93,25 @@ extern "C"
 /** 计算偏移量 */
 //#define MYPROTOCOL_OFFSETOF(t,m)                 ((uint16)(&((t *)0)->m)) 
 #define MYPROTOCOL_OFFSETOF(t,m)                 offsetof(t,m)
-
 /** 数据包所占内存空间 */
 #define MYPROTOCOL_PACKET_SIZE                   (sizeof(MYPROTOCOL_FORMAT_t)/sizeof(uint8))
-
 /** 设备信息所占内存空间 */
 #define MYPROTOCOL_DEVICE_INFO_SIZE              (sizeof(MYPROTOCOL_DEVICE_INFO_t)/sizeof(uint8))
-
 /** 计算user_data在MYPROTOCOL_FORMAT_t中的偏移量 */
 #define MYPROTOCOL_USER_DATA_OFFSET              MYPROTOCOL_OFFSETOF(MYPROTOCOL_FORMAT_t,user_data)
-
 /** 计算user_data各个成员的的偏移量 */
 #define MYPROTOCOL_USER_DATA_M_OFFSET(m)         MYPROTOCOL_OFFSETOF(MYPROTOCOL_USER_DATA_t,m)
-
 /** 计算cmd在MYPROTOCOL_USER_DATA_t中的偏移量 */
 #define MTPROTOCOL_USER_DATA_CMD_OFFSET          MYPROTOCOL_USER_DATA_M_OFFSET(cmd)
-
 /** 计算len在MYPROTOCOL_USER_DATA_t中的偏移量 */
 #define MYPROTOCOL_USER_DATA_LEN_OFFSET          MYPROTOCOL_USER_DATA_M_OFFSET(len) 
-
 /** 计算data在MYPROTOCOL_USER_DATA_t中的偏移量 */
 #define MYPROTOCOL_USER_DATA_DATA_OFFSET         MYPROTOCOL_USER_DATA_M_OFFSET(data) 
-
 ///** 计算user_data所占内存空间大小 user_data为MYPROTOCOL_USER_DATA_t类型的结构体指针*/
 //#define MYPROTOCOL_CAL_USER_DATA_SIZE(user_data) ( MYPROTOCOL_USER_DATA_LEN_OFFSET \
 //                                                  + (((MYPROTOCOL_USER_DATA_t *)user_data)->len))  
-
 /** 通讯格式 用户数据大小 */
 #define MYPROTOCOL_USER_DATA_SIZE   (18)
-
 /** 通讯格式 MAC地址大小 */
 #define MYPROTOCOL_MAC_ADDR_SIZE    (8)
 
@@ -127,15 +137,6 @@ extern "C"
 /**@} */
 
 /* Exported types ------------------------------------------------------------*/
-/**
- * @name MYPROTOCOL相关功能接口定义
- * @{
- */
-typedef bool (*packet_type)(void *ctx, void *packet);
-typedef bool (*send_type)(void *ctx, void *packet);
-typedef bool (*receive_type)(void *ctx, void *packet);
-/**@} */
-
 /**
  * @name MYPROTOCOL数据包格式定义
  * @{
@@ -194,6 +195,15 @@ typedef struct
     uint8                    sum;
 }MYPROTOCOL_FORMAT_t;
 
+/**@} */
+
+/**
+ * @name MYPROTOCOL相关功能接口定义
+ * @{
+ */
+typedef bool (*packet_type)(void *ctx, void *packet);
+typedef bool (*send_type)(void *ctx, void *packet);
+typedef bool (*receive_type)(MYPROTOCOL_FORMAT_t *ctx);
 /**@} */
 
 /* Exported variables --------------------------------------------------------*/
@@ -267,7 +277,7 @@ extern bool MyprotocolReplyErrPacket( MYPROTOCOL_FORMAT_t* );
 #define MyprotocolW2DReceiveData( ctx, receive_func ) receive_func(ctx)
 #define MyprotocolD2DReceiveData( ctx, receive_func ) receive_func(ctx)
 
-extern bool MyprotocolReceiveData( void*, void*, receive_type, receive_type );
+extern bool MyprotocolReceiveData( void*, receive_type );
 /**@} */
 
 /**
@@ -286,6 +296,7 @@ extern bool createD2WWaitPacket( void*, void* );
 extern bool createD2WAckPacket( void*, void* );
 extern bool createW2DWaitPacket( void*, void* );
 extern bool createW2DAckPacket( void*, void* );
+extern bool createDeviceGetNetTimePacket( void*, void* );
 /**@} */
 
 #ifdef __cplusplus

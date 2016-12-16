@@ -32,24 +32,27 @@ extern "C"
 #include "bsp_key.h"
 
 /* Exported macro ------------------------------------------------------------*/
+#if MYPROTOCOL_DEVICE_IS_CURTAIN
+#define bspDeviceInit        bspCurtainInit
+#define deviceMessageHandler curtainMessageHandler
+#endif
+  
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern void bsp_curtain_init( void );
-
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
-#define curtain_switch_handler key1_handler
-#define curtain_rain_handler   key2_handler
-
-extern void curtain_switch_handler( key_message_t );
-extern void curtain_rain_handler( key_message_t );
-
+extern void bspCurtainInit( void );
+extern bool curtainControlCmd( uint8 );
+#if MYPROTOCOL_DEVICE_IS_CURTAIN
+#define curtainSwitchKeyHandler key1_handler
+#define curtainRainKeyHandler   key2_handler
 #endif
+extern void curtainSwitchKeyHandler( key_message_t );
+extern void curtainRainKeyHandler( key_message_t );
 
-extern bool curtain_cmd_resolve( MYPROTOCOL_USER_DATA *data );
+extern bool curtainMessageHandler( MYPROTOCOL_FORMAT_t *recPacket );
 
 #ifdef __cplusplus
 }

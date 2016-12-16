@@ -7905,10 +7905,22 @@
     <group>
       <name>app</name>
       <file>
+        <name>$PROJ_DIR$\..\Source\app\app_save.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\app\app_save.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\Source\app\app_time.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\Source\app\app_time.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\app\app_timer.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\app\app_timer.h</name>
       </file>
     </group>
     <group>
@@ -7918,6 +7930,12 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\Source\bsp\bsp_coord.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_curtain.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_curtain.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\Source\bsp\bsp_htsensor.c</name>
@@ -7930,6 +7948,18 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\Source\bsp\bsp_key.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_light.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_light.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_socket.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\bsp\bsp_socket.h</name>
       </file>
     </group>
     <group>
@@ -7975,6 +8005,18 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\Source\hal\hal_ds1302.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\hal\mcu_adc.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\hal\mcu_adc.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\hal\mcu_timer.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\hal\mcu_timer.h</name>
       </file>
     </group>
     <group>

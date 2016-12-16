@@ -33,13 +33,10 @@ extern "C"
 /* Exported macro ------------------------------------------------------------*/
 #if MYPROTOCOL_DEVICE_IS_COORD
 #define bspDeviceInit bspCoordInit
-#endif
-
-/* E#xported types ------------------------------------------------------------*/
-#if MYPROTOCOL_DEVICE_IS_COORD
 #define deviceMessageHandler coordMessageHandler
 #endif
-    
+
+/* Exported types ------------------------------------------------------------*/ 
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
@@ -50,14 +47,14 @@ extern void bspCoordInit(void);
 #if MYPROTOCOL_DEVICE_IS_COORD
 #define coordRstWIFIKeyHandler    key1_handler
 #define coordUpdateTimeKeyHandler key2_handler
+#endif
 
 extern void coordRstWIFIKeyHandler( key_message_t );
 extern void coordUpdateTimeKeyHandler( key_message_t );
-#endif
 
-extern bool coordMessageHandler( void* );
+extern bool coordMessageHandler( MYPROTOCOL_FORMAT_t* );
 
-extern bool DeviceListChangePacket( void*, void* );
+extern bool createDeviceListChangePacket( void*, void* );
 
 #ifdef __cplusplus
 extern "C" 

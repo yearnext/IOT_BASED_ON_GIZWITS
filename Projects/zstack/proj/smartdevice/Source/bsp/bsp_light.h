@@ -27,29 +27,33 @@
 #include "bsp_key.h"
 
 /* Exported macro ------------------------------------------------------------*/
+#if MYPROTOCOL_DEVICE_IS_LIGHT
+#define bspDeviceInit()      bspLightInit()
+#define deviceMessageHandler lightMessageHandler
+#endif
+
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern void bsp_light_init( void );
-extern void set_light_brightness( uint8 );
-extern uint8 get_light_brightness( void );
-extern void light_control_handler( uint8 );
-extern void light_switch_handler( void );
+extern void bspLightInit( void );
+extern void setLightBrightness( uint8 );
+extern uint8 getLightBrightness( void );
+extern void lightControlHandler( uint8 );
+extern void lightSwitchHandler( void );
 
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
-#define light_switch_key_handler key1_handler
-#define light_reset_key_handler  key2_handler
-
-extern void key_switch_handler( key_message_t );
-extern void key_switch_handler( key_message_t );
-
+#if MYPROTOCOL_DEVICE_IS_LIGHT
+#define lightSwitchKeyHandler key1_handler
+#define lightRstKeyHandler    key2_handler
 #endif
 
-extern void light_working_handler( void );
-extern bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data );
+extern void lightSwitchKeyHandler( key_message_t );
+extern void lightRstKeyHandler( key_message_t );
+
+extern void lightWorkingHandler( void );
+extern bool lightMessageHandler( MYPROTOCOL_FORMAT_t *recPacket );
 
 #endif      /* __SMART_DEVICE_LIGHT_H__ */
 

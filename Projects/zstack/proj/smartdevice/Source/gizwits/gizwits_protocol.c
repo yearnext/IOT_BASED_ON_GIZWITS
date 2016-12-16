@@ -1188,7 +1188,6 @@ static bool gizProtocolModuleStatus(protocolWifiStatus_t *status)
     {
         gizwitsProtocol.wifiStatusEvent.event[gizwitsProtocol.wifiStatusEvent.num] = WIFI_CON_APP;
         gizwitsProtocol.wifiStatusEvent.num++;
-        gizwitsProtocol.wifiStatusData.app = 1;
         GIZWITS_LOG("app connect \n");
     }
     else
@@ -1493,6 +1492,21 @@ bool gizwitsGetNTP( void )
 
     return true;
 }
+ 
+/**
+ *******************************************************************************
+ * @brief       设置APP为连接状态
+ * @param       [in/out]  void
+ * @return      [in/out]  bool    连接状态
+ * @note        用户可以调用检测WIFI模块与云端之间的连接状态
+ *******************************************************************************
+ */
+bool setGizwitsAPPStatus( void )
+{
+    gizwitsProtocol.wifiStatusData.app = 1;
+    
+    return true;
+}
 
 /**
  *******************************************************************************
@@ -1505,6 +1519,21 @@ bool gizwitsGetNTP( void )
 bool getGizwitsAPPStatus( void )
 {
     return (gizwitsProtocol.wifiStatusData.app == 1) ? (true):(false);
+}
+
+/**
+ *******************************************************************************
+ * @brief       设置M2M为连接状态
+ * @param       [in/out]  void
+ * @return      [in/out]  bool    连接状态
+ * @note        用户可以调用检测WIFI模块与云端之间的连接状态
+ *******************************************************************************
+ */
+bool setGizwitsM2MStatus( void )
+{
+    gizwitsProtocol.wifiStatusData.app = 1;
+    
+    return true;
 }
 
 /**

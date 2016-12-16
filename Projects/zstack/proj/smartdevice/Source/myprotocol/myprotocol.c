@@ -356,6 +356,7 @@ bool MyprotocolD2DRecDeviceCheck( MYPROTOCOL_FORMAT_t *recPacket )
 bool MyprotocolD2DSendData( void *ctx, void *packet )
 {
   afAddrType_t DeviceDstAddr;
+  
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
     {
@@ -548,19 +549,23 @@ bool MyprotocolForwardData( void *dstaddr, void *packet, send_type send_func )
  * @note        None
  *******************************************************************************
  */
-bool MyprotocolReceiveData( void *ctx, void *packet, receive_type error, receive_type receive )
+bool MyprotocolReceiveData( void *recPacket, receive_type receive_func )
 {
-    if( MyprotocolPacketCheck(packet) == false )
+#if USE_MYPROTOCOL_DEBUG
+    if( recPacket == NULL )
     {
-        error(ctx, packet);
+        MYPROTOCOL_LOG("MyprotocolReceiveData error, the input param is invaild!");
         return false;
-    }
-    else
-    {
-        receive(ctx, packet);
-    }
+    }    
     
-    return true;
+    if( MyprotocolPacketCheck((MYPROTOCOL_FORMAT_t *)recPacket) == false )
+    {
+        MyprotocolReplyErrPacket((MYPROTOCOL_FORMAT_t *)recPacket);
+        return true;
+    }
+#endif
+    
+    return receive_func(recPacket);
 }
 
 /**@} */     /** MYPROTOCOL 硬件层 */
@@ -837,7 +842,7 @@ bool createD2WAckPacket( void *ctx, void *packet )
         return false;
     }
 #endif 
-
+    
     if( ctx != NULL )
     {
         memcpy(&((MYPROTOCOL_FORMAT_t *)packet)->user_data, ctx, sizeof(((MYPROTOCOL_FORMAT_t *)packet)->user_data) );
@@ -902,6 +907,32 @@ bool createW2DAckPacket( void *ctx, void *packet )
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype = MYPROTOCOL_W2D_ACK;
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       设备向网关发送获取网络时间数据包
+ * @param       [in/out]  ctx            用户数据
+ * @param       [in/out]  packet         创建数据包函数
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool createDeviceGetNetTimePacket( void *ctx, void *packet )
+{
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("W2D ack packet intput param packet is invalid! \r\n");
+        return false;
+    }
+#endif 
+
+    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype      = MYPROTOCOL_S2H_WAIT;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.cmd = MYPROTOCOL_RD_TIME_CMD;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.len = 0;
     
     return true;
 }

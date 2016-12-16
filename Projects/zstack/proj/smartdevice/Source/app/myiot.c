@@ -57,6 +57,8 @@
 #include "bsp_socket.h"
 
 #elif MYPROTOCOL_DEVICE_IS_CURTAIN
+#include "bsp_curtain.h"
+
 #elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
 #include "bsp_htsensor.h"
 
@@ -101,6 +103,7 @@
 #define TIMER_20MS_COUNT  DEVICE_TIMR_CONVER_TICK(20)
 #define TIMER_50MS_COUNT  DEVICE_TIMR_CONVER_TICK(50)
 #define TIMER_100MS_COUNT DEVICE_TIMR_CONVER_TICK(100)
+#define TIMER_500MS_COUNT DEVICE_TIMR_CONVER_TICK(500)
 #define TIMER_350MS_COUNT DEVICE_TIMR_CONVER_TICK(350)
 //#define TIMER_1MIN_COUNT  (600)
 #define TIMER_1MIN_COUNT  DEVICE_TIMR_CONVER_TICK(60000)
@@ -181,7 +184,7 @@ uint16 myIotProcessEven( uint8 task_id, uint16 events )
             switch( MSGpkt->hdr.event )
             {
                 case AF_INCOMING_MSG_CMD:
-                    MyprotocolD2DReceiveData((void *)MSGpkt->cmd.Data,deviceMessageHandler);
+                    MyprotocolReceiveData((void *)MSGpkt->cmd.Data,deviceMessageHandler);
 //                    SmartDevice_Message_Handler(MSGpkt);
                     break;
                 case ZDO_STATE_CHANGE:
@@ -205,7 +208,7 @@ uint16 myIotProcessEven( uint8 task_id, uint16 events )
 #if MYPROTOCOL_DEVICE_IS_COORD
         if( allZombieDeviceClr() == true )
         {
-            MyprotocolSendData(NULL,NULL, DeviceListChangePacket, MyprotocolD2WSendData);
+            MyprotocolSendData(NULL,NULL, createDeviceListChangePacket, MyprotocolD2WSendData);
         }
         
         allDeviceTickClr();
@@ -350,52 +353,25 @@ void deviceTimerCallBack( void )
 void deviceTimerCallBack( void )
 {
     static uint8 timer_20ms  = 0;
-    static uint8 timer_50ms  = 0;
-    static uint8 timer_100ms = 0;
-    static uint8 timer_350ms = 0;
+    static uint8 timer_500ms = 0;
     static uint16 timer_1min = 0;
     
     if( ++timer_20ms >= TIMER_20MS_COUNT )
     {
         key_scan();
+        key_handler();
         timer_20ms = 0;
     }
-    
-    if( ++timer_50ms >= TIMER_50MS_COUNT )
+
+    if( ++timer_500ms >= TIMER_500MS_COUNT )
     {
-#if MYPROTOCOL_DEVICE_IS_COORD
-        gizTimer50Ms();
-#endif
-        key_handler();
-        timer_50ms = 0;
-    }
-    
-    if( ++timer_100ms >= TIMER_100MS_COUNT )
-    {
-#if MYPROTOCOL_DEVICE_IS_COORD
-        gizwitsHandle();
-#endif
-        timer_100ms = 0;
-    }
-    
-    if( ++timer_350ms >= TIMER_350MS_COUNT )
-    {
-#if MYPROTOCOL_DEVICE_IS_LIGHT
-        app_time_update();
-        light_working_handler();
-#elif MYPROTOCOL_DEVICE_IS_SOCKET
-        app_time_update();
-        socket_working_handler();
-#else
-#endif  
-        timer_350ms = 0;
+        deviceUpdateNTPTime();
+        lightWorkingHandler();
+        timer_500ms = 0;
     }
     
     if( ++timer_1min >= TIMER_1MIN_COUNT )
     {
-#if MYPROTOCOL_DEVICE_IS_HT_SENSOR
-		reportHTSensorData();
-#endif
         timer_1min = 0;
     }
 }
@@ -403,106 +379,39 @@ void deviceTimerCallBack( void )
 void deviceTimerCallBack( void )
 {
     static uint8 timer_20ms  = 0;
-    static uint8 timer_50ms  = 0;
-    static uint8 timer_100ms = 0;
-    static uint8 timer_350ms = 0;
-    static uint16 timer_1min = 0;
+    static uint8 timer_500ms = 0;
     
     if( ++timer_20ms >= TIMER_20MS_COUNT )
     {
         key_scan();
+        key_handler();
         timer_20ms = 0;
     }
-    
-    if( ++timer_50ms >= TIMER_50MS_COUNT )
+
+    if( ++timer_500ms >= TIMER_500MS_COUNT )
     {
-#if MYPROTOCOL_DEVICE_IS_COORD
-        gizTimer50Ms();
-#endif
-        key_handler();
-        timer_50ms = 0;
-    }
-    
-    if( ++timer_100ms >= TIMER_100MS_COUNT )
-    {
-#if MYPROTOCOL_DEVICE_IS_COORD
-        gizwitsHandle();
-#endif
-        timer_100ms = 0;
-    }
-    
-    if( ++timer_350ms >= TIMER_350MS_COUNT )
-    {
-#if MYPROTOCOL_DEVICE_IS_LIGHT
-        app_time_update();
-        light_working_handler();
-#elif MYPROTOCOL_DEVICE_IS_SOCKET
-        app_time_update();
-        socket_working_handler();
-#else
-#endif  
-        timer_350ms = 0;
-    }
-    
-    if( ++timer_1min >= TIMER_1MIN_COUNT )
-    {
-#if MYPROTOCOL_DEVICE_IS_HT_SENSOR
-		report_ht_sensor_data();
-#endif
-        timer_1min = 0;
+        deviceUpdateNTPTime();
+        socketWorkingHandler();
+        timer_500ms = 0;
     }
 }
 #elif MYPROTOCOL_DEVICE_IS_CURTAIN
 void deviceTimerCallBack( void )
 {
     static uint8 timer_20ms  = 0;
-    static uint8 timer_50ms  = 0;
-    static uint8 timer_100ms = 0;
-    static uint8 timer_350ms = 0;
-    static uint16 timer_1min = 0;
+    static uint8 timer_500ms  = 0;
     
     if( ++timer_20ms >= TIMER_20MS_COUNT )
     {
         key_scan();
+        key_handler();
         timer_20ms = 0;
     }
     
-    if( ++timer_50ms >= TIMER_50MS_COUNT )
+    if( ++timer_500ms >= TIMER_500MS_COUNT )
     {
-#if MYPROTOCOL_DEVICE_IS_COORD
-        gizTimer50Ms();
-#endif
-        key_handler();
-        timer_50ms = 0;
-    }
-    
-    if( ++timer_100ms >= TIMER_100MS_COUNT )
-    {
-#if MYPROTOCOL_DEVICE_IS_COORD
-        gizwitsHandle();
-#endif
-        timer_100ms = 0;
-    }
-    
-    if( ++timer_350ms >= TIMER_350MS_COUNT )
-    {
-#if MYPROTOCOL_DEVICE_IS_LIGHT
-        app_time_update();
-        light_working_handler();
-#elif MYPROTOCOL_DEVICE_IS_SOCKET
-        app_time_update();
-        socket_working_handler();
-#else
-#endif  
-        timer_350ms = 0;
-    }
-    
-    if( ++timer_1min >= TIMER_1MIN_COUNT )
-    {
-#if MYPROTOCOL_DEVICE_IS_HT_SENSOR
-		report_ht_sensor_data();
-#endif
-        timer_1min = 0;
+        deviceUpdateNTPTime();
+        timer_500ms = 0;
     }
 }
 

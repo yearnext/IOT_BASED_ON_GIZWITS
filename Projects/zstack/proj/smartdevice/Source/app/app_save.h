@@ -96,9 +96,9 @@ typedef void (*load_flase_handler)(void);
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 //extern void Rst_DeviceSaveData( uint8 );
-extern void Device_FirstWriteKey_Init( void );
-extern bool Device_FirstWrite_Check( uint16 id, uint16 size );
-extern bool Device_Load_LastData( uint16, uint16, void*, load_flase_handler );
+extern void deviceKeyInit( void );
+extern bool deviceKeyCheck( uint16 id, uint16 size );
+extern bool deviceLoadDownData( uint16, uint16, void*, load_flase_handler );
 
 #endif      /* __CC2530_FLASH_SAVE_H__ */
 

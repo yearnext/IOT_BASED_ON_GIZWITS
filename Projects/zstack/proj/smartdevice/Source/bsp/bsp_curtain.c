@@ -100,7 +100,7 @@
 #define RD_SPD_CH2_REVERSE()     ( CURTAIN_SPD_CH2_POLARITY(CURTAIN_SPD_CH2_PORT) )
 
 // 亮度检测端口
-#define Curtain_Brightness_Init() MCU_ADC_CH_Init(CURTAIN_BRIGHTNESS_ADC_CH)
+#define curtainBrightnessInit() MCU_ADC_CH_Init(CURTAIN_BRIGHTNESS_ADC_CH)
 
 /** @}*/     /* 电动窗帘硬件抽象层定义 */
 
@@ -120,14 +120,9 @@
 #define CURTAIN_CLOSE_ALL_STATE   (0x06)
 
 // 电动窗帘控制命令
-#define CURTAIN_CMD_KEEP          (0x00)
+#define CURTAIN_CMD_STOP          (0x00)
 #define CURTAIN_CMD_OPEN          (0x01)
 #define CURTAIN_CMD_CLOSE         (0x02)
-
-// 电动窗帘状态
-#define CURTAIN_STATE_KEEP        (0x00)
-#define CURTAIN_STATE_CLOSE       (0x01)
-#define CURTAIN_STATE_OPEN        (0x02)
 
 // 电动窗帘功能使能宏
 #define CURTAIN_DISABLE_FUNC      (0x00)
@@ -185,7 +180,7 @@ static struct _DEVICE_CURTAIN_SAVE_DATA_
 
 // 下雨标志
 bool flg_rain = false;
-uint8 curtain_cmd = CURTAIN_CMD_KEEP;
+uint8 curtain_cmd = CURTAIN_CMD_STOP;
 
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
@@ -197,16 +192,16 @@ uint8 curtain_cmd = CURTAIN_CMD_KEEP;
  * @note        None
  *******************************************************************************
  */
-static void report_curtain_state( void )
+static void reportCurtainStatePacket( void )
 {
-    MYPROTOCOL_USER_DATA user_data;
-    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
+    MYPROTOCOL_USER_DATA_t user_data;
+    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
     
     user_data.cmd = RD_CURTAIN_STATE;
     user_data.data[0] = curtain.status;
     user_data.len = 1;
     
-    MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
+    MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData);
 }
 
 /**
@@ -217,10 +212,10 @@ static void report_curtain_state( void )
  * @note        None
  *******************************************************************************
  */
-static void report_curtain_timer_data( uint8 timer )
+static void reportCurtainTimerData( uint8 timer )
 {
-    MYPROTOCOL_USER_DATA user_data;
-    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
+    MYPROTOCOL_USER_DATA_t user_data;
+    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
     
     if( timer == 0 )
     {
@@ -238,7 +233,7 @@ static void report_curtain_timer_data( uint8 timer )
     memcpy(&user_data.data,&curtain.timer[timer],sizeof(DEVICE_TIMER));
     user_data.len = sizeof(DEVICE_TIMER);
     
-    MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
+    MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData);
 }
 
 /**
@@ -249,16 +244,16 @@ static void report_curtain_timer_data( uint8 timer )
  * @note        None
  *******************************************************************************
  */
-static void report_curtain_smartmode_data( void )
+static void reportCurtainSmartModeData( void )
 {
-    MYPROTOCOL_USER_DATA user_data;
-    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
+    MYPROTOCOL_USER_DATA_t user_data;
+    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
     
     user_data.cmd = RD_CURTAIN_SMART_MODE;  
     memcpy(&user_data.data,&curtain.smart_mode,sizeof(DEVICE_TIMER));
     user_data.len = sizeof(curtain.smart_mode);
     
-    MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
+    MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData);
 }
 
 /**
@@ -269,16 +264,16 @@ static void report_curtain_smartmode_data( void )
  * @note        None
  *******************************************************************************
  */
-static void report_curtain_rainwarning_data( void )
+static void reportCurtainRainwarning( void )
 {
-    MYPROTOCOL_USER_DATA user_data;
-    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
+    MYPROTOCOL_USER_DATA_t user_data;
+    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
     
     user_data.cmd = RD_CURTAIN_RAIN_WARNING;  
     user_data.data[0] = curtain.rain_warning;
     user_data.len = 1;
     
-    MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
+    MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData);
 }
 
 /**
@@ -289,16 +284,16 @@ static void report_curtain_rainwarning_data( void )
  * @note        None
  *******************************************************************************
  */
-static void report_curtain_brightness_data( void )
+static void reportCurtainBrightness( void )
 {
-    MYPROTOCOL_USER_DATA user_data;
-    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
+    MYPROTOCOL_USER_DATA_t user_data;
+    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
     
     user_data.cmd = RD_CURTAIN_BRIGHTNESS;  
     user_data.data[0] = curtain.brightness;
     user_data.len = 1;
     
-    MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
+    MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData);
 }
 
 /**
@@ -309,16 +304,16 @@ static void report_curtain_brightness_data( void )
  * @note        None
  *******************************************************************************
  */
-static void report_curtain_loadset_data( void )
+static void reportCurtainLoadSetData( void )
 {
-    MYPROTOCOL_USER_DATA user_data;
-    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
+    MYPROTOCOL_USER_DATA_t user_data;
+    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
     
     user_data.cmd = RD_CURTAIN_LOAD_MODE;
     memcpy(&user_data.data,&curtain.load_set,sizeof(curtain.load_set));
     user_data.len = sizeof(curtain.load_set);
     
-    MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
+    MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData);
 }
 
 /**
@@ -330,7 +325,7 @@ static void report_curtain_loadset_data( void )
  * @note        None
  *******************************************************************************
  */
-static bool save_curtain_timer_data( uint8 timer, uint8 *data )
+static bool saveCurtainTimerData( uint8 timer, uint8 *data )
 {
     if( timer >= CURTAIN_USE_TIMER_NUM )
     {
@@ -355,7 +350,7 @@ static bool save_curtain_timer_data( uint8 timer, uint8 *data )
  * @note        None
  *******************************************************************************
  */
-static bool save_curtain_smartmode_data( uint8 *data )
+static bool saveCurtainSmartModeData( uint8 *data )
 {
     memcpy(&curtain.smart_mode,data,sizeof(curtain.smart_mode));
     
@@ -375,7 +370,7 @@ static bool save_curtain_smartmode_data( uint8 *data )
  * @note        None
  *******************************************************************************
  */
-static bool save_curtain_loadset_data( uint8 data )
+static bool saveCurtainLoadSetData( uint8 data )
 {
     curtain.load_set = data;
     
@@ -395,7 +390,7 @@ static bool save_curtain_loadset_data( uint8 data )
  * @note                       CH1、CH2为正弦脉冲                    
  *******************************************************************************
  */
-static void Curtain_Speed_Init( void )
+static void CurtainSpeedInit( void )
 {
 	CURTAIN_SPD_CH1_RdMode();
 	CURTAIN_SPD_CH2_RdMode();	
@@ -428,7 +423,7 @@ static void Curtain_Speed_Init( void )
  * @note        电机正反转控制                  
  *******************************************************************************
  */
-static void Curtain_Metor_Init( void )
+static void CurtainMetorInit( void )
 {
     // GPIO 初始化
 	CURTAIN_FORWARD_WrMode();
@@ -446,7 +441,7 @@ static void Curtain_Metor_Init( void )
  * @note        None
  *******************************************************************************
  */
-static void curtain_rst_set( void )
+static void rstCurtainData( void )
 {
     memset(&curtain,0,sizeof(curtain));
     
@@ -462,19 +457,19 @@ static void curtain_rst_set( void )
  * @note        None
  *******************************************************************************
  */
-void bsp_curtain_init(void)
+void bspCurtainInit(void)
 {
     // 电动窗帘驱动模块初始化
-	Curtain_Metor_Init();
+    CurtainMetorInit();
 	
-	// 电动窗帘测速模块初始化
-	Curtain_Speed_Init();
-    	
-	// 亮度检测端口初始化
-    Curtain_Brightness_Init();
+    // 电动窗帘测速模块初始化
+    CurtainSpeedInit();
+    
+    // 亮度检测端口初始化
+    curtainBrightnessInit();
 	
     // FLASH 数据初始化
-    Device_Load_LastData(DEVICE_CURTAIN_SAVE_ID,DEVICE_CURTAIN_DATA_SIZE,(void *)&curtain,curtain_rst_set);
+    deviceLoadDownData(DEVICE_CURTAIN_SAVE_ID,DEVICE_CURTAIN_DATA_SIZE,(void *)&curtain,rstCurtainData);
 }
  
 /**
@@ -485,15 +480,16 @@ void bsp_curtain_init(void)
  * @note        None
  *******************************************************************************
  */
-bool bsp_curtain_cmd( uint8 cmd )
+bool curtainControlCmd( uint8 cmd )
 {
     if( cmd == CURTAIN_CMD_OPEN )
     {
         if( curtain.status != CURTAIN_CLOSE_ALL_STATE )
         {
+            INIT_CURTAIN_OPERA();
+            Onboard_wait(100);
             SET_CURTAIN_FORWARD();
-            CLR_CURTAIN_REVERSE();
-            
+
             curtain.status = CURTAIN_OPEN_STATE;
         }
     }
@@ -501,22 +497,22 @@ bool bsp_curtain_cmd( uint8 cmd )
     {
         if( curtain.status != CURTAIN_OPEN_ALL_STATE )
         {
-            CLR_CURTAIN_REVERSE();
-            SET_CURTAIN_FORWARD(); 
+            INIT_CURTAIN_OPERA();
+            Onboard_wait(100);
+            SET_CURTAIN_REVERSE();
             
             curtain.status = CURTAIN_CLOSE_STATE;
         }
     }
     else
     {
-//        CLR_CURTAIN_REVERSE();
-//        CLR_CURTAIN_REVERSE();
+        INIT_CURTAIN_OPERA();
+        curtain.status = CURTAIN_INIT_STATE;
     }
     
     return true;
 }
 
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_CURTAIN)
 /**
  *******************************************************************************
  * @brief       按键处理
@@ -525,18 +521,30 @@ bool bsp_curtain_cmd( uint8 cmd )
  * @note        None
  *******************************************************************************
  */
-void curtain_switch_handler( key_message_t message )
+void curtainSwitchKeyHandler( key_message_t message )
 {
     switch (message)
     {
 		case KEY_MESSAGE_PRESS_EDGE:
-            if( bsp_curtain_cmd(CURTAIN_CMD_OPEN) == false )
+            if( curtain.status == CURTAIN_INIT_STATE )
             {
-                bsp_curtain_cmd(CURTAIN_CMD_CLOSE);
+                curtainControlCmd(CURTAIN_CMD_OPEN);
+            }
+            else if( curtain.status == CURTAIN_OPEN_STATE )
+            {
+                curtainControlCmd(CURTAIN_CMD_CLOSE);
+            }
+            else if( curtain.status == CURTAIN_CLOSE_STATE )
+            {
+                curtainControlCmd(CURTAIN_CMD_STOP);
+            }
+            else
+            {
+                return;
             }
 			break;
         case KEY_MESSAGE_LONG_PRESS:
-            curtain_rst_set();
+            rstCurtainData();
             Onboard_soft_reset();
             break;
 		default:
@@ -552,7 +560,7 @@ void curtain_switch_handler( key_message_t message )
  * @note        None
  *******************************************************************************
  */
-void curtain_rain_handler( key_message_t message )
+void curtainRainKeyHandler( key_message_t message )
 {
     switch (message)
     {
@@ -567,8 +575,6 @@ void curtain_rain_handler( key_message_t message )
     }
 }
 
-#endif
-
 /**
  *******************************************************************************
  * @brief       解析命令数据
@@ -577,57 +583,63 @@ void curtain_rain_handler( key_message_t message )
  * @note        None
  *******************************************************************************
  */
-bool curtain_cmd_resolve( MYPROTOCOL_USER_DATA *data )
+bool curtainMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
 {    
-    switch( data->cmd )
+    switch( recPacket->user_data.cmd )
     {
-        case DEVICE_TICK:
+        case MYPROTOCOL_TICK_CMD:
             break;
-        case DEVICE_RESET:
-            curtain_rst_set();
-        case DEVICE_REBOOT:
+        case MYPROTOCOL_RESET_CMD:
+            rstCurtainData();
+        case MYPROTOCOL_REBOOT_CMD:
             Onboard_soft_reset();
             break;
+        case MYPROTOCOL_RD_TIME_CMD:
+            if( recPacket->user_data.data[8] == 1 )
+            {
+                app_time_update((user_time *)&recPacket->user_data.data);
+            }
+            break;
         case RD_CURTAIN_STATE:
-            report_curtain_state();
+            reportCurtainStatePacket();
             break;
         case WR_CURTAIN_OPERA:
-            bsp_curtain_cmd(data->data[0]);
-            report_curtain_state();
+            curtainControlCmd(recPacket->user_data.data[0]);
+            reportCurtainStatePacket();
             break;
         case RD_CURTAIN_SINGLE_TIMER:
-            report_curtain_timer_data(0);
+            reportCurtainTimerData(0);
             break;
         case WR_CURTAIN_SINGLE_TIMER:
-            save_curtain_timer_data(0,data->data);
-            report_curtain_timer_data(0);
+            saveCurtainTimerData(0,recPacket->user_data.data);
+            reportCurtainTimerData(0);
             break;
         case RD_CURTAIN_CIRCUL_TIMER:
-            report_curtain_timer_data(1);
+            reportCurtainTimerData(1);
             break;
         case WR_CURTAIN_CIRCUL_TIMER:
-            save_curtain_timer_data(1,data->data);
-            report_curtain_timer_data(1);
+            saveCurtainTimerData(1,recPacket->user_data.data);
+            reportCurtainTimerData(1);
             break;
         case RD_CURTAIN_SMART_MODE:
-            report_curtain_smartmode_data();
+            reportCurtainSmartModeData();
             break;
         case WR_CURTAIN_SMART_MODE:
-            save_curtain_smartmode_data(data->data);
-            report_curtain_smartmode_data();
+            saveCurtainSmartModeData(recPacket->user_data.data);
+            reportCurtainSmartModeData();
             break;
         case RD_CURTAIN_RAIN_WARNING:
-            report_curtain_rainwarning_data();
+            reportCurtainRainwarning();
             break;
         case RD_CURTAIN_BRIGHTNESS:
-            report_curtain_brightness_data();
+            reportCurtainBrightness();
             break;
         case RD_CURTAIN_LOAD_MODE:
-            report_curtain_loadset_data();
+            reportCurtainLoadSetData();
             break;
         case WR_CURTAIN_LOAD_MODE:
-            save_curtain_loadset_data(data->data[0]);
-            report_curtain_loadset_data();
+            saveCurtainLoadSetData(recPacket->user_data.data[0]);
+            reportCurtainLoadSetData();
             break;
         default:
             return false;

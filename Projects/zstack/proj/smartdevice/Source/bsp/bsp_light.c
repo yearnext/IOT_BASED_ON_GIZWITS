@@ -27,6 +27,7 @@
 #include "mcu_timer.h"
 #include <string.h>
 #include "app_save.h"
+#include "app_time.h"
 #include "app_timer.h"
 #include "Onboard.h"
      
@@ -97,15 +98,16 @@ static struct _DEVICE_LIGHT_SAVE_DATA_
  * @note        None
  *******************************************************************************
  */
-static void report_light_brightness_data( void )
+static void reportLightBrightnessPacket( void )
 {
-    MYPROTOCOL_USER_DATA user_data;
-    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
+    MYPROTOCOL_USER_DATA_t user_data;
+    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
     
     user_data.cmd = RD_LIGHT_BRIGHTNESS;
     user_data.data[0] = light.status.now;
     user_data.len = 1;
-    MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
+    
+    MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData);
 }
 
 /**
@@ -116,10 +118,10 @@ static void report_light_brightness_data( void )
  * @note        None
  *******************************************************************************
  */
-static void report_light_timer_data( uint8 timer )
+static void reportLightTimerPacket( uint8 timer )
 {
-    MYPROTOCOL_USER_DATA user_data;
-    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
+    MYPROTOCOL_USER_DATA_t user_data;
+    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
     
     if( timer == 0 )
     {
@@ -137,7 +139,7 @@ static void report_light_timer_data( uint8 timer )
     memcpy(&user_data.data,&light.timer[timer],sizeof(DEVICE_TIMER));
     user_data.len = sizeof(DEVICE_TIMER);
     
-    MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
+    MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData);
 }
 
 /**
@@ -148,16 +150,16 @@ static void report_light_timer_data( uint8 timer )
  * @note        None
  *******************************************************************************
  */
-static void report_light_loadset_data( void )
+static void reportLightLoadSetPacket( void )
 {
-    MYPROTOCOL_USER_DATA user_data;
-    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA));
+    MYPROTOCOL_USER_DATA_t user_data;
+    memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
     
     user_data.cmd = RD_LIGHT_LOAD_SET;
     memcpy(&user_data.data,&light.load_set,sizeof(light.load_set));
     user_data.len = sizeof(light.load_set);
     
-    MYPROTOCO_S2H_MSG_SEND(create_d2w_wait_packet,&user_data);
+    MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData);
 }
 
 /**
@@ -168,7 +170,7 @@ static void report_light_loadset_data( void )
  * @note        None
  *******************************************************************************
  */
-static bool save_light_timer_data( uint8 timer, uint8 *data )
+static bool saveLightTimerData( uint8 timer, uint8 *data )
 {
     if( timer >= LIGHT_USE_TIMER_NUM )
     {
@@ -193,7 +195,7 @@ static bool save_light_timer_data( uint8 timer, uint8 *data )
  * @note        None
  *******************************************************************************
  */
-static bool save_light_loadset_data( uint8 data )
+static bool saveLightLoadSetData( uint8 data )
 {
     light.load_set = data;
     
@@ -212,7 +214,7 @@ static bool save_light_loadset_data( uint8 data )
  * @note        None
  *******************************************************************************
  */
-static void light_rst_set( void )
+static void rstLightData( void )
 {
     memset(&light,0,sizeof(light));
     light.status.now = LIGHT_OFF_BRIGHTNESS;
@@ -230,7 +232,7 @@ static void light_rst_set( void )
  * @note        None
  *******************************************************************************
  */
-void set_light_brightness( uint8 brightness )
+void setLightBrightness( uint8 brightness )
 {
     uint16 brightness_data = brightness;
     brightness_data <<= 8;
@@ -253,7 +255,7 @@ void set_light_brightness( uint8 brightness )
  * @note        None
  *******************************************************************************
  */
-uint8 get_light_brightness( void )
+uint8 getLightBrightness( void )
 {
     uint16 brightness_data = Light_Brightness_Conversion(Get_Light_Brightness());
     brightness_data *= 100;
@@ -276,18 +278,18 @@ uint8 get_light_brightness( void )
  * @note        None
  *******************************************************************************
  */
-void bsp_light_init( void )
+void bspLightInit( void )
 {
     Timer4_PWM_Init( TIM4_CH0_PORT_P2_0 );
-    set_light_brightness(LIGHT_OFF_BRIGHTNESS);
+    setLightBrightness(LIGHT_OFF_BRIGHTNESS);
     
     // FLASH 数据初始化
-    Device_Load_LastData(DEVICE_LIGHT_SAVE_ID,DEVICE_LIGHT_DATA_SIZE,(void *)&light,light_rst_set);
+    deviceLoadDownData(DEVICE_LIGHT_SAVE_ID,DEVICE_LIGHT_DATA_SIZE,(void *)&light,rstLightData);
     
     // 载入掉点前的状态
     if( light.load_set == LIGHT_LOAD_SET )
     {
-        set_light_brightness(light.status.now);
+        setLightBrightness(light.status.now);
     }
 }
 
@@ -299,14 +301,14 @@ void bsp_light_init( void )
  * @note        None
  *******************************************************************************
  */
-void light_control_handler( uint8 brightness )
+void lightControlHandler( uint8 brightness )
 {
-    if( brightness != get_light_brightness() )
+    if( brightness != getLightBrightness() )
     {
         light.status.last = light.status.now;
         light.status.now = brightness;
         
-        set_light_brightness( light.status.now );
+        setLightBrightness( light.status.now );
         
         osal_nv_write(DEVICE_LIGHT_SAVE_ID,\
                       (uint16)&light.status-(uint16)&light,\
@@ -323,7 +325,7 @@ void light_control_handler( uint8 brightness )
  * @note        None
  *******************************************************************************
  */
-void light_switch_handler( void )
+void lightSwitchHandler( void )
 {
     uint8 temp = 0;
 
@@ -347,17 +349,16 @@ void light_switch_handler( void )
         light.status.now = LIGHT_OFF_BRIGHTNESS;
     }
     
-    set_light_brightness( light.status.now );
+    setLightBrightness( light.status.now );
     
     osal_nv_write(DEVICE_LIGHT_SAVE_ID,\
               ((uint16)&light.status - (uint16)&light),\
               sizeof(light.status),\
               (void *)&light.status); 
 
-    report_light_brightness_data();
+    reportLightBrightnessPacket();
 }
 
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_LIGHT)
 /**
  *******************************************************************************
  * @brief       按键处理
@@ -366,12 +367,12 @@ void light_switch_handler( void )
  * @note        None
  *******************************************************************************
  */
-void light_switch_key_handler( key_message_t message )
+void lightSwitchKeyHandler( key_message_t message )
 {
     switch (message)
     {
 		case KEY_MESSAGE_PRESS_EDGE:
-            light_switch_handler();
+            lightSwitchHandler();
 			break;
 		default:
 			break;
@@ -386,19 +387,19 @@ void light_switch_key_handler( key_message_t message )
  * @note        None
  *******************************************************************************
  */
-void light_reset_key_handler( key_message_t message )
+void lightRstKeyHandler( key_message_t message )
 {
     switch (message)
     {
-		case KEY_MESSAGE_PRESS_EDGE:
-            //light_switch_handler();
+		case KEY_MESSAGE_LONG_PRESS_EDGE:
+            rstLightData();
+            Onboard_soft_reset();
 			break;
 		default:
 			break;
     }
 }
 
-#endif
 /**
  *******************************************************************************
  * @brief       电灯工作处理函数
@@ -407,13 +408,13 @@ void light_reset_key_handler( key_message_t message )
  * @note        None
  *******************************************************************************
  */
-void light_working_handler( void )
+void lightWorkingHandler( void )
 {
     uint8 i;
     
     for( i=0; i<SIMPLE_DEVICE_TIMER_NUM; i++ )
     {
-        device_timer_handler((DEVICE_TIMER*)&light.timer[i],light_control_handler);
+        device_timer_handler((DEVICE_TIMER*)&light.timer[i],lightControlHandler);
     }
 }
 
@@ -425,45 +426,50 @@ void light_working_handler( void )
  * @note        None
  *******************************************************************************
  */
-bool light_cmd_resolve( MYPROTOCOL_USER_DATA *data )
+bool lightMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
 {    
-    switch( data->cmd )
+    switch( recPacket->user_data.cmd )
     {
-        case DEVICE_TICK:
+        case MYPROTOCOL_TICK_CMD:
             break;
-        case DEVICE_RESET:
-            light_rst_set();
-//            break;
-        case DEVICE_REBOOT:
+        case MYPROTOCOL_RESET_CMD:
+            rstLightData();
+        case MYPROTOCOL_REBOOT_CMD:
             Onboard_soft_reset();
             break;
+        case MYPROTOCOL_RD_TIME_CMD:
+            if( recPacket->user_data.data[8] == 1 )
+            {
+                app_time_update((user_time *)&recPacket->user_data.data);
+            }
+            break;
         case RD_LIGHT_BRIGHTNESS:
-            report_light_brightness_data();
+            reportLightBrightnessPacket();
             break;
         case WR_LIGHT_BRIGHTNESS:
-            light_control_handler(data->data[0]);
-            report_light_brightness_data();
+            lightControlHandler(recPacket->user_data.data[0]);
+            reportLightBrightnessPacket();
             break;
         case RD_LIGHT_SINGLE_TIMER:
-            report_light_timer_data(0);
+            reportLightTimerPacket(0);
             break;
         case WR_LIGHT_SINGLE_TIMER:
-            save_light_timer_data(0,data->data);
-            report_light_timer_data(0);
+            saveLightTimerData(0,recPacket->user_data.data);
+            reportLightTimerPacket(0);
             break;
         case RD_LIGHT_CIRCUL_TIMER:
-            report_light_timer_data(1);
+            reportLightTimerPacket(1);
             break;
         case WR_LIGHT_CIRCUL_TIMER:
-            save_light_timer_data(1,data->data);
-            report_light_timer_data(1);
+            saveLightTimerData(1,recPacket->user_data.data);
+            reportLightTimerPacket(1);
             break;
         case RD_LIGHT_LOAD_SET:
-            report_light_loadset_data();
+            reportLightLoadSetPacket();
             break;
         case WR_LIGHT_LOAD_SET:
-            save_light_loadset_data(data->data[0]);
-            report_light_loadset_data();
+            saveLightLoadSetData(recPacket->user_data.data[0]);
+            reportLightLoadSetPacket();
             break;
         default:
             return false;

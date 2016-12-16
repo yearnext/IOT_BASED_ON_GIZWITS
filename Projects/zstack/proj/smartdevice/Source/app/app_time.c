@@ -27,16 +27,11 @@
 #include <string.h>
 #include "hal_ds1302.h"
 #include "gizwits_protocol.h"
-#include "myprotocol.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-#define hal_timechip_init() hal_ds1302_init()  
-#define hal_time_set(time)  ds1302_wr_time(time)
-#define hal_time_read(time) ds1302_rd_time(time)
-     
+/* Private define ------------------------------------------------------------*/  
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -67,7 +62,6 @@ void app_time_init( void )
 void app_time_update( user_time *time )
 {
     time->year -= 2000;
-    
     hal_time_set(time); 
 }
 
@@ -81,13 +75,17 @@ void app_time_update( user_time *time )
  */
 user_time app_get_time( void )
 {
+#if !MYPROTOCOL_DEVICE_IS_COORD
     user_time time;
     
     hal_time_read(&time);
     
     time.year += 2000;
-    
+
     return time;
+#else  
+    return gizwitsGetTime();
+#endif
 }
 
 /**

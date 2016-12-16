@@ -24,8 +24,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
 #include "app_save.h"
+#include "myprotocol.h"
 
 /* Exported macro ------------------------------------------------------------*/
+#define deviceUpdateNTPTime() MyprotocolSendData(NULL,NULL,createDeviceGetNetTimePacket,MyprotocolD2WSendData)
+
 /* Exported types ------------------------------------------------------------*/
 /**
  *******************************************************************************

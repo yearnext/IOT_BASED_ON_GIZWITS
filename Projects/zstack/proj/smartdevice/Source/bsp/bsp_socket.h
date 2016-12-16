@@ -27,28 +27,33 @@
 #include "bsp_key.h"
 
 /* Exported macro ------------------------------------------------------------*/
+#if MYPROTOCOL_DEVICE_IS_SOCKET
+#define bspDeviceInit() bspSocketInit()
+#define deviceMessageHandler socketMessageHandler
+#endif
+
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern void bsp_socket_init( void );
-extern void set_socket_value( uint8 );
-extern uint8 get_socket_value( void );
-extern void socket_control_handler( uint8 );
-extern void socket_switch_handler( void );
+extern void bspSocketInit( void );
+extern void setSocketState( uint8 );
+extern uint8 getSocketState( void );
+extern void socketControlHandler( uint8 );
+extern void socketSwitchHandler( void );
 
-#if (SMART_DEVICE_TYPE) == (MYPROTOCOL_DEVICE_SOCKET)
-#define key_switch_key_handler key1_handler
-#define key_reset_key_handler  key2_handler
-
-extern void key_switch_key_handler( key_message_t );
-extern void key_reset_key_handler( key_message_t );
+#if MYPROTOCOL_DEVICE_IS_SOCKET
+#define socketSwitchKeyHandler key1_handler
+#define socketRstKeyHandler    key2_handler
 #endif
 
-extern void socket_working_handler( void );
-extern bool socket_cmd_resolve( MYPROTOCOL_USER_DATA *data );
+extern void socketSwitchKeyHandler( key_message_t );
+extern void socketRstKeyHandler( key_message_t );
+
+extern void socketWorkingHandler( void );
+extern bool socketMessageHandler( MYPROTOCOL_FORMAT_t *recPacket );
 
 #endif      /* __SMART_DEVICE_socket_H__ */
 
