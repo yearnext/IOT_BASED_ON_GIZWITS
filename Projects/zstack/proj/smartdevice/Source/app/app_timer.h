@@ -107,7 +107,7 @@ typedef void (*device_timer_func)(uint8);
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern bool device_timer_handler(DEVICE_TIMER *timer, device_timer_func func);
+extern bool deviceTimerHandler(DEVICE_TIMER *timer, device_timer_func func);
 
 #endif      /* __APP_USER_TIMER_H__ */
 

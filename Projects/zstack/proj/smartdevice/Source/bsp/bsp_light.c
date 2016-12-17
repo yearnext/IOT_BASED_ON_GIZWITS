@@ -98,7 +98,7 @@ static struct _DEVICE_LIGHT_SAVE_DATA_
  * @note        None
  *******************************************************************************
  */
-static void reportLightBrightnessPacket( void )
+static void reportLightBrightnessData( void )
 {
     MYPROTOCOL_USER_DATA_t user_data;
     memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
@@ -118,7 +118,7 @@ static void reportLightBrightnessPacket( void )
  * @note        None
  *******************************************************************************
  */
-static void reportLightTimerPacket( uint8 timer )
+static void reportLightTimerData( uint8 timer )
 {
     MYPROTOCOL_USER_DATA_t user_data;
     memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
@@ -150,7 +150,7 @@ static void reportLightTimerPacket( uint8 timer )
  * @note        None
  *******************************************************************************
  */
-static void reportLightLoadSetPacket( void )
+static void reportLightLoadSetData( void )
 {
     MYPROTOCOL_USER_DATA_t user_data;
     memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
@@ -355,8 +355,6 @@ void lightSwitchHandler( void )
               ((uint16)&light.status - (uint16)&light),\
               sizeof(light.status),\
               (void *)&light.status); 
-
-    reportLightBrightnessPacket();
 }
 
 /**
@@ -373,6 +371,7 @@ void lightSwitchKeyHandler( key_message_t message )
     {
 		case KEY_MESSAGE_PRESS_EDGE:
             lightSwitchHandler();
+            reportLightBrightnessData();
 			break;
 		default:
 			break;
@@ -412,9 +411,9 @@ void lightWorkingHandler( void )
 {
     uint8 i;
     
-    for( i=0; i<SIMPLE_DEVICE_TIMER_NUM; i++ )
+    for( i=0; i<LIGHT_USE_TIMER_NUM; i++ )
     {
-        device_timer_handler((DEVICE_TIMER*)&light.timer[i],lightControlHandler);
+        deviceTimerHandler((DEVICE_TIMER*)&light.timer[i],lightControlHandler);
     }
 }
 
@@ -444,32 +443,32 @@ bool lightMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
             }
             break;
         case RD_LIGHT_BRIGHTNESS:
-            reportLightBrightnessPacket();
+            reportLightBrightnessData();
             break;
         case WR_LIGHT_BRIGHTNESS:
             lightControlHandler(recPacket->user_data.data[0]);
-            reportLightBrightnessPacket();
+            reportLightBrightnessData();
             break;
         case RD_LIGHT_SINGLE_TIMER:
-            reportLightTimerPacket(0);
+            reportLightTimerData(0);
             break;
         case WR_LIGHT_SINGLE_TIMER:
             saveLightTimerData(0,recPacket->user_data.data);
-            reportLightTimerPacket(0);
+            reportLightTimerData(0);
             break;
         case RD_LIGHT_CIRCUL_TIMER:
-            reportLightTimerPacket(1);
+            reportLightTimerData(1);
             break;
         case WR_LIGHT_CIRCUL_TIMER:
             saveLightTimerData(1,recPacket->user_data.data);
-            reportLightTimerPacket(1);
+            reportLightTimerData(1);
             break;
         case RD_LIGHT_LOAD_SET:
-            reportLightLoadSetPacket();
+            reportLightLoadSetData();
             break;
         case WR_LIGHT_LOAD_SET:
             saveLightLoadSetData(recPacket->user_data.data[0]);
-            reportLightLoadSetPacket();
+            reportLightLoadSetData();
             break;
         default:
             return false;

@@ -411,6 +411,7 @@ void deviceTimerCallBack( void )
     if( ++timer_500ms >= TIMER_500MS_COUNT )
     {
         deviceUpdateNTPTime();
+        curtainWorkingHandler();
         timer_500ms = 0;
     }
 }

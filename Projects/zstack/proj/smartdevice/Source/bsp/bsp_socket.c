@@ -393,9 +393,9 @@ void socketWorkingHandler( void )
 {
     uint8 i;
     
-    for( i=0; i<SIMPLE_DEVICE_TIMER_NUM; i++ )
+    for( i=0; i<SOCKET_USE_TIMER_NUM; i++ )
     {
-        device_timer_handler((DEVICE_TIMER*)&socket.timer[i],socketControlHandler);
+        deviceTimerHandler((DEVICE_TIMER*)&socket.timer[i],socketControlHandler);
     }
 }
 

@@ -48,7 +48,7 @@
  * @note        None
  *******************************************************************************
  */
-static DEVICE_STATUS_SIGNAL period_timer_inquire(TIMER_WOKRING_TIME *timer, uint16 time)
+static DEVICE_STATUS_SIGNAL devicePeriodTimerInquire(TIMER_WOKRING_TIME *timer, uint16 time)
 {
     uint16 start_time = Time_Hour2Minute(timer->start_hour)+timer->start_minute;
     uint16 end_time = Time_Hour2Minute(timer->end_hour)+timer->end_minute;
@@ -80,7 +80,7 @@ static DEVICE_STATUS_SIGNAL period_timer_inquire(TIMER_WOKRING_TIME *timer, uint
  * @note        None
  *******************************************************************************
  */
-static DEVICE_STATUS_SIGNAL downcnt_timer_inquire(TIMER_WOKRING_TIME *timer, uint16 time)
+static DEVICE_STATUS_SIGNAL deviceDowncntTimerInquire(TIMER_WOKRING_TIME *timer, uint16 time)
 {
     uint16 start_time = Time_Hour2Minute(timer->start_hour)+timer->start_minute;
     uint16 end_time = Time_Hour2Minute(timer->end_hour)+timer->end_minute;
@@ -124,7 +124,7 @@ static DEVICE_STATUS_SIGNAL downcnt_timer_inquire(TIMER_WOKRING_TIME *timer, uin
  * @note        None
  *******************************************************************************
  */
-bool device_timer_handler(DEVICE_TIMER *timer, device_timer_func func)
+bool deviceTimerHandler(DEVICE_TIMER *timer, device_timer_func func)
 {
 	user_time time = app_get_time();
 	uint16 now_time = Time_Hour2Minute(time.hour) + time.minute;
@@ -135,14 +135,14 @@ bool device_timer_handler(DEVICE_TIMER *timer, device_timer_func func)
 			return true;
 			break;
 		case TIMER_PERIOD_MODE_WAIT:
-			if (period_timer_inquire(&timer->time,now_time) == DEVICE_START_SIGNAL)
+			if (devicePeriodTimerInquire(&timer->time,now_time) == DEVICE_START_SIGNAL)
 			{
 				func(timer->status.start);
 				timer->mode = TIMER_PERIOD_MODE;
 			}
 			break;
 		case TIMER_PERIOD_MODE:
-			if (period_timer_inquire(&timer->time, now_time) == DEVICE_STOP_SIGNAL)
+			if (devicePeriodTimerInquire(&timer->time, now_time) == DEVICE_STOP_SIGNAL)
 			{
 				func(timer->status.end);
 				timer->mode = TIMER_SLEEP_MODE;
@@ -152,7 +152,7 @@ bool device_timer_handler(DEVICE_TIMER *timer, device_timer_func func)
 			func(timer->status.start);
 			timer->mode = TIMER_DOWNCNT_MODE;
 		case TIMER_DOWNCNT_MODE:
-			if (downcnt_timer_inquire(&timer->time, now_time) == DEVICE_STOP_SIGNAL)
+			if (deviceDowncntTimerInquire(&timer->time, now_time) == DEVICE_STOP_SIGNAL)
 			{
 				func(timer->status.end);
 				timer->mode = TIMER_SLEEP_MODE;
@@ -162,7 +162,7 @@ bool device_timer_handler(DEVICE_TIMER *timer, device_timer_func func)
 		{
 			uint8 week = *(uint8 *)(&timer->custom);
 			if (( week & TIMER_CUSTOM_BV(time.week)) \
-				&&(period_timer_inquire(&timer->time, now_time) == DEVICE_START_SIGNAL))
+				&&(devicePeriodTimerInquire(&timer->time, now_time) == DEVICE_START_SIGNAL))
 			{
 				func(timer->status.start);
 				timer->mode = TIMER_CUSTOM_MODE;
@@ -174,7 +174,7 @@ bool device_timer_handler(DEVICE_TIMER *timer, device_timer_func func)
 			uint8 week = *(uint8 *)(&timer->custom);
 			if (week & TIMER_CUSTOM_BV(time.week))
 			{
-				if (period_timer_inquire(&timer->time, now_time) == DEVICE_STOP_SIGNAL)
+				if (devicePeriodTimerInquire(&timer->time, now_time) == DEVICE_STOP_SIGNAL)
 				{
 					func(timer->status.end);
 					timer->mode = TIMER_CUSTOM_MODE_WAIT;

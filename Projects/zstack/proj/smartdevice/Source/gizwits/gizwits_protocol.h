@@ -247,7 +247,8 @@ typedef enum
 } PROTOCOL_CMDTYPE;
 
 /** 重发机制结构体 */
-typedef struct {
+typedef struct 
+{
     uint8                 num;                    ///< 重发次数
     uint8                 flag;                   ///< 1,表示有需要等待的ACK;0,表示无需要等待的ACK
     uint8                 buf[MAX_PACKAGE_LEN];   ///< 重发数据缓冲区

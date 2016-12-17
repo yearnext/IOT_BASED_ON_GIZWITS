@@ -112,6 +112,7 @@
 
 // 电动窗帘工作状态
 #define CURTAIN_INIT_STATE        (0x00)
+#define CURTAIN_STOP_STATE        (0x00)
 #define CURTAIN_OPEN_STATE        (0x01)
 #define CURTAIN_OPEN_END_STATE    (0x02)
 #define CURTAIN_OPEN_ALL_STATE    (0x03)
@@ -132,6 +133,10 @@
 #define OPEN_CURTAIN_OPERA()      {CLR_CURTAIN_REVERSE();SET_CURTAIN_FORWARD();}
 #define CLOSE_CURTAIN_OPERA()     {CLR_CURTAIN_FORWARD();SET_CURTAIN_REVERSE();}
 #define INIT_CURTAIN_OPERA()      {CLR_CURTAIN_REVERSE();CLR_CURTAIN_FORWARD();}
+
+// 电动窗帘定时器标号
+#define CURTAIN_SIGNAL_TIMER      (0x01)
+#define CURTAIN_CIRCUL_TIMER      (0x02)
 
 /* Private typedef -----------------------------------------------------------*/
 // 窗帘控制命令
@@ -158,18 +163,30 @@ static struct _DEVICE_CURTAIN_SAVE_DATA_
     // 状态数据
     uint8 status;
     
-    // 定时器数据
-    DEVICE_TIMER timer[CURTAIN_USE_TIMER_NUM]; 
+    struct
+    {
+        uint8 status;
+    }metor;
     
+    // 定时器数据
+    struct
+    {
+        DEVICE_TIMER signal;
+        DEVICE_TIMER circul;
+    }timer;
+ 
     // 窗帘智能工作模式
     struct
     {
         uint8 state;
         uint8 brightness;    
-    }smart_mode;
+    }mode;
     
     // 下雨报警标志
-    uint8 rain_warning;
+    struct
+    {
+        uint8 status;
+    }rain;
     
     // 室内亮度
     uint8 brightness;
@@ -177,10 +194,6 @@ static struct _DEVICE_CURTAIN_SAVE_DATA_
     // 上电设置
     uint8 load_set;
 }curtain;
-
-// 下雨标志
-bool flg_rain = false;
-uint8 curtain_cmd = CURTAIN_CMD_STOP;
 
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
@@ -192,7 +205,7 @@ uint8 curtain_cmd = CURTAIN_CMD_STOP;
  * @note        None
  *******************************************************************************
  */
-static void reportCurtainStatePacket( void )
+static void reportCurtainStatus( void )
 {
     MYPROTOCOL_USER_DATA_t user_data;
     memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
@@ -217,20 +230,21 @@ static void reportCurtainTimerData( uint8 timer )
     MYPROTOCOL_USER_DATA_t user_data;
     memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
     
-    if( timer == 0 )
+    if( timer == CURTAIN_SIGNAL_TIMER )
     {
         user_data.cmd = RD_CURTAIN_SINGLE_TIMER;
+        memcpy(&user_data.data,&curtain.timer.signal,sizeof(DEVICE_TIMER));
     }
-    else if( timer == 1 )
+    else if( timer == CURTAIN_CIRCUL_TIMER )
     {
         user_data.cmd = RD_CURTAIN_CIRCUL_TIMER;
+        memcpy(&user_data.data,&curtain.timer.circul,sizeof(DEVICE_TIMER));
     }
     else
     {
         return;
     }
     
-    memcpy(&user_data.data,&curtain.timer[timer],sizeof(DEVICE_TIMER));
     user_data.len = sizeof(DEVICE_TIMER);
     
     MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData);
@@ -250,8 +264,8 @@ static void reportCurtainSmartModeData( void )
     memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
     
     user_data.cmd = RD_CURTAIN_SMART_MODE;  
-    memcpy(&user_data.data,&curtain.smart_mode,sizeof(DEVICE_TIMER));
-    user_data.len = sizeof(curtain.smart_mode);
+    memcpy(&user_data.data,&curtain.mode,sizeof(curtain.mode));
+    user_data.len = sizeof(curtain.mode);
     
     MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData);
 }
@@ -264,13 +278,13 @@ static void reportCurtainSmartModeData( void )
  * @note        None
  *******************************************************************************
  */
-static void reportCurtainRainwarning( void )
+static void reportCurtainRainStatus( void )
 {
     MYPROTOCOL_USER_DATA_t user_data;
     memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
     
     user_data.cmd = RD_CURTAIN_RAIN_WARNING;  
-    user_data.data[0] = curtain.rain_warning;
+    user_data.data[0] = curtain.rain.status;
     user_data.len = 1;
     
     MyprotocolSendData(&user_data, NULL, createD2WWaitPacket, MyprotocolD2WSendData);
@@ -332,14 +346,34 @@ static bool saveCurtainTimerData( uint8 timer, uint8 *data )
         return false;
     }
     
-    memcpy(&curtain.timer[timer],data,sizeof(curtain.timer[timer]));
-    
-    osal_nv_write(DEVICE_CURTAIN_SAVE_ID,
-                  (uint32)&curtain.timer[timer]-(uint32)&curtain,
-                  sizeof(curtain.timer[timer]),
-                  (void *)&curtain.timer[timer]); 
+    if( timer == CURTAIN_SIGNAL_TIMER )
+    {
+        memcpy(&curtain.timer.signal,data,sizeof(curtain.timer.signal));
+        
+        osal_nv_write(DEVICE_CURTAIN_SAVE_ID,
+                      (uint32)&curtain.timer.signal-(uint32)&curtain,
+                      sizeof(curtain.timer.signal),
+                      (void *)&curtain.timer.signal); 
+        
+        return true;
+    }
+    else if ( timer == CURTAIN_CIRCUL_TIMER )
+    {
+        memcpy(&curtain.timer.circul,data,sizeof(curtain.timer.circul));
+        
+        osal_nv_write(DEVICE_CURTAIN_SAVE_ID,
+                  (uint32)&curtain.timer.circul-(uint32)&curtain,
+                  sizeof(curtain.timer.circul),
+                  (void *)&curtain.timer.circul); 
+        
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 
-    return true;
+//    return true;
 }
 
 /**
@@ -352,12 +386,12 @@ static bool saveCurtainTimerData( uint8 timer, uint8 *data )
  */
 static bool saveCurtainSmartModeData( uint8 *data )
 {
-    memcpy(&curtain.smart_mode,data,sizeof(curtain.smart_mode));
+    memcpy(&curtain.mode,data,sizeof(curtain.mode));
     
     osal_nv_write(DEVICE_CURTAIN_SAVE_ID,
-                  (uint32)&curtain.smart_mode-(uint32)&curtain,
-                  sizeof(curtain.smart_mode),
-                  (void *)&curtain.smart_mode); 
+                  (uint32)&curtain.mode-(uint32)&curtain,
+                  sizeof(curtain.mode),
+                  (void *)&curtain.mode); 
 
     return true;
 }
@@ -480,37 +514,63 @@ void bspCurtainInit(void)
  * @note        None
  *******************************************************************************
  */
-bool curtainControlCmd( uint8 cmd )
+void curtainControlHandler( uint8 cmd )
 {
     if( cmd == CURTAIN_CMD_OPEN )
-    {
-        if( curtain.status != CURTAIN_CLOSE_ALL_STATE )
-        {
-            INIT_CURTAIN_OPERA();
-            Onboard_wait(100);
-            SET_CURTAIN_FORWARD();
-
-            curtain.status = CURTAIN_OPEN_STATE;
-        }
-    }
-    else if( cmd == CURTAIN_CMD_CLOSE )
     {
         if( curtain.status != CURTAIN_OPEN_ALL_STATE )
         {
             INIT_CURTAIN_OPERA();
-            Onboard_wait(100);
+            SET_CURTAIN_FORWARD();
+
+            curtain.status = CURTAIN_OPEN_STATE;
+            curtain.metor.status = CURTAIN_OPEN_STATE;
+        }
+    }
+    else if( cmd == CURTAIN_CMD_CLOSE )
+    {
+        if( curtain.status != CURTAIN_CLOSE_ALL_STATE )
+        {
+            INIT_CURTAIN_OPERA();
             SET_CURTAIN_REVERSE();
             
             curtain.status = CURTAIN_CLOSE_STATE;
+            curtain.metor.status = CURTAIN_CLOSE_STATE;
         }
     }
     else
     {
         INIT_CURTAIN_OPERA();
-        curtain.status = CURTAIN_INIT_STATE;
+        
+        if( curtain.status == CURTAIN_OPEN_STATE )
+        {
+            curtain.status = CURTAIN_OPEN_END_STATE;
+        }
+        else if( curtain.status == CURTAIN_CLOSE_STATE )
+        {
+            curtain.status = CURTAIN_CLOSE_END_STATE;
+        }
+        else
+        {
+            
+        }
+        
+        curtain.metor.status = CURTAIN_STOP_STATE;
     }
-    
-    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       电动窗帘工作处理函数
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void curtainWorkingHandler( void )
+{
+    deviceTimerHandler((DEVICE_TIMER*)& curtain.timer.signal,curtainControlHandler);
+    deviceTimerHandler((DEVICE_TIMER*)& curtain.timer.circul,curtainControlHandler);
 }
 
 /**
@@ -525,18 +585,21 @@ void curtainSwitchKeyHandler( key_message_t message )
 {
     switch (message)
     {
-		case KEY_MESSAGE_PRESS_EDGE:
-            if( curtain.status == CURTAIN_INIT_STATE )
+        case KEY_MESSAGE_PRESS_EDGE:
+            if( curtain.metor.status == CURTAIN_STOP_STATE )
             {
-                curtainControlCmd(CURTAIN_CMD_OPEN);
+                curtainControlHandler(CURTAIN_CMD_OPEN);
+                reportCurtainStatus();
             }
-            else if( curtain.status == CURTAIN_OPEN_STATE )
+            else if( curtain.metor.status == CURTAIN_OPEN_STATE )
             {
-                curtainControlCmd(CURTAIN_CMD_CLOSE);
+                curtainControlHandler(CURTAIN_CMD_CLOSE);
+                reportCurtainStatus();
             }
-            else if( curtain.status == CURTAIN_CLOSE_STATE )
+            else if( curtain.metor.status == CURTAIN_CLOSE_STATE )
             {
-                curtainControlCmd(CURTAIN_CMD_STOP);
+                curtainControlHandler(CURTAIN_CMD_STOP);
+                reportCurtainStatus();
             }
             else
             {
@@ -565,10 +628,18 @@ void curtainRainKeyHandler( key_message_t message )
     switch (message)
     {
 		case KEY_MESSAGE_LONG_PRESS:
-            flg_rain = true;
+        if( !curtain.rain.status )
+        {
+            curtain.rain.status = 1;
+            reportCurtainRainStatus();
+        }
 			break;
         case KEY_MESSAGE_RELEASE:
-            flg_rain = false;
+        if( curtain.rain.status )
+        {
+            curtain.rain.status = 0;
+            reportCurtainRainStatus();
+        }
             break;
 		default:
 			break;
@@ -601,25 +672,25 @@ bool curtainMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
             }
             break;
         case RD_CURTAIN_STATE:
-            reportCurtainStatePacket();
+            reportCurtainStatus();
             break;
         case WR_CURTAIN_OPERA:
-            curtainControlCmd(recPacket->user_data.data[0]);
-            reportCurtainStatePacket();
+            curtainControlHandler(recPacket->user_data.data[0]);
+            reportCurtainStatus();
             break;
         case RD_CURTAIN_SINGLE_TIMER:
-            reportCurtainTimerData(0);
+            reportCurtainTimerData(CURTAIN_SIGNAL_TIMER);
             break;
         case WR_CURTAIN_SINGLE_TIMER:
-            saveCurtainTimerData(0,recPacket->user_data.data);
-            reportCurtainTimerData(0);
+            saveCurtainTimerData(CURTAIN_SIGNAL_TIMER,recPacket->user_data.data);
+            reportCurtainTimerData(CURTAIN_SIGNAL_TIMER);
             break;
         case RD_CURTAIN_CIRCUL_TIMER:
-            reportCurtainTimerData(1);
+            reportCurtainTimerData(CURTAIN_CIRCUL_TIMER);
             break;
         case WR_CURTAIN_CIRCUL_TIMER:
-            saveCurtainTimerData(1,recPacket->user_data.data);
-            reportCurtainTimerData(1);
+            saveCurtainTimerData(CURTAIN_CIRCUL_TIMER,recPacket->user_data.data);
+            reportCurtainTimerData(CURTAIN_CIRCUL_TIMER);
             break;
         case RD_CURTAIN_SMART_MODE:
             reportCurtainSmartModeData();
@@ -629,7 +700,7 @@ bool curtainMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
             reportCurtainSmartModeData();
             break;
         case RD_CURTAIN_RAIN_WARNING:
-            reportCurtainRainwarning();
+            reportCurtainRainStatus();
             break;
         case RD_CURTAIN_BRIGHTNESS:
             reportCurtainBrightness();

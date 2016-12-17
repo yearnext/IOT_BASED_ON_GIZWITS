@@ -64,7 +64,7 @@ extern void Timer3_Init( void );
 extern bool Timer3_PWM_Init( uint8 CHANNEL_PIN );
 extern void Timer4_Init( void );
 extern bool Timer4_PWM_Init( uint8 );
-extern bool Timer4_PWM_Deinit( uint8 );
+extern bool Timer4_PWM_Deinit( uint8, bool );
 
 #endif      /* __CC2530_MCU_TIMER_H__ */
 

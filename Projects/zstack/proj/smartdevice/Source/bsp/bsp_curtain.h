@@ -52,6 +52,7 @@ extern bool curtainControlCmd( uint8 );
 extern void curtainSwitchKeyHandler( key_message_t );
 extern void curtainRainKeyHandler( key_message_t );
 
+extern void curtainWorkingHandler( void );
 extern bool curtainMessageHandler( MYPROTOCOL_FORMAT_t *recPacket );
 
 #ifdef __cplusplus
