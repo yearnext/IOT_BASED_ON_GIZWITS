@@ -43,10 +43,10 @@
 #define DEVICE_LIGHT_DATA_SIZE         (Cal_DataSize(light))
 
 // 灯的最大亮度/最小亮度
-#define LIGHT_MAX_BRIGHTNESS           (90)
+#define LIGHT_MAX_BRIGHTNESS           (100)
 #define LIGHT_MIN_BRIGHTNESS           (0)
 // 灯的开启亮度/关闭亮度
-#define LIGHT_ON_BRIGHTNESS            (90)  
+#define LIGHT_ON_BRIGHTNESS            (100)  
 #define LIGHT_OFF_BRIGHTNESS           (0)
      
 // 配置定时器使用数量
@@ -367,12 +367,46 @@ void lightSwitchHandler( void )
  */
 void lightSwitchKeyHandler( key_message_t message )
 {
+    static uint8 lastStatus = LIGHT_MIN_BRIGHTNESS;
+    static bool keyStatus = 0;
+    
     switch (message)
     {
 		case KEY_MESSAGE_PRESS_EDGE:
-            lightSwitchHandler();
-            reportLightBrightnessData();
+            keyStatus = 0;
 			break;
+        case KEY_MESSAGE_LONG_PRESS_EDGE:
+            lastStatus = light.status.now;
+            keyStatus = 1;
+            break;
+        case KEY_MESSAGE_LONG_PRESS:
+            keyStatus = 1;
+            if( light.status.last >= light.status.now )
+            {
+                if( light.status.now < LIGHT_MAX_BRIGHTNESS  )
+                {
+                    setLightBrightness( light.status.now++ );
+                }
+            }
+            else
+            {
+                if( light.status.now > LIGHT_MIN_BRIGHTNESS  )
+                {
+                    setLightBrightness( light.status.now-- );
+                }
+            }
+            break;
+        case KEY_MESSAGE_RELEASE_EDGE: 
+            if( keyStatus == 1 )
+            {
+                light.status.last = lastStatus;
+                reportLightBrightnessData();
+            }
+            else
+            {
+                lightSwitchHandler();
+            }
+            break;
 		default:
 			break;
     }

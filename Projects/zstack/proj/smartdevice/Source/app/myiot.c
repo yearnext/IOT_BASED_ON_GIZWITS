@@ -94,18 +94,22 @@
 #define DEVICE_LIST_TIMER_EVEN          (0x0002)
 
 /** 设备后台运行时间 */
-#define DEVICE_BACKSTAGE_TIME           (20)
+#define DEVICE_BACKSTAGE_TIME           (10)
 #define DEVICE_TIMR_CONVER_TICK(n)      (n/DEVICE_BACKSTAGE_TIME)
 /** 设备定时器事件 */
 #define DEVICE_TIMER_EVEN               (0x0008)
 
 /** 定时器计数值 */
+#define TIMER_10MS_COUNT  DEVICE_TIMR_CONVER_TICK(10)
 #define TIMER_20MS_COUNT  DEVICE_TIMR_CONVER_TICK(20)
 #define TIMER_50MS_COUNT  DEVICE_TIMR_CONVER_TICK(50)
 #define TIMER_100MS_COUNT DEVICE_TIMR_CONVER_TICK(100)
 #define TIMER_500MS_COUNT DEVICE_TIMR_CONVER_TICK(500)
 #define TIMER_350MS_COUNT DEVICE_TIMR_CONVER_TICK(350)
-//#define TIMER_1MIN_COUNT  (600)
+#define TIMER_1S_COUNT    DEVICE_TIMR_CONVER_TICK(1000)
+#define TIMER_15S_COUNT   DEVICE_TIMR_CONVER_TICK(15000)
+#define TIMER_20S_COUNT   DEVICE_TIMR_CONVER_TICK(20000)
+#define TIMER_30S_COUNT   DEVICE_TIMR_CONVER_TICK(30000)
 #define TIMER_1MIN_COUNT  DEVICE_TIMR_CONVER_TICK(60000)
 
 /** Smart Device 通讯状态指示灯 */
@@ -354,7 +358,6 @@ void deviceTimerCallBack( void )
 {
     static uint8 timer_20ms  = 0;
     static uint8 timer_500ms = 0;
-    static uint16 timer_1min = 0;
     
     if( ++timer_20ms >= TIMER_20MS_COUNT )
     {
@@ -370,10 +373,6 @@ void deviceTimerCallBack( void )
         timer_500ms = 0;
     }
     
-    if( ++timer_1min >= TIMER_1MIN_COUNT )
-    {
-        timer_1min = 0;
-    }
 }
 #elif MYPROTOCOL_DEVICE_IS_SOCKET
 void deviceTimerCallBack( void )
@@ -399,7 +398,15 @@ void deviceTimerCallBack( void )
 void deviceTimerCallBack( void )
 {
     static uint8 timer_20ms  = 0;
+    static uint8 timer_10ms  = 0;
     static uint8 timer_500ms  = 0;
+    static uint16 timer_20s  = 0;
+    
+    if( ++timer_10ms >= TIMER_10MS_COUNT )
+    {
+        curtainSpeedDetection();
+        timer_10ms = 0;
+    }
     
     if( ++timer_20ms >= TIMER_20MS_COUNT )
     {
@@ -407,12 +414,18 @@ void deviceTimerCallBack( void )
         key_handler();
         timer_20ms = 0;
     }
-    
+
     if( ++timer_500ms >= TIMER_500MS_COUNT )
     {
         deviceUpdateNTPTime();
         curtainWorkingHandler();
         timer_500ms = 0;
+    }
+    
+    if( ++timer_20s >= TIMER_20S_COUNT )
+    {    
+        curtainBrightnessHandler();
+        timer_20s = 0;
     }
 }
 

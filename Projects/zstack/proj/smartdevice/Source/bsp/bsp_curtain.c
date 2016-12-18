@@ -28,7 +28,7 @@
 #include "app_save.h"
 #include "app_timer.h"
 #include "hal_board_cfg.h"
-#include "mcu_adc.h"
+#include "hal_adc.h"
 #include "Onboard.h"
 #include "hal_ds1302.h"
 
@@ -69,7 +69,7 @@
 #define CURTAIN_SPD_CH2_POLARITY ACTIVE_LOW
 
 // 光照强度检测端口
-#define CURTAIN_BRIGHTNESS_ADC_CH ADC_CONVERT_CH7 
+#define CURTAIN_BRIGHTNESS_ADC_CH HAL_ADC_CHANNEL_7 
 
 // 窗帘正转端口功能配置
 #define CURTAIN_FORWARD_WrMode() ( CURTAIN_FORWARD_DIR |=  CURTAIN_FORWARD_BV )
@@ -88,19 +88,19 @@
 // 转速输入端口1
 #define CURTAIN_SPD_CH1_WrMode() ( CURTAIN_SPD_CH1_DIR |=  CURTAIN_SPD_CH1_BV )
 #define CURTAIN_SPD_CH1_RdMode() ( CURTAIN_SPD_CH1_DIR &= ~CURTAIN_SPD_CH1_BV )
-#define SET_SPD_CH1_REVERSE()    ( CURTAIN_SPD_CH1_PORT = CURTAIN_SPD_CH1_POLARITY(1) )
-#define CLR_SPD_CH1_REVERSE()    ( CURTAIN_SPD_CH1_PORT = CURTAIN_SPD_CH1_POLARITY(0) )
-#define RD_SPD_CH1_REVERSE()     ( CURTAIN_SPD_CH1_POLARITY(CURTAIN_SPD_CH1_PORT) )
+#define SET_CURTAIN_SPD_CH1()    ( CURTAIN_SPD_CH1_PORT = CURTAIN_SPD_CH1_POLARITY(1) )
+#define CLR_CURTAIN_SPD_CH1()    ( CURTAIN_SPD_CH1_PORT = CURTAIN_SPD_CH1_POLARITY(0) )
+#define RD_CURTAIN_SPD_CH1()     ( CURTAIN_SPD_CH1_POLARITY(CURTAIN_SPD_CH1_PORT) )
 
 // 转速输入端口2
 #define CURTAIN_SPD_CH2_WrMode() ( CURTAIN_SPD_CH2_DIR |=  CURTAIN_SPD_CH2_BV )
 #define CURTAIN_SPD_CH2_RdMode() ( CURTAIN_SPD_CH2_DIR &= ~CURTAIN_SPD_CH2_BV )
-#define SET_SPD_CH2_REVERSE()    ( CURTAIN_SPD_CH2_PORT = CURTAIN_SPD_CH2_POLARITY(1) )
-#define CLR_SPD_CH2_REVERSE()    ( CURTAIN_SPD_CH2_PORT = CURTAIN_SPD_CH2_POLARITY(0) )
-#define RD_SPD_CH2_REVERSE()     ( CURTAIN_SPD_CH2_POLARITY(CURTAIN_SPD_CH2_PORT) )
+#define SET_CURTAIN_SPD_CH2()    ( CURTAIN_SPD_CH2_PORT = CURTAIN_SPD_CH2_POLARITY(1) )
+#define CLR_CURTAIN_SPD_CH2()    ( CURTAIN_SPD_CH2_PORT = CURTAIN_SPD_CH2_POLARITY(0) )
+#define RD_CURTAIN_SPD_CH2()     ( CURTAIN_SPD_CH2_POLARITY(CURTAIN_SPD_CH2_PORT) )
 
 // 亮度检测端口
-#define curtainBrightnessInit() MCU_ADC_CH_Init(CURTAIN_BRIGHTNESS_ADC_CH)
+#define curtainBrightnessInit()  ( P0SEL |= 0x80, P0DIR &= ~0x80 )
 
 /** @}*/     /* 电动窗帘硬件抽象层定义 */
 
@@ -430,25 +430,6 @@ static void CurtainSpeedInit( void )
 	CURTAIN_SPD_CH2_RdMode();	
 }
 
-///**
-// *******************************************************************************
-// * @brief       电动窗帘状态检测
-// * @param       [in/out]  void
-// * @return      [in/out]  void
-// * @note        None                  
-// *******************************************************************************
-// */
-//static uint8 Curtain_Speed_Scan( void )
-//{
-////	static enum
-////    {
-////        CURTAIN_WORKING_STATE_LOW,
-////        CURTAIN_WORKING_STATE_PULSE,
-////    }CH1_STATE, CH2_STATE; 
-//	
-//	return CURTAIN_STATE_KEEP;
-//}
-
 /**
  *******************************************************************************
  * @brief       电动窗帘电机控制端口初始化
@@ -561,6 +542,104 @@ void curtainControlHandler( uint8 cmd )
 
 /**
  *******************************************************************************
+ * @brief       电动窗帘状态检测
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None                  
+ *******************************************************************************
+ */
+void curtainSpeedDetection( void )
+{
+#define CURTAIN_SPEED_COUNT (150)
+    
+    static uint8 s1Count = 0;
+    static uint8 s2Count = 0;
+    static uint8 s1Handler = 0;
+    static uint8 s2Handler = 0;
+    static uint8 s1Value = KEY_VALUE_NOP;
+    static uint8 s2Value = KEY_VALUE_NOP;
+    uint8 s1NowValue = RD_CURTAIN_SPD_CH1();
+    uint8 s2NowValue = RD_CURTAIN_SPD_CH2();
+    
+    if( s1Value != s1NowValue )
+    {
+        s1Value = s1NowValue;
+        s1Count = 0;
+        s1Handler = 0;
+    }
+    else
+    {
+        if( s1Handler )
+        {
+            if( s1Count >= CURTAIN_SPEED_COUNT )
+            {
+                curtainControlHandler(CURTAIN_CMD_STOP);
+                reportCurtainStatus();
+                s1Handler = 1;
+            }
+            else
+            {
+                s1Count++;
+            }
+        }
+    }
+    
+    if( s2Value != s2NowValue )
+    {
+        s2Value = s2NowValue;
+        s2Count = 0;
+        s2Handler = 0;
+    }
+    else
+    {
+        if( s2Handler )
+        {
+            if( s2Count >= CURTAIN_SPEED_COUNT )
+            {
+                curtainControlHandler(CURTAIN_CMD_STOP);
+                reportCurtainStatus();
+            }
+            else
+            {
+                s2Count++;
+            }
+        }
+    }
+}
+
+
+/**
+ *******************************************************************************
+ * @brief       电动窗帘状态检测
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None                  
+ *******************************************************************************
+ */
+void curtainBrightnessHandler( void )
+{
+   curtain.brightness = (uint8)HalAdcRead(HAL_ADC_CHANNEL_7,HAL_ADC_RESOLUTION_8);
+   curtain.brightness = (uint8)((uint16)curtain.brightness * 100 / 255);
+
+   if( curtain.mode.state )
+   {
+       if( curtain.brightness > (curtain.mode.brightness + 20) )
+       {
+           curtainControlHandler(CURTAIN_CMD_CLOSE);
+       }
+       else if( curtain.brightness < (curtain.mode.brightness + 10) )
+       {
+           curtainControlHandler(CURTAIN_CMD_OPEN);
+       }
+       else
+       {
+           return;
+       }
+   }
+}
+
+/**
+ *******************************************************************************
  * @brief       电动窗帘工作处理函数
  * @param       [in/out]  void
  * @return      [in/out]  void
@@ -583,27 +662,35 @@ void curtainWorkingHandler( void )
  */
 void curtainSwitchKeyHandler( key_message_t message )
 {
+    static uint8 keyHandle = 0;
     switch (message)
     {
         case KEY_MESSAGE_PRESS_EDGE:
-            if( curtain.metor.status == CURTAIN_STOP_STATE )
+            switch( keyHandle )
             {
-                curtainControlHandler(CURTAIN_CMD_OPEN);
-                reportCurtainStatus();
-            }
-            else if( curtain.metor.status == CURTAIN_OPEN_STATE )
-            {
-                curtainControlHandler(CURTAIN_CMD_CLOSE);
-                reportCurtainStatus();
-            }
-            else if( curtain.metor.status == CURTAIN_CLOSE_STATE )
-            {
-                curtainControlHandler(CURTAIN_CMD_STOP);
-                reportCurtainStatus();
-            }
-            else
-            {
-                return;
+                case 0:
+                    curtainControlHandler(CURTAIN_CMD_OPEN);
+                    reportCurtainStatus();
+                    keyHandle = 1;
+                    break;
+                case 1:
+                    curtainControlHandler(CURTAIN_CMD_STOP);
+                    reportCurtainStatus();
+                    keyHandle = 2;
+                    break;
+                case 2:
+                    curtainControlHandler(CURTAIN_CMD_CLOSE);
+                    reportCurtainStatus();
+                    keyHandle = 3;
+                    break;
+                case 3:
+                    curtainControlHandler(CURTAIN_CMD_CLOSE);
+                    reportCurtainStatus();
+                    keyHandle =4;
+                    break;
+                default:
+                    keyHandle = 0;
+                    break;
             }
 			break;
         case KEY_MESSAGE_LONG_PRESS:

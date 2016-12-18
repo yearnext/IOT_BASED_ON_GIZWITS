@@ -381,7 +381,7 @@ void key_scan(void)
 		case KEY_RELEASE:
 			if (key_now_value == KEY_VALUE_NOP)
 			{
-
+                key_message_send(key_now_value, KEY_MESSAGE_RELEASE);
 			}
 			else
 			{
