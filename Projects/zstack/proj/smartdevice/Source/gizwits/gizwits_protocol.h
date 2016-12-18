@@ -416,7 +416,7 @@ extern bool gizPutData( uint8*, uint16 );
 extern bool gizwitsHandle( void );
 extern bool gizwitsSendData( void* );
 extern bool gizwitsWrTime( user_time* );
-extern user_time gizwitsGetTime( void );
+extern user_time gizwitsNTPConverUserTime( void );
 extern bool gizUpdateTime( protocolUTT_t* );
 extern bool setGizwitsM2MStatus( void );
 extern bool getGizwitsM2MStatus( void );

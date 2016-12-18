@@ -84,7 +84,7 @@ user_time app_get_time( void )
 
     return time;
 #else  
-    return gizwitsGetTime();
+    return gizwitsNTPConverUserTime();
 #endif
 }
 

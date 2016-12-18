@@ -1577,7 +1577,7 @@ bool gizUpdateTime( protocolUTT_t *packet )
  * @note        用户可以调用该接口刷新本地时间
  *******************************************************************************
  */
-user_time gizwitsGetTime( void )
+user_time gizwitsNTPConverUserTime( void )
 {
 	user_time time;
 	

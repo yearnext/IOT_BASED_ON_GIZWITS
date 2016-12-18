@@ -684,9 +684,9 @@ void curtainSwitchKeyHandler( key_message_t message )
                     keyHandle = 3;
                     break;
                 case 3:
-                    curtainControlHandler(CURTAIN_CMD_CLOSE);
+                    curtainControlHandler(CURTAIN_CMD_STOP);
                     reportCurtainStatus();
-                    keyHandle =4;
+                    keyHandle =0;
                     break;
                 default:
                     keyHandle = 0;
@@ -753,8 +753,11 @@ bool curtainMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
             Onboard_soft_reset();
             break;
         case MYPROTOCOL_RD_TIME_CMD:
-            if( recPacket->user_data.data[8] == 1 )
+            if( recPacket->user_data.data[sizeof(user_time)] == 1 )
             {
+#if USE_MYPROTOCOL_DEBUG
+                MYPROTOCOL_LOG("curtain get net time is not invaild! \r\n");
+#endif 
                 app_time_update((user_time *)&recPacket->user_data.data);
             }
             break;

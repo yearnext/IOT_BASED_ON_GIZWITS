@@ -177,7 +177,7 @@ bool createDeviceInfoAckPacket( void *ctx, void *packet )
  */
 bool createDeviceRdTimeAckPacket( void *ctx, void *packet )
 {    
-    user_time nowTime = gizwitsGetTime();
+    user_time nowTime = gizwitsNTPConverUserTime();
     
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
@@ -188,22 +188,16 @@ bool createDeviceRdTimeAckPacket( void *ctx, void *packet )
 #endif    
 
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype          = MYPROTOCOL_S2H_ACK;
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.cmd     = MYPROTOCOL_WR_TIME_CMD; 
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[0] = nowTime.year;
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[1] = nowTime.month;
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[2] = nowTime.day;
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[3] = nowTime.week;
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[4] = nowTime.hour;
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[5] = nowTime.minute;
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[6] = nowTime.second;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.cmd     = MYPROTOCOL_RD_TIME_CMD; 
+    memcpy(&((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data, &nowTime, sizeof(user_time));
     
     if( getGizwitsM2MStatus() == true )
     {
-        ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[7] = 0x01;
+        ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[sizeof(user_time)] = 0x01;
     }
     else
     {
-        ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[7] = 0x00;
+        ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[sizeof(user_time)] = 0x00;
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.len = sizeof(user_time)+1;
@@ -222,7 +216,7 @@ bool createDeviceRdTimeAckPacket( void *ctx, void *packet )
  */
 bool createAPPRdTimeAckPacket( void *ctx, void *packet )
 {    
-    user_time nowTime = gizwitsGetTime();
+    user_time nowTime = gizwitsNTPConverUserTime();
     
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
@@ -234,21 +228,15 @@ bool createAPPRdTimeAckPacket( void *ctx, void *packet )
 
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype          = MYPROTOCOL_W2D_ACK;
     ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.cmd     = MYPROTOCOL_RD_TIME_CMD; 
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[0] = nowTime.year;
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[1] = nowTime.month;
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[2] = nowTime.day;
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[3] = nowTime.week;
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[4] = nowTime.hour;
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[5] = nowTime.minute;
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[6] = nowTime.second;
+    memcpy(&((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data, &nowTime, sizeof(user_time));
     
     if( getGizwitsM2MStatus() == true )
     {
-        ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[7] = 0x01;
+        ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[sizeof(user_time)] = 0x01;
     }
     else
     {
-        ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[7] = 0x00;
+        ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[sizeof(user_time)] = 0x00;
     }
     
     ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.len = sizeof(user_time)+1;
@@ -576,7 +564,8 @@ bool coordMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
                 switch( recPacket->user_data.cmd )
                 {
                     case MYPROTOCOL_TICK_CMD:
-                    {            
+                    {          
+#if USE_MYPROTOCOL_DEBUG
                         switch( recPacket->device.device )
                         {
                             case MYPROTOCOL_DEVICE_LIGHT:
@@ -595,14 +584,34 @@ bool coordMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
                                 MYPROTOCOL_LOG("Coord get a tick from NO SUPPORT DEVICE!\r\n");
                                 break;
                         }
-        
+#endif
                         addDeviceTick(&recPacket->device);
                         MyprotocolSendData(recPacket,&recPacket->device.mac, createDeviceTickAckPacket, MyprotocolD2DSendData);
                         break;
                     }
                     case MYPROTOCOL_RD_TIME_CMD:
                     {
-                        MyprotocolSendData(NULL, NULL, createDeviceRdTimeAckPacket, MyprotocolD2WSendData);
+#if USE_MYPROTOCOL_DEBUG
+                        switch( recPacket->device.device )
+                        {
+                            case MYPROTOCOL_DEVICE_LIGHT:
+                                MYPROTOCOL_LOG("device LIGHT get net time!\r\n");
+                                break;
+                            case MYPROTOCOL_DEVICE_SOCKET:
+                                MYPROTOCOL_LOG("device SOCKET get net time!\r\n");
+                                break;
+                            case MYPROTOCOL_DEVICE_CURTAIN:
+                                MYPROTOCOL_LOG("device CURTAIN get net time!\r\n");
+                                break;
+                            case MYPROTOCOL_DEVICE_HT_SENSOR:
+                                MYPROTOCOL_LOG("device HT_SENSOR get net time!\r\n");
+                                break;
+                            default:
+                                MYPROTOCOL_LOG("no support device get net time!\r\n");
+                                break;
+                        }
+#endif
+                        MyprotocolSendData(NULL, &recPacket->device.mac, createDeviceRdTimeAckPacket, MyprotocolD2DSendData);
                         break;
                     }
                     default:

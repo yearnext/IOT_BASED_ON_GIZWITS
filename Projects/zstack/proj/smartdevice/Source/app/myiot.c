@@ -24,24 +24,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "myiot.h"
-//#include "ZComDef.h"
-//#include "OSAL.h"
-//#include "AF.h"
 #include "ZDApp.h"
-//#include "ZGlobals.h"
-//#include <string.h>
-//#include "NLMEDE.h"
-//#include "onboard.h"
 #include "hal_led.h"
-//#include "hal_timer.h"
-//#include "app_save.h"
-//#include "OSAL_Nv.h"
-//#include "hal_key.h"
-//#include "devicelist.h"
 #include "MT_UART.h"
 #include "myprotocol.h"
-
-//#include "mcu_timer.h"
 #include "bsp_key.h"
 #include "app_time.h"
 
@@ -110,6 +96,7 @@
 #define TIMER_15S_COUNT   DEVICE_TIMR_CONVER_TICK(15000)
 #define TIMER_20S_COUNT   DEVICE_TIMR_CONVER_TICK(20000)
 #define TIMER_30S_COUNT   DEVICE_TIMR_CONVER_TICK(30000)
+#define TIMER_45S_COUNT   DEVICE_TIMR_CONVER_TICK(45000)
 #define TIMER_1MIN_COUNT  DEVICE_TIMR_CONVER_TICK(60000)
 
 /** Smart Device 通讯状态指示灯 */
@@ -266,6 +253,7 @@ void ZDO_STATE_CHANGE_CB( devStates_t status )
     {
         case DEV_ROUTER:
             DEVICE_LOG("I am Router Device!\n");
+            MyprotocolSendData(NULL,NULL, createDeviceTickPacket, MyprotocolD2DSendData);
             myiotCommLedControl(MYIOT_CONNED_STATE);
             osal_start_timerEx( myIotTaskID, 
                                 DEVICE_LIST_TIMER_EVEN, 
@@ -273,6 +261,7 @@ void ZDO_STATE_CHANGE_CB( devStates_t status )
                 break;
         case DEV_END_DEVICE:
             DEVICE_LOG("I am End Device!\n");
+            MyprotocolSendData(NULL,NULL, createDeviceTickPacket, MyprotocolD2DSendData);
             myiotCommLedControl(MYIOT_CONNED_STATE);
             osal_start_timerEx( myIotTaskID, 
                                 DEVICE_LIST_TIMER_EVEN, 
@@ -334,6 +323,7 @@ static void myiotCommLedControl( uint8 state )
 void deviceTimerCallBack( void )
 {
     static uint8 timer_20ms  = 0;
+    static uint8 timer_50ms = 0;
     static uint8 timer_100ms = 0;
     
     if( ++timer_20ms >= TIMER_20MS_COUNT )
@@ -343,11 +333,17 @@ void deviceTimerCallBack( void )
         
         timer_20ms = 0;
     }
+  
+    if( ++timer_50ms >= TIMER_50MS_COUNT )
+    {
+        gizwitsHandle();
+        
+        timer_50ms = 0;
+    }
     
     if( ++timer_100ms >= TIMER_100MS_COUNT )
     {
         gizTimer100Ms();
-        gizwitsHandle();
         
         timer_100ms = 0;
     }
@@ -400,7 +396,8 @@ void deviceTimerCallBack( void )
     static uint8 timer_20ms  = 0;
     static uint8 timer_10ms  = 0;
     static uint8 timer_500ms  = 0;
-    static uint16 timer_20s  = 0;
+    static uint16 timer_15s  = 0;
+    static uint16 timer_30s  = 0;
     
     if( ++timer_10ms >= TIMER_10MS_COUNT )
     {
@@ -417,15 +414,23 @@ void deviceTimerCallBack( void )
 
     if( ++timer_500ms >= TIMER_500MS_COUNT )
     {
-        deviceUpdateNTPTime();
         curtainWorkingHandler();
         timer_500ms = 0;
     }
     
-    if( ++timer_20s >= TIMER_20S_COUNT )
+    if( ++timer_15s >= TIMER_15S_COUNT )
     {    
         curtainBrightnessHandler();
-        timer_20s = 0;
+        timer_15s = 0;
+    }
+    
+    if( ++timer_30s >= TIMER_30S_COUNT )
+    {    
+#if USE_MYPROTOCOL_DEBUG
+        MYPROTOCOL_LOG("curtain send net time packet! \r\n");
+#endif 
+        deviceUpdateNTPTime();
+        timer_30s = 0;
     }
 }
 
