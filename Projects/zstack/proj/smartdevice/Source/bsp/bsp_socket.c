@@ -113,6 +113,11 @@ static void reportSocketState( void )
     MYPROTOCOL_USER_DATA_t user_data;
     memset(&user_data,0,sizeof(MYPROTOCOL_USER_DATA_t));
     
+        
+#if USE_MYPROTOCOL_DEBUG
+        MYPROTOCOL_LOG("device socket report state! \r\n");
+#endif
+    
     user_data.cmd = RD_SOCKET_STATE;
     user_data.data[0] = socket.status.now;
     user_data.len = 1;

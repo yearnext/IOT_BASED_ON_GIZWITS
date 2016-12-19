@@ -71,7 +71,7 @@
      
 /** 设备定时时间 */
 #if MYPROTOCOL_DEVICE_IS_COORD
-    #define DEVICE_LIST_TIME            (60000)
+    #define DEVICE_LIST_TIME            (15000)
 #else
     #define DEVICE_LIST_TIME            (5000)
 #endif
@@ -196,10 +196,10 @@ uint16 myIotProcessEven( uint8 task_id, uint16 events )
 #if MYPROTOCOL_DEVICE_IS_COORD
         if( allZombieDeviceClr() == true )
         {
+            DEVICE_LOG("COORD CLEAR ZOMBIE DEVICE!\n");
             MyprotocolSendData(NULL,NULL, createDeviceListChangePacket, MyprotocolD2WSendData);
         }
-        
-//        allDeviceTickClr();
+
         DEVICE_LOG("COORD FRESH DEVICE LIST!\n");
 #else
         MyprotocolSendData(NULL,NULL, createDeviceTickPacket, MyprotocolD2DSendData);

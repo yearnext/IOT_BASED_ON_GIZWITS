@@ -619,23 +619,33 @@ bool coordMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
                         break;
                 }
             }
-            else
-            {
+//            else
+//            {
+//                addDeviceTick(&recPacket->device);
+//                // 转发数据包
+//                MyprotocolForwardData(NULL, recPacket, MyprotocolD2WSendData);
+//#if USE_MYPROTOCOL_DEBUG
+//                MYPROTOCOL_LOG("coord get recPacket from device!");
+//#endif 
+//            }
+            
+            break;
+        }
+        case MYPROTOCOL_D2W_WAIT:
                 addDeviceTick(&recPacket->device);
                 // 转发数据包
                 MyprotocolForwardData(NULL, recPacket, MyprotocolD2WSendData);
 #if USE_MYPROTOCOL_DEBUG
                 MYPROTOCOL_LOG("coord get recPacket from device!");
 #endif 
-            }
-            
             break;
-        }
         case MYPROTOCOL_D2W_ACK:
-            break;
-        case MYPROTOCOL_D2W_WAIT:
-            break;
-        case MYPROTOCOL_H2S_WAIT:
+//                // 转发数据包
+//                MyprotocolForwardData(&recPacket->device.mac, recPacket, MyprotocolD2DSendData);
+//                MyprotocolSendData(recPacket, NULL, createW2DAckPacket, MyprotocolD2WSendData);
+//#if USE_MYPROTOCOL_DEBUG
+//                MYPROTOCOL_LOG("coord forward recPacket to else device!");
+//#endif 
             break;
         case MYPROTOCOL_H2S_ACK:
             break;

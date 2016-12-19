@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=-2136764723
+Checksum=952989460
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -104,10 +104,9 @@ Bp2=_ "STD_CODE" "{C:\Users\NBSEC\Desktop}.441.3" 0 0 0 0 "" 0 ""
 Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\Source\hal\hal_dht11.c}.172.21" 0 0 0 0 "" 0 ""
 Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits\gizwits_protocol.c}.1175.9" 0 0 0 0 "" 0 ""
 Bp5=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits\gizwits_protocol.c}.1182.9" 0 0 0 0 "" 0 ""
-Bp6=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_coord.c}.194.9" 0 0 0 0 "" 0 ""
-Bp7=_ "STD_CODE" "{$PROJ_DIR$\..\Source\app\myiot.c}.199.13" 1 0 0 0 "" 0 ""
-Bp8=_ "STD_CODE" "{$PROJ_DIR$\..\Source\devicelist\devicelist.c}.423.5" 1 0 0 0 "" 0 ""
-Count=9
+Bp6=_ "STD_CODE" "{$PROJ_DIR$\..\Source\devicelist\devicelist.c}.423.5" 0 0 0 0 "" 0 ""
+Bp7=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_coord.c}.551.17" 1 0 0 0 "" 0 ""
+Count=8
 [ChipconEmu]
 Stop timers on halt=0
 Leave target running=1
