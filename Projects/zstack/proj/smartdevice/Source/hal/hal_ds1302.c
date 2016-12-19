@@ -25,6 +25,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hal_ds1302.h"
 #include <ioCC2530.h>
+#include <string.h>
 #include "hal_board_cfg.h"
 #include "OnBoard.h"
 
@@ -34,26 +35,26 @@
 /* Private define ------------------------------------------------------------*/
 #if USE_HAL_DS1302
 // SCK端口功能配置
-#define DS1302_SCK_WrMode() ( DS1302_SCK_DIR |=  DS1302_SCK_BV )
-#define DS1302_SCK_RdMode() ( DS1302_SCK_DIR &= ~DS1302_SCK_BV )
+#define DS1302_SCK_WrMode() ( DS1302_SCK_SEL &= ~DS1302_SCK_BV, DS1302_SCK_DIR |=  DS1302_SCK_BV )
+#define DS1302_SCK_RdMode() ( DS1302_SCK_SEL &= ~DS1302_SCK_BV, DS1302_SCK_DIR &= ~DS1302_SCK_BV )
 #define SET_DS1302_SCK()    ( DS1302_SCK_PORT = DS1302_SCK_POLARITY(1) )
 #define RST_DS1302_SCK()    ( DS1302_SCK_PORT = DS1302_SCK_POLARITY(0) )
 #define Read_DS1302_SCK()   ( DS1302_SCK_POLARITY(DS1302_SCK_PORT) )
 // SDA端口功能配置
-#define DS1302_SDA_WrMode() ( DS1302_SDA_DIR |=  DS1302_SDA_BV )
-#define DS1302_SDA_RdMode() ( DS1302_SDA_DIR &= ~DS1302_SDA_BV )
+#define DS1302_SDA_WrMode() ( DS1302_SDA_SEL &= ~DS1302_SCK_BV, DS1302_SDA_DIR |=  DS1302_SDA_BV )
+#define DS1302_SDA_RdMode() ( DS1302_SDA_SEL &= ~DS1302_SCK_BV, DS1302_SDA_DIR &= ~DS1302_SDA_BV )
 #define SET_DS1302_SDA()    ( DS1302_SDA_PORT = DS1302_SDA_POLARITY(1) )
 #define RST_DS1302_SDA()    ( DS1302_SDA_PORT = DS1302_SDA_POLARITY(0) )
 #define Read_DS1302_SDA()   ( DS1302_SDA_POLARITY(DS1302_SDA_PORT) )
 // RST端口功能配置
-#define DS1302_RST_WrMode() ( DS1302_RST_DIR |=  DS1302_RST_BV )
-#define DS1302_RST_RdMode() ( DS1302_RST_DIR &= ~DS1302_RST_BV )
+#define DS1302_RST_WrMode() ( DS1302_RST_SEL &= ~DS1302_SCK_BV, DS1302_RST_DIR |=  DS1302_RST_BV )
+#define DS1302_RST_RdMode() ( DS1302_RST_SEL &= ~DS1302_SCK_BV, DS1302_RST_DIR &= ~DS1302_RST_BV )
 #define SET_DS1302_RST()    ( DS1302_RST_PORT = DS1302_RST_POLARITY(1) )
 #define RST_DS1302_RST()    ( DS1302_RST_PORT = DS1302_RST_POLARITY(0) )
 #define Read_DS1302_RST()   ( DS1302_RST_POLARITY(DS1302_RST_PORT) )
 
 // 延时功能定义
-#define DS1302_DELAY()      Onboard_wait(1)
+#define DS1302_DELAY()      Onboard_wait(2)
 
 // DS1302 内部寄存器操作功能
 // DS1302 写保护功能
@@ -118,7 +119,10 @@ static uint8 ds1302_rd_byte( void )
         DS1302_DELAY();
         
         SET_DS1302_SCK();
+        DS1302_DELAY();
+        
         RST_DS1302_SCK();
+        DS1302_DELAY();
     }
     
     return rd_data;
@@ -145,7 +149,10 @@ static void ds1302_wr_byte( uint8 wr_data )
         DS1302_DELAY();
         
         SET_DS1302_SCK();
+        DS1302_DELAY();
+        
         RST_DS1302_SCK();
+        DS1302_DELAY();
     }
 
     DS1302_SDA_RdMode();
@@ -198,12 +205,16 @@ static void ds1302_wr_byte( uint8 wr_data )
  */
 void ds1302_wr_data( uint8 wr_addr, uint8 wr_data )
 {
+#if USE_DS1302_DEBUG
+    uint8 cmd_data = wr_addr;
+#else
     uint8 cmd_data = 0x80 | ( wr_addr << 1 );
-    
+#endif
     RST_DS1302_RST();
     RST_DS1302_SCK();
     SET_DS1302_RST();
     
+    DS1302_DELAY();
     ds1302_wr_byte(cmd_data);
     ds1302_wr_byte(wr_data);
     
@@ -221,13 +232,18 @@ void ds1302_wr_data( uint8 wr_addr, uint8 wr_data )
  */
 uint8 ds1302_rd_data( uint8 rd_addr )
 {
+#if USE_DS1302_DEBUG
+    uint8 cmd_data = rd_addr;
+#else 
     uint8 cmd_data = 0x81 | ( rd_addr << 1 );
+#endif
     uint8 rd_data = 0;
     
     RST_DS1302_RST();
     RST_DS1302_SCK();
     SET_DS1302_RST();
     
+    DS1302_DELAY();
     ds1302_wr_byte(cmd_data);
     rd_data = ds1302_rd_byte();
     
@@ -247,13 +263,39 @@ uint8 ds1302_rd_data( uint8 rd_addr )
  */
 void ds1302_rd_time( void *time )
 {
+#if USE_DS1302_DEBUG
+    uint8 data[7];
+#else
     uint8 *data = (uint8 *)time;
+#endif
+
+#if USE_DS1302_DEBUG
+    uint8 i = 0;
+    
+    data[0] = ds1302_rd_data(0x81);
+    data[1] = ds1302_rd_data(0x83);
+    data[2] = ds1302_rd_data(0x85);
+    data[3] = ds1302_rd_data(0x87);
+    data[4] = ds1302_rd_data(0x89);
+    data[5] = ds1302_rd_data(0x8B);
+    data[6] = ds1302_rd_data(0x8D);
+    
+    for( i=0; i<7; i++ )
+    {
+        data[i] = DS1302_BCD2HEX(data[i]);
+    }
+#else
     uint8 i = 0;
     
     for( i=0; i<7; i++ )
     {
         data[i] = DS1302_BCD2HEX(ds1302_rd_data(DS1302_RD_TIME_ADDR+i));
     }
+#endif
+    
+#if USE_DS1302_DEBUG
+    memcpy(time, &data, 7);
+#endif
 }
 
 /**
@@ -266,7 +308,34 @@ void ds1302_rd_time( void *time )
  */
 void ds1302_wr_time( void *time )
 {
+#if USE_DS1302_DEBUG
+    uint8 data[7];
+    memcpy(&data, time, 7);
+#else
     uint8 *data = (uint8 *)time;
+#endif
+    
+#if USE_DS1302_DEBUG
+    if( ds1302_rd_data(0x81) & 0x80 )
+    {
+        ds1302_wr_data(0x8E,0x00);
+        
+        ds1302_wr_data(0x80,DS1302_HEX2BCD(data[0]));
+        ds1302_wr_data(0x82,DS1302_HEX2BCD(data[1]));
+        ds1302_wr_data(0x84,DS1302_HEX2BCD(data[2]));
+        ds1302_wr_data(0x86,DS1302_HEX2BCD(data[3]));
+        ds1302_wr_data(0x88,DS1302_HEX2BCD(data[4]));
+        ds1302_wr_data(0x8A,DS1302_HEX2BCD(data[5]));
+        ds1302_wr_data(0x8C,DS1302_HEX2BCD(data[6]));
+        
+        ds1302_wr_data(0x90,0xA5);
+        ds1302_wr_data(0x8E,0x80);
+    }
+    else
+    {
+        ds1302_wr_data(0x80,0x80);
+    }
+#else
     uint8 i = 0;
     
     DS1302_DISABLE_WP();
@@ -277,6 +346,7 @@ void ds1302_wr_time( void *time )
     }
     
     DS1302_ENABLE_WP();
+#endif
 }
 
 #endif

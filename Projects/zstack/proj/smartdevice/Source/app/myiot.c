@@ -71,7 +71,7 @@
      
 /** 设备定时时间 */
 #if MYPROTOCOL_DEVICE_IS_COORD
-    #define DEVICE_LIST_TIME            (10000)
+    #define DEVICE_LIST_TIME            (60000)
 #else
     #define DEVICE_LIST_TIME            (5000)
 #endif
@@ -176,11 +176,8 @@ uint16 myIotProcessEven( uint8 task_id, uint16 events )
             {
                 case AF_INCOMING_MSG_CMD:
                     MyprotocolReceiveData((void *)MSGpkt->cmd.Data,deviceMessageHandler);
-//                    SmartDevice_Message_Handler(MSGpkt);
                     break;
                 case ZDO_STATE_CHANGE:
-//                    myIotNwkState = (devStates_t)(MSGpkt->hdr.status);
-//                    ZDO_STATE_CHANGE_CB(myIotNwkState);
                     ZDO_STATE_CHANGE_CB((devStates_t)(MSGpkt->hdr.status));
                     break;
                 default:
@@ -202,7 +199,7 @@ uint16 myIotProcessEven( uint8 task_id, uint16 events )
             MyprotocolSendData(NULL,NULL, createDeviceListChangePacket, MyprotocolD2WSendData);
         }
         
-        allDeviceTickClr();
+//        allDeviceTickClr();
         DEVICE_LOG("COORD FRESH DEVICE LIST!\n");
 #else
         MyprotocolSendData(NULL,NULL, createDeviceTickPacket, MyprotocolD2DSendData);
@@ -254,6 +251,7 @@ void ZDO_STATE_CHANGE_CB( devStates_t status )
         case DEV_ROUTER:
             DEVICE_LOG("I am Router Device!\n");
             MyprotocolSendData(NULL,NULL, createDeviceTickPacket, MyprotocolD2DSendData);
+            deviceUpdateNTPTime();
             myiotCommLedControl(MYIOT_CONNED_STATE);
             osal_start_timerEx( myIotTaskID, 
                                 DEVICE_LIST_TIMER_EVEN, 
@@ -262,6 +260,7 @@ void ZDO_STATE_CHANGE_CB( devStates_t status )
         case DEV_END_DEVICE:
             DEVICE_LOG("I am End Device!\n");
             MyprotocolSendData(NULL,NULL, createDeviceTickPacket, MyprotocolD2DSendData);
+            deviceUpdateNTPTime();
             myiotCommLedControl(MYIOT_CONNED_STATE);
             osal_start_timerEx( myIotTaskID, 
                                 DEVICE_LIST_TIMER_EVEN, 
@@ -370,11 +369,13 @@ void deviceTimerCallBack( void )
     }
     
 }
+
 #elif MYPROTOCOL_DEVICE_IS_SOCKET
 void deviceTimerCallBack( void )
 {
     static uint8 timer_20ms  = 0;
     static uint8 timer_500ms = 0;
+    static uint16 timer_30s  = 0;
     
     if( ++timer_20ms >= TIMER_20MS_COUNT )
     {
@@ -385,11 +386,27 @@ void deviceTimerCallBack( void )
 
     if( ++timer_500ms >= TIMER_500MS_COUNT )
     {
-        deviceUpdateNTPTime();
         socketWorkingHandler();
         timer_500ms = 0;
     }
+    
+#if USE_MYPROTOCOL_DEBUG    
+    if( ++timer_30s >= TIMER_1S_COUNT )
+    {    
+        MYPROTOCOL_LOG("device socket send get net time packet! \r\n");
+
+        deviceUpdateNTPTime();
+        timer_30s = 0;
+    }
+#else  
+    if( ++timer_30s >= TIMER_30S_COUNT )
+    {    
+        deviceUpdateNTPTime();
+        timer_30s = 0;
+    }
+#endif 
 }
+
 #elif MYPROTOCOL_DEVICE_IS_CURTAIN
 void deviceTimerCallBack( void )
 {
@@ -424,14 +441,21 @@ void deviceTimerCallBack( void )
         timer_15s = 0;
     }
     
-    if( ++timer_30s >= TIMER_30S_COUNT )
+#if USE_MYPROTOCOL_DEBUG    
+    if( ++timer_30s >= TIMER_1S_COUNT )
     {    
-#if USE_MYPROTOCOL_DEBUG
-        MYPROTOCOL_LOG("curtain send net time packet! \r\n");
-#endif 
+        MYPROTOCOL_LOG("device curtain send get net time packet! \r\n");
+
         deviceUpdateNTPTime();
         timer_30s = 0;
     }
+#else  
+    if( ++timer_30s >= TIMER_30S_COUNT )
+    {    
+        deviceUpdateNTPTime();
+        timer_30s = 0;
+    }
+#endif 
 }
 
 #elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
@@ -455,7 +479,6 @@ void deviceTimerCallBack( void )
 }
 
 #endif
-
 
 /** @}*/     /* smartlight模块 */
 

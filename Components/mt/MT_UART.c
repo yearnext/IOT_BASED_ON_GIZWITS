@@ -133,7 +133,8 @@ void MT_UartInit ()
 #if defined (MT_UART_DEFAULT_PORT)
 //  HalUARTOpen (MT_UART_DEFAULT_PORT, &uartConfig);
   HalUARTOpen (HAL_UART_PORT_0, &uartConfig);
-  
+
+#if MYPROTOCOL_DEVICE_IS_COORD
   /* UART Configuration */
   uartConfig.configured           = TRUE;
   uartConfig.baudRate             = HAL_UART_BR_115200;
@@ -145,6 +146,7 @@ void MT_UartInit ()
   uartConfig.intEnable            = TRUE;
   uartConfig.callBackFunc         = MT_UartProcessZToolData;
   HalUARTOpen (HAL_UART_PORT_1, &uartConfig);
+#endif
   
 #else
   /* Silence IAR compiler warning */

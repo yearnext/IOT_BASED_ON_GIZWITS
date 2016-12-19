@@ -37,7 +37,7 @@ typedef struct
     uint8 month;
     uint8 week;
     uint8 year;
-}DS1302_TIME;
+}DS1302_TIME_t;
 
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -62,6 +62,7 @@ typedef struct
 #define DS1302_RST_POLARITY ACTIVE_HIGH
 // 启用DS1302
 #define USE_HAL_DS1302      (1)
+#define USE_DS1302_DEBUG    (1)
 
 #elif MYPROTOCOL_DEVICE_IS_CURTAIN
 // SCK端口寄存器定义
@@ -85,6 +86,7 @@ typedef struct
 
 // 启用DS1302
 #define USE_HAL_DS1302      (1)
+#define USE_DS1302_DEBUG    (1)
 
 #else
 // 禁用DS1302
@@ -96,10 +98,10 @@ typedef struct
 #define DS1302_RD_TIME_ADDR     (0x00)
 #define DS1302_SEC_REG_ADDR     (0x00)
 #define DS1302_MIN_REG_ADDR     (0x01)
-#define DS1302_HR_REG_ADDR      (0x02)
-#define DS1302_DATE_REG_ADDR    (0x03)
+#define DS1302_HOUR_REG_ADDR    (0x02)
+#define DS1302_DAY_REG_ADDR     (0x03)
 #define DS1302_MONTH_REG_ADDR   (0x04)
-#define DS1302_DAY_REG_ADDR     (0x05)
+#define DS1302_WEEK_REG_ADDR    (0x05)
 #define DS1302_YEAR_REG_ADDR    (0x06)
 #define DS1302_CONTROL_REG_ADDR (0x07)
 #define DS1302_TRICK_REG_ADDR   (0x08)

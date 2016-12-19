@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=-1738442000
+Checksum=-2136764723
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -84,7 +84,8 @@ Fmt5=uint8 [32]	4	0
 Fmt6=uint8 [5]	3	0
 Fmt7=uint8 [6]	4	0
 Fmt8=uint8 [74]	4	0
-Fmt9=uint8 [8]	4	0
+Fmt9=uint8 [7]	4	0
+Fmt10=uint8 [8]	4	0
 [watch_formats]
 Fmt0={W}0:activeTaskID	4	0
 Fmt1={W}0:events	4	0
@@ -104,8 +105,9 @@ Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\Source\hal\hal_dht11.c}.172.21" 0 0 0 0 "" 0 ""
 Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits\gizwits_protocol.c}.1175.9" 0 0 0 0 "" 0 ""
 Bp5=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits\gizwits_protocol.c}.1182.9" 0 0 0 0 "" 0 ""
 Bp6=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_coord.c}.194.9" 0 0 0 0 "" 0 ""
-Bp7=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_curtain.c}.761.17" 1 0 0 0 "" 0 ""
-Count=8
+Bp7=_ "STD_CODE" "{$PROJ_DIR$\..\Source\app\myiot.c}.199.13" 1 0 0 0 "" 0 ""
+Bp8=_ "STD_CODE" "{$PROJ_DIR$\..\Source\devicelist\devicelist.c}.423.5" 1 0 0 0 "" 0 ""
+Count=9
 [ChipconEmu]
 Stop timers on halt=0
 Leave target running=1

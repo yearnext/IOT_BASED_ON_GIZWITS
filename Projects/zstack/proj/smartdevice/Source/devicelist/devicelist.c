@@ -130,35 +130,35 @@ static bool listDeviceFindForId( void **ctx, void **list, void **expand )
 	return false;
 }
 
-/**
- *******************************************************************************
- * @brief       查找当前id的节点信息，并进行功能操作
- * @param       [in/out]  ctx     上下文
- *              [in/out]  list    链表
- *              [in/out]  expand  拓展用
- * @return      [in/out]  status  状态
- * @note        None
- *******************************************************************************
-*/
-static bool listDeviceFindOperaForId( void **ctx, void **list, void **expand )
-{
-  	uint8 *id = (uint8 *)ctx;
-
-	if (*list != NULL)
-	{
-		if (--(*id))
-		{
-            if( expand != NULL )
-            {
-                ((node_func)((uint16)expand))(ctx,list,NULL);
-            }
-            
-			return true;
-		}
-	}
-
-	return false;
-}
+///**
+// *******************************************************************************
+// * @brief       查找当前id的节点信息，并进行功能操作
+// * @param       [in/out]  ctx     上下文
+// *              [in/out]  list    链表
+// *              [in/out]  expand  拓展用
+// * @return      [in/out]  status  状态
+// * @note        None
+// *******************************************************************************
+//*/
+//static bool listDeviceFindOperaForId( void **ctx, void **list, void **expand )
+//{
+//  	uint8 *id = (uint8 *)ctx;
+//
+//	if (*list != NULL)
+//	{
+//		if (--(*id))
+//		{
+//            if( expand != NULL )
+//            {
+//                ((node_func)((uint16)expand))(ctx,list,NULL);
+//            }
+//            
+//			return true;
+//		}
+//	}
+//
+//	return false;
+//}
 
 /**
  *******************************************************************************
@@ -265,27 +265,27 @@ static bool listDeviceTickAdd( void **ctx, void **list, void **expand )
 	return false;
 }
 
-/**
- *******************************************************************************
- * @brief       清除设备心跳计数
- * @param       [in/out]  ctx     上下文
- *              [in/out]  list    链表
- *              [in/out]  expand  拓展用
- * @return      [in/out]  status  状态
- * @note        None
- *******************************************************************************
-*/
-static bool listDeviceTickClr( void **ctx, void **list, void **expand )
-{
-	if (*list != NULL)
-	{
-        ((listInfo_t *)ctx)->tick = 0;
-            
-        return true;
-	}
-
-	return false;
-}
+///**
+// *******************************************************************************
+// * @brief       清除设备心跳计数
+// * @param       [in/out]  ctx     上下文
+// *              [in/out]  list    链表
+// *              [in/out]  expand  拓展用
+// * @return      [in/out]  status  状态
+// * @note        None
+// *******************************************************************************
+//*/
+//static bool listDeviceTickClr( void **ctx, void **list, void **expand )
+//{
+//	if (*list != NULL)
+//	{
+//        ((listInfo_t *)ctx)->tick = 0;
+//            
+//        return true;
+//	}
+//
+//	return false;
+//}
 
 /**
  *******************************************************************************
@@ -338,6 +338,10 @@ bool listZombieDeviceClr( void **ctx, void **list, void **expand )
             osal_mem_free(delNode);
             
             (*((uint8 *)ctx))++;
+        }
+        else
+        {
+            info->tick = 0;
         }
     }
     
@@ -436,7 +440,7 @@ bool addDeviceTick( MYPROTOCOL_DEVICE_INFO_t *info )
 {
     if( deviceIsExists(info) == true )
     {
-        return nodeTraverse((void **)&listHead, listDeviceFindOperaForInfo, (void **)&info, (void **)((uint16)&listDeviceTickAdd));
+        return nodeTraverse((void **)&listHead, listDeviceFindOperaForInfo, (void **)info, (void **)((uint16)&listDeviceTickAdd));
     }
     else
     {

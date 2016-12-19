@@ -49,6 +49,7 @@
 #include "hal_mcu.h"
 #include "hal_defs.h"
 #include "hal_types.h"
+#include "myprotocol.h"
 
 /* ------------------------------------------------------------------------------------------------
  *                                       CC2590/CC2591 support
@@ -457,6 +458,9 @@ st( \
 #endif
 #endif
 
+#if MYPROTOCOL_DEVICE_IS_COORD
+// The device is coord
+
 #if HAL_UART
 // Always prefer to use DMA over ISR.
 #if HAL_DMA
@@ -492,6 +496,49 @@ st( \
 #else
 #define HAL_UART_DMA  0
 #define HAL_UART_ISR  0
+#endif
+
+#else
+// The device is not coord
+
+#if HAL_UART
+#ifndef HAL_UART_DMA
+#if HAL_DMA
+#if (defined ZAPP_P2) || (defined ZTOOL_P2)
+#define HAL_UART_DMA  2
+#else
+#define HAL_UART_DMA  1
+#endif
+#else
+#define HAL_UART_DMA  0
+#endif
+#endif
+
+#ifndef HAL_UART_ISR
+#if HAL_UART_DMA           // Default preference for DMA over ISR.
+#define HAL_UART_ISR  0
+#elif (defined ZAPP_P2) || (defined ZTOOL_P2)
+#define HAL_UART_ISR  2
+#else
+#define HAL_UART_ISR  1
+#endif
+#endif
+
+#if (HAL_UART_DMA && (HAL_UART_DMA == HAL_UART_ISR))
+#error HAL_UART_DMA & HAL_UART_ISR must be different.
+#endif
+
+// Used to set P2 priority - USART0 over USART1 if both are defined.
+#if ((HAL_UART_DMA == 1) || (HAL_UART_ISR == 1))
+#define HAL_UART_PRIPO             0x00
+#else
+#define HAL_UART_PRIPO             0x40
+#endif
+#else
+#define HAL_UART_DMA  0
+#define HAL_UART_ISR  0
+#endif
+
 #endif
 
 /* USB is not used for CC2530 configuration */

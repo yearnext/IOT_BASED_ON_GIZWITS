@@ -418,7 +418,7 @@ bool socketMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
         case MYPROTOCOL_REBOOT_CMD:
             Onboard_soft_reset();
             break;
-        case MYPROTOCOL_WR_TIME_CMD:
+        case MYPROTOCOL_RD_TIME_CMD:
             if( recPacket->user_data.data[8] == 1 )
             {
                 app_time_update((user_time *)&recPacket->user_data.data);

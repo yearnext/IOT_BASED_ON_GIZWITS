@@ -78,6 +78,8 @@ user_time app_get_time( void )
 #if !MYPROTOCOL_DEVICE_IS_COORD
     user_time time;
     
+    memset(&time, 0, sizeof(time));
+    
     hal_time_read(&time);
     
     time.year += 2000;

@@ -611,6 +611,7 @@ bool coordMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
                                 break;
                         }
 #endif
+                        addDeviceTick(&recPacket->device);
                         MyprotocolSendData(NULL, &recPacket->device.mac, createDeviceRdTimeAckPacket, MyprotocolD2DSendData);
                         break;
                     }
@@ -620,6 +621,7 @@ bool coordMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
             }
             else
             {
+                addDeviceTick(&recPacket->device);
                 // 转发数据包
                 MyprotocolForwardData(NULL, recPacket, MyprotocolD2WSendData);
 #if USE_MYPROTOCOL_DEBUG
