@@ -30,6 +30,7 @@
 #include <string.h>
 #include "aps_groups.h"
 #include "gizwits_protocol.h"
+#include "ZDApp.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -82,6 +83,9 @@ static aps_Group_t DeviceGroup;
 
 ///** 目标地址 */
 //static afAddrType_t DeviceDstAddr;
+
+/** 设备状态 */
+static devStates_t NwkState;
 
 /**@} */
 
@@ -275,8 +279,8 @@ static uint8 MyprotocolCalChecksum( uint8 *packet )
     
     return checksum;
 }
-
 #endif
+
 /**
  *******************************************************************************
  * @brief       校验数据包
@@ -343,7 +347,34 @@ bool MyprotocolD2DRecDeviceCheck( MYPROTOCOL_FORMAT_t *recPacket )
     
     return false;
 } 
-        
+   
+/**
+ *******************************************************************************
+ * @brief       刷新Device连接状态
+ * @param       [in/out]  newStatus    新的状态            
+ * @return      [in/out]  bool         刷新结果
+ * @note        None
+ *******************************************************************************
+ */
+bool MyprotocolDeviceConStatusUpdate( uint8 newStatus )
+{
+    NwkState = (devStates_t)newStatus;
+    return true;
+}
+//
+///**
+// *******************************************************************************
+// * @brief       获取Device连接状态
+// * @param       [in/out]  void
+// * @return      [in/out]  devStates_t  连接状态
+// * @note        None
+// *******************************************************************************
+// */
+//devStates_t MyprotocolDeviceConStatusGet( void )
+//{
+//    return NwkState;
+//}
+
 /**
  *******************************************************************************
  * @brief       发送D2D数据包
@@ -356,6 +387,11 @@ bool MyprotocolD2DRecDeviceCheck( MYPROTOCOL_FORMAT_t *recPacket )
 bool MyprotocolD2DSendData( void *ctx, void *packet )
 {
   afAddrType_t DeviceDstAddr;
+  
+  if( NwkState == DEV_NWK_DISC )
+  {
+      return false;
+  }
   
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )

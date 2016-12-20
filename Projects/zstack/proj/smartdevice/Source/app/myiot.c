@@ -108,9 +108,6 @@
 /** 任务ID */
 static byte myIotTaskID;
 
-/** 设备状态 */
-//static devStates_t myIotNwkState;
-
 /* functions statement -------------------------------------------------------*/
 void ZDO_STATE_CHANGE_CB( devStates_t status );
 void myiotCommLedControl( uint8 state );
@@ -178,6 +175,7 @@ uint16 myIotProcessEven( uint8 task_id, uint16 events )
                     MyprotocolReceiveData((void *)MSGpkt->cmd.Data,deviceMessageHandler);
                     break;
                 case ZDO_STATE_CHANGE:
+                    MyprotocolDeviceConStatusUpdate((uint8)(MSGpkt->hdr.status));
                     ZDO_STATE_CHANGE_CB((devStates_t)(MSGpkt->hdr.status));
                     break;
                 default:
@@ -411,22 +409,18 @@ void deviceTimerCallBack( void )
 #elif MYPROTOCOL_DEVICE_IS_CURTAIN
 void deviceTimerCallBack( void )
 {
-    static uint8 timer_20ms  = 0;
-    static uint8 timer_10ms  = 0;
+    static uint8 timer_20ms   = 0;
     static uint8 timer_500ms  = 0;
-    static uint16 timer_15s  = 0;
-    static uint16 timer_30s  = 0;
-    
-    if( ++timer_10ms >= TIMER_10MS_COUNT )
-    {
-        curtainSpeedDetection();
-        timer_10ms = 0;
-    }
-    
+    static uint16 timer_15s   = 0;
+    static uint16 timer_30s   = 0;
+    static uint16 timer_1min  = 0;
+
     if( ++timer_20ms >= TIMER_20MS_COUNT )
     {
         key_scan();
         key_handler();
+        
+        curtainSpeedDetection();
         timer_20ms = 0;
     }
 
@@ -436,7 +430,7 @@ void deviceTimerCallBack( void )
         timer_500ms = 0;
     }
     
-    if( ++timer_15s >= TIMER_15S_COUNT )
+    if( ++timer_15s >= TIMER_1S_COUNT )
     {    
         curtainBrightnessHandler();
         timer_15s = 0;
@@ -457,6 +451,13 @@ void deviceTimerCallBack( void )
         timer_30s = 0;
     }
 #endif 
+        
+    if( ++timer_1min >= TIMER_1MIN_COUNT )
+    {
+        curtainRainDetection();
+        
+        timer_1min = 0;
+    }
 }
 
 #elif MYPROTOCOL_DEVICE_IS_HT_SENSOR

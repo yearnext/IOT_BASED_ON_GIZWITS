@@ -28,6 +28,7 @@
 #include "app_save.h"
 #include "bsp_socket.h"
 #include "Onboard.h"
+#include "app_timer.h"
 #include "app_time.h"
 
 /* Exported macro ------------------------------------------------------------*/
@@ -314,7 +315,7 @@ void socketControlHandler( uint8 state )
  *******************************************************************************
  * @brief       插座按键处理
  * @param       [in/out]  void
- * @return      [in/out]  void
+ * @return      [in/out]  void 
  * @note        None
  *******************************************************************************
  */
@@ -324,7 +325,6 @@ void socketSwitchHandler( void )
     
     if( socket.status.now == SOCKET_OFF_CMD )
     {
-        
         socket.status.now = SOCKET_ON_CMD;
     }
     else

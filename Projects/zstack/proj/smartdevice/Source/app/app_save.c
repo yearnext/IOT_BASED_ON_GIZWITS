@@ -24,7 +24,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_save.h"
+#include "hal_flash.h"
 #include <string.h>
+#include "myprotocol.h"
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -99,55 +101,55 @@
 //    }
 //}
 
-/**
- *******************************************************************************
- * @brief       初始化出厂密钥
- * @param       [in/out]  void
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-void deviceKeyInit( void )
-{
-    uint8 key = 0;
-    
-    key = DEVICE_FIRST_WRIYE_KEY;
-    osal_nv_write(DEVICE_FIRSTWRITEKEY_ID,0,1,(void *)&key);
-}
+///**
+// *******************************************************************************
+// * @brief       初始化出厂密钥
+// * @param       [in/out]  void
+// * @return      [in/out]  void
+// * @note        None
+// *******************************************************************************
+// */
+//void deviceKeyInit( void )
+//{
+//    uint8 key = 0;
+//    
+//    key = DEVICE_FIRST_WRIYE_KEY;
+//    osal_nv_write(DEVICE_FIRSTWRITEKEY_ID,0,1,(void *)&key);
+//}
 
-/**
- *******************************************************************************
- * @brief       检测出厂密钥
- * @param       [in/out]  void
- * @return      [in/out]  void
- * @note        None
- *******************************************************************************
- */
-bool deviceKeyCheck( uint16 id, uint16 size )
-{
-    uint8 key = 0;
-    
-    if( osal_nv_read(DEVICE_FIRSTWRITEKEY_ID,0,1,(void *)&key) != SUCCESS )
-    {
-        osal_nv_item_init(id,size,NULL);
-        
-        deviceKeyInit();
-        
-        return false;
-    }
-    else
-    {
-        if( key != DEVICE_FIRST_WRIYE_KEY )
-        {
-            deviceKeyInit();
-            return false;
-        }
-        else
-        {
-            return true;
-        }
-    }
-}
+///**
+// *******************************************************************************
+// * @brief       检测出厂密钥
+// * @param       [in/out]  void
+// * @return      [in/out]  void
+// * @note        None
+// *******************************************************************************
+// */
+//bool deviceKeyCheck( uint16 id, uint16 size )
+//{
+//    uint8 key = 0;
+//    
+//    if( osal_nv_read(DEVICE_FIRSTWRITEKEY_ID,0,1,(void *)&key) != SUCCESS )
+//    {
+//        osal_nv_item_init(id,size,NULL);
+//        
+//        deviceKeyInit();
+//        
+//        return false;
+//    }
+//    else
+//    {
+//        if( key != DEVICE_FIRST_WRIYE_KEY )
+//        {
+//            deviceKeyInit();
+//            return false;
+//        }
+//        else
+//        {
+//            return true;
+//        }
+//    }
+//}
 
 /**
  *******************************************************************************
@@ -163,27 +165,25 @@ bool deviceKeyCheck( uint16 id, uint16 size )
  */
 bool deviceLoadDownData( uint16 id, uint16 size, void *ctx, load_flase_handler handler )
 {
-    // FLASH 数据初始化
-//    if( deviceKeyCheck(id,size) == false \
-//        || osal_nv_read(id,0,size,ctx) != SUCCESS )
-//    {
-//        handler();
-//        return false;
-//    }
-    
-//    if( deviceKeyCheck(id,size) == false )
-//    {
-//        handler();
-//        return false;
-//    }
-    
-    if( osal_nv_read(id,0,size,ctx) != SUCCESS )
+    if( osal_nv_item_init(id, size, NULL) == SUCCESS )
+    {
+        osal_nv_read(id, 0, size, ctx);
+
+#if USE_MYPROTOCOL_DEBUG
+        MYPROTOCOL_LOG("device load down data success! \r\n");
+#endif
+        return true;
+    }
+    else
     {
         handler();
-        return false;
+        
+#if USE_MYPROTOCOL_DEBUG
+        MYPROTOCOL_LOG("device load down data error! \r\n");
+#endif
     }
     
-    return true;
+    return false;
 }
 
 /**
@@ -199,10 +199,13 @@ bool deviceLoadDownData( uint16 id, uint16 size, void *ctx, load_flase_handler h
  */
 bool deviceSaveData( uint16 id, uint16 size, void *ctx )
 {
-    osal_nv_item_init(id,size,NULL);
-    osal_nv_write(id,0,size,ctx);
-    
-    return true;
+    if( osal_nv_item_init(id, size, NULL) == SUCCESS )
+    {
+        osal_nv_write(id, 0, size, ctx);
+        return true;
+    }
+
+    return false;
 }
 
 /** @}*/     /* Flash 存储功能模块 */

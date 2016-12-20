@@ -23,15 +23,14 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
-#include "OSAL_Nv.h"
-#include "app_timer.h" 
+#include "osal_nv.h"
 
 /* Exported macro ------------------------------------------------------------*/
 // 设备存储地址
 #define DEVICE_FIRSTWRITEKEY_ID                 (0x0202)
 #define DEVICE_COORD_SAVE_ID                    (0x0210)
 #define DEVICE_LIGHT_SAVE_ID                    (0x0210)
-#define DEVICE_SOCKET_SAVE_ID                   (0x0201)
+#define DEVICE_SOCKET_SAVE_ID                   (0x0210)
 #define DEVICE_CURTAIN_SAVE_ID                  (0x0210)
 #define DEVICE_DEVICE_TEMP_HUM_SENSOR_SAVE_ID   (0x0210)
 //设备占用存储空间大小
@@ -49,45 +48,7 @@
 // 配置智能设备的定时器数量
 #define SIMPLE_DEVICE_TIMER_NUM (2)
 /* Exported types ------------------------------------------------------------*/
-// COORD 设备存储数据
-typedef struct
-{
-    uint8 firstwritekey;
-}DEVICE_BASE_SAVE_DATA;
-
-// 简单设备存储数据
-typedef struct
-{
-    struct
-    {
-        uint8 now;
-        uint8 last;
-    }status;
-    
-    DEVICE_TIMER timer[SIMPLE_DEVICE_TIMER_NUM]; 
-}SIMPLE_DEVICE_SAVE_DATA;
-
-// 简单设备存储数据
-typedef struct
-{
-    uint8 device_status;
-    
-    struct
-    {
-        uint8 mode;
-        uint8 active_data;
-    }smart;
-    
-    DEVICE_TIMER normal_timer;
-    DEVICE_TIMER cntdown_timer;  
-}DEVICE_CURTAIN_SAVE_DATA;
-
-//设备储存类型 
-//typedef DEVICE_BASE_SAVE_DATA   DEVICE_COORD_SAVE_DATA;
-//typedef DEVICE_BASE_SAVE_DATA   DEVICE_TEMP_HUM_SENSOR_SAVE_DATA;
-//typedef SIMPLE_DEVICE_SAVE_DATA DEVICE_LIGHT_SAVE_DATA;
-//typedef SIMPLE_DEVICE_SAVE_DATA DEVICE_SOCKET_SAVE_DATA;
-
+//加载数据错误功能
 typedef void (*load_flase_handler)(void);
 
 /* Exported variables --------------------------------------------------------*/

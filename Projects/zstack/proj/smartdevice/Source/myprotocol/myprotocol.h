@@ -29,7 +29,7 @@ extern "C"
 /* Includes ------------------------------------------------------------------*/
 #include "comdef.h"
 #include <stddef.h>
-
+    
 /* Exported macro ------------------------------------------------------------*/
 /** 程序调试宏 */
 #define USE_MYPROTOCOL_DEBUG 1
@@ -254,6 +254,13 @@ extern void MyprotocolPutLog( uint8*, uint16 );
 extern bool MyprotocolPacketCheck( void* );
 extern bool MyprotocolW2DRecDeviceCheck( MYPROTOCOL_FORMAT_t* );
 extern bool MyprotocolD2DRecDeviceCheck( MYPROTOCOL_FORMAT_t* );
+/**@} */
+
+/**
+ * @name 设备与网关的连接状态API
+ * @{
+ */
+extern bool MyprotocolDeviceConStatusUpdate( uint8 );
 /**@} */
 
 /**

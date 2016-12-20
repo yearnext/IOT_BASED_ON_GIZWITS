@@ -47,12 +47,12 @@ extern void bspCurtainInit( void );
 extern bool curtainControlCmd( uint8 );
 #if MYPROTOCOL_DEVICE_IS_CURTAIN
 #define curtainSwitchKeyHandler key1_handler
-#define curtainRainKeyHandler   key2_handler
 #endif
 extern void curtainSwitchKeyHandler( key_message_t );
 extern void curtainRainKeyHandler( key_message_t );
 extern void curtainControlHandler( uint8 );
 extern void curtainSpeedDetection( void );
+extern void curtainRainDetection( void );
 extern void curtainBrightnessHandler( void );
 extern void curtainWorkingHandler( void );
 extern bool curtainMessageHandler( MYPROTOCOL_FORMAT_t *recPacket );

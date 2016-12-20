@@ -241,8 +241,6 @@ void bsp_key_init(void)
 #elif MYPROTOCOL_DEVICE_IS_CURTAIN
     /** KEY1 P1_0 */
     KEY1_PORT_INIT();
-    /** KEY2 P0_6 */
-    KEY2_PORT_INIT();
 #elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
 
 #else
@@ -309,12 +307,6 @@ key_value_t get_key_value(void)
 	if (KEY1_READ())
 	{
 		return KEY_VALUE_K1;
-	}
-    
-    /** KEY1 P0_6 */
-	if (KEY2_READ())
-	{
-		return KEY_VALUE_K2;
 	}
     
 #elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
@@ -431,7 +423,6 @@ void key_handler(void)
 #elif MYPROTOCOL_DEVICE_IS_SOCKET
                 key2_handler(message.message);
 #elif MYPROTOCOL_DEVICE_IS_CURTAIN
-                key2_handler(message.message);
 #elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
 #else
 #endif

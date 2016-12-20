@@ -52,14 +52,14 @@ extern "C"
  * @name 通讯参数配置
  * @{
  */
-#define GIZWITS_TICK_CYCLE (100)
+#define GIZWITS_TICK_CYCLE (50)
      
 #define GIZWITS_TIME_CONVER_TICK(time) (time/GIZWITS_TICK_CYCLE)
      
  /** 3000ms重发 */
 #define SEND_MAX_TIME   GIZWITS_TIME_CONVER_TICK(3000)
      
-#define UPDATE_NTP_TIME GIZWITS_TIME_CONVER_TICK(1000)
+#define UPDATE_NTP_TIME GIZWITS_TIME_CONVER_TICK(500)
 
 /** 重发次数 */
 #define SEND_MAX_NUM    (2)                     

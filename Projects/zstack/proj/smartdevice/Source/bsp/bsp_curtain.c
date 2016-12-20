@@ -68,6 +68,13 @@
 #define CURTAIN_SPD_CH2_DIR      P0DIR
 #define CURTAIN_SPD_CH2_POLARITY ACTIVE_LOW
 
+/** 雨滴检测端口 */
+#define CURTAIN_RAIN_PORT        P0_6
+#define CURTAIN_RAIN_BIT         BV(6)
+#define CURTAIN_RAIN_SEL         P0SEL
+#define CURTAIN_RAIN_DIR         P0DIR
+#define CURTAIN_RAIN_POLARITY    ACTIVE_LOW
+
 // 光照强度检测端口
 #define CURTAIN_BRIGHTNESS_ADC_CH HAL_ADC_CHANNEL_7 
 
@@ -98,6 +105,13 @@
 #define SET_CURTAIN_SPD_CH2()    ( CURTAIN_SPD_CH2_PORT = CURTAIN_SPD_CH2_POLARITY(1) )
 #define CLR_CURTAIN_SPD_CH2()    ( CURTAIN_SPD_CH2_PORT = CURTAIN_SPD_CH2_POLARITY(0) )
 #define RD_CURTAIN_SPD_CH2()     ( CURTAIN_SPD_CH2_POLARITY(CURTAIN_SPD_CH2_PORT) )
+
+// 雨滴检测端口
+#define CURTAIN_RAIN_WrMode() ( CURTAIN_RAIN_DIR |=  CURTAIN_RAIN_BV )
+#define CURTAIN_RAIN_RdMode() ( CURTAIN_RAIN_DIR &= ~CURTAIN_RAIN_BV )
+#define SET_CURTAIN_RAIN()    ( CURTAIN_RAIN_PORT = CURTAIN_RAIN_POLARITY(1) )
+#define CLR_CURTAIN_RAIN()    ( CURTAIN_RAIN_PORT = CURTAIN_RAIN_POLARITY(0) )
+#define RD_CURTAIN_RAIN()     ( CURTAIN_RAIN_POLARITY(CURTAIN_RAIN_PORT) )
 
 // 亮度检测端口
 #define curtainBrightnessInit()  ( P0SEL |= 0x80, P0DIR &= ~0x80 )
@@ -137,6 +151,9 @@
 // 电动窗帘定时器标号
 #define CURTAIN_SIGNAL_TIMER      (0x01)
 #define CURTAIN_CIRCUL_TIMER      (0x02)
+
+// 写入离线数据
+#define curtainSaveData() deviceSaveData(DEVICE_CURTAIN_SAVE_ID, DEVICE_CURTAIN_DATA_SIZE, (void *)&curtain )
 
 /* Private typedef -----------------------------------------------------------*/
 // 窗帘控制命令
@@ -349,22 +366,14 @@ static bool saveCurtainTimerData( uint8 timer, uint8 *data )
     if( timer == CURTAIN_SIGNAL_TIMER )
     {
         memcpy(&curtain.timer.signal,data,sizeof(curtain.timer.signal));
-        
-        osal_nv_write(DEVICE_CURTAIN_SAVE_ID,
-                      (uint32)&curtain.timer.signal-(uint32)&curtain,
-                      sizeof(curtain.timer.signal),
-                      (void *)&curtain.timer.signal); 
+        curtainSaveData();
         
         return true;
     }
     else if ( timer == CURTAIN_CIRCUL_TIMER )
     {
         memcpy(&curtain.timer.circul,data,sizeof(curtain.timer.circul));
-        
-        osal_nv_write(DEVICE_CURTAIN_SAVE_ID,
-                  (uint32)&curtain.timer.circul-(uint32)&curtain,
-                  sizeof(curtain.timer.circul),
-                  (void *)&curtain.timer.circul); 
+        curtainSaveData(); 
         
         return true;
     }
@@ -387,11 +396,7 @@ static bool saveCurtainTimerData( uint8 timer, uint8 *data )
 static bool saveCurtainSmartModeData( uint8 *data )
 {
     memcpy(&curtain.mode,data,sizeof(curtain.mode));
-    
-    osal_nv_write(DEVICE_CURTAIN_SAVE_ID,
-                  (uint32)&curtain.mode-(uint32)&curtain,
-                  sizeof(curtain.mode),
-                  (void *)&curtain.mode); 
+    curtainSaveData(); 
 
     return true;
 }
@@ -407,11 +412,8 @@ static bool saveCurtainSmartModeData( uint8 *data )
 static bool saveCurtainLoadSetData( uint8 data )
 {
     curtain.load_set = data;
+    curtainSaveData();
     
-    osal_nv_write(DEVICE_CURTAIN_SAVE_ID,
-                  (uint32)&curtain.load_set-(uint32)&curtain,
-                  sizeof(curtain.load_set),
-                  (void *)&curtain.load_set);     
     return true;
 }
 
@@ -485,6 +487,8 @@ void bspCurtainInit(void)
 	
     // FLASH 数据初始化
     deviceLoadDownData(DEVICE_CURTAIN_SAVE_ID,DEVICE_CURTAIN_DATA_SIZE,(void *)&curtain,rstCurtainData);
+    
+    curtainControlHandler(curtain.metor.status);
 }
  
 /**
@@ -550,16 +554,16 @@ void curtainControlHandler( uint8 cmd )
  */
 void curtainSpeedDetection( void )
 {
-#define CURTAIN_SPEED_COUNT (150)
+#define CURTAIN_SPEED_COUNT (15)
     
     static uint8 s1Count = 0;
-    static uint8 s2Count = 0;
+//    static uint8 s2Count = 0;
     static uint8 s1Handler = 0;
-    static uint8 s2Handler = 0;
+//    static uint8 s2Handler = 0;
     static uint8 s1Value = KEY_VALUE_NOP;
-    static uint8 s2Value = KEY_VALUE_NOP;
+//    static uint8 s2Value = KEY_VALUE_NOP;
     uint8 s1NowValue = RD_CURTAIN_SPD_CH1();
-    uint8 s2NowValue = RD_CURTAIN_SPD_CH2();
+//    uint8 s2NowValue = RD_CURTAIN_SPD_CH2();
     
     if( s1Value != s1NowValue )
     {
@@ -569,13 +573,15 @@ void curtainSpeedDetection( void )
     }
     else
     {
-        if( s1Handler )
+        if( !s1Handler )
         {
             if( s1Count >= CURTAIN_SPEED_COUNT )
             {
                 curtainControlHandler(CURTAIN_CMD_STOP);
                 reportCurtainStatus();
                 s1Handler = 1;
+                
+                return;
             }
             else
             {
@@ -584,29 +590,93 @@ void curtainSpeedDetection( void )
         }
     }
     
-    if( s2Value != s2NowValue )
+//    if( s2Value != s2NowValue )
+//    {
+//        s2Value = s2NowValue;
+//        s2Count = 0;
+//        s2Handler = 0;
+//    }
+//    else
+//    {
+//        if( !s2Handler )
+//        {
+//            if( s2Count >= CURTAIN_SPEED_COUNT )
+//            {
+//                curtainControlHandler(CURTAIN_CMD_STOP);
+//                reportCurtainStatus();
+//                s2Handler = 1;
+//                
+//                return;
+//            }
+//            else
+//            {
+//                s2Count++;
+//            }
+//        }
+//    }
+}
+
+/**
+ *******************************************************************************
+ * @brief       电动窗帘下雨状态检测
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None                  
+ *******************************************************************************
+ */
+void curtainRainDetection( void )
+{
+#define RAIN_SPEED_COUNT (10)
+    
+    static uint16 rainCount = 0;
+    static uint8 rainHandler = 0;
+    static uint8 rainValue = KEY_VALUE_NOP;
+    uint8 rainNowValue = RD_CURTAIN_RAIN();
+    
+    if( rainValue != rainNowValue )
     {
-        s2Value = s2NowValue;
-        s2Count = 0;
-        s2Handler = 0;
+        rainValue = rainNowValue;
+        rainCount = 0;
+        rainHandler = 0;
     }
     else
     {
-        if( s2Handler )
+        if( !rainHandler )
         {
-            if( s2Count >= CURTAIN_SPEED_COUNT )
+            if( rainCount >= RAIN_SPEED_COUNT )
             {
-                curtainControlHandler(CURTAIN_CMD_STOP);
-                reportCurtainStatus();
+                if( rainValue )
+                {
+                    curtain.rain.status = 0;
+                    reportCurtainRainStatus();
+                    
+#if USE_MYPROTOCOL_DEBUG
+                MYPROTOCOL_LOG("curtain not check raining! \r\n");
+#endif 
+                }
+                else
+                {                             
+#if USE_MYPROTOCOL_DEBUG
+                MYPROTOCOL_LOG("curtain check raining! \r\n");
+#endif 
+                    curtain.rain.status = 1;
+                    reportCurtainRainStatus();
+            
+                    curtainControlHandler(CURTAIN_CMD_CLOSE);
+                    reportCurtainStatus();
+                }
+                
+                rainHandler = 1;
+                
+                return;
             }
             else
             {
-                s2Count++;
+                rainCount++;
             }
         }
     }
 }
-
 
 /**
  *******************************************************************************
@@ -670,22 +740,38 @@ void curtainSwitchKeyHandler( key_message_t message )
             {
                 case 0:
                     curtainControlHandler(CURTAIN_CMD_OPEN);
-                    reportCurtainStatus();
+                    curtainSaveData();
+                    reportCurtainStatus();                
+#if USE_MYPROTOCOL_DEBUG
+                    MYPROTOCOL_LOG("curtain is opening! \r\n");
+#endif
                     keyHandle = 1;
                     break;
                 case 1:
                     curtainControlHandler(CURTAIN_CMD_STOP);
+                    curtainSaveData();
                     reportCurtainStatus();
+#if USE_MYPROTOCOL_DEBUG
+                    MYPROTOCOL_LOG("curtain is stop，old state is open! \r\n");
+#endif
                     keyHandle = 2;
                     break;
                 case 2:
                     curtainControlHandler(CURTAIN_CMD_CLOSE);
+                    curtainSaveData();
                     reportCurtainStatus();
+#if USE_MYPROTOCOL_DEBUG
+                    MYPROTOCOL_LOG("curtain is close! \r\n");
+#endif
                     keyHandle = 3;
                     break;
                 case 3:
                     curtainControlHandler(CURTAIN_CMD_STOP);
+                    curtainSaveData();
                     reportCurtainStatus();
+#if USE_MYPROTOCOL_DEBUG
+                    MYPROTOCOL_LOG("curtain is stop，old state is close! \r\n");
+#endif
                     keyHandle =0;
                     break;
                 default:
