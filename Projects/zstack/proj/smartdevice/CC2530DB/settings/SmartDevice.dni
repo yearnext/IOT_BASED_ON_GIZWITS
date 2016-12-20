@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=952989460
+Checksum=-623386111
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -60,20 +60,24 @@ Freq=50000000
 [struct_types]
 Fmt0=MYPROTOCOL_FORMAT_t-sn	3	0
 Fmt1=MYPROTOCOL_USER_DATA_t-len	3	0
-Fmt2=osal_event_hdr_t-event	4	0
-Fmt3=protocolNetTime_t-day	3	0
-Fmt4=protocolNetTime_t-hour	3	0
-Fmt5=protocolNetTime_t-minute	3	0
-Fmt6=protocolNetTime_t-month	3	0
-Fmt7=protocolNetTime_t-ntp	4	0
-Fmt8=protocolNetTime_t-second	3	0
-Fmt9=user_time-day	3	0
-Fmt10=user_time-hour	3	0
-Fmt11=user_time-minute	3	0
-Fmt12=user_time-month	3	0
-Fmt13=user_time-second	3	0
-Fmt14=user_time-week	3	0
-Fmt15=user_time-year	3	0
+Fmt2=TIMER_WOKRING_TIME-end_hour	3	0
+Fmt3=TIMER_WOKRING_TIME-end_minute	3	0
+Fmt4=TIMER_WOKRING_TIME-start_hour	3	0
+Fmt5=TIMER_WOKRING_TIME-start_minute	3	0
+Fmt6=osal_event_hdr_t-event	4	0
+Fmt7=protocolNetTime_t-day	3	0
+Fmt8=protocolNetTime_t-hour	3	0
+Fmt9=protocolNetTime_t-minute	3	0
+Fmt10=protocolNetTime_t-month	3	0
+Fmt11=protocolNetTime_t-ntp	4	0
+Fmt12=protocolNetTime_t-second	3	0
+Fmt13=user_time-day	3	0
+Fmt14=user_time-hour	3	0
+Fmt15=user_time-minute	3	0
+Fmt16=user_time-month	3	0
+Fmt17=user_time-second	3	0
+Fmt18=user_time-week	3	0
+Fmt19=user_time-year	3	0
 [array_types]
 Fmt0=byte [8]	4	0
 Fmt1=uint8 [128]	4	0
@@ -104,9 +108,16 @@ Bp2=_ "STD_CODE" "{C:\Users\NBSEC\Desktop}.441.3" 0 0 0 0 "" 0 ""
 Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\Source\hal\hal_dht11.c}.172.21" 0 0 0 0 "" 0 ""
 Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits\gizwits_protocol.c}.1175.9" 0 0 0 0 "" 0 ""
 Bp5=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits\gizwits_protocol.c}.1182.9" 0 0 0 0 "" 0 ""
-Bp6=_ "STD_CODE" "{$PROJ_DIR$\..\Source\devicelist\devicelist.c}.423.5" 0 0 0 0 "" 0 ""
-Bp7=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_coord.c}.551.17" 1 0 0 0 "" 0 ""
-Count=8
+Bp6=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_coord.c}.551.17" 0 0 0 0 "" 0 ""
+Bp7=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_socket.c}.254.5" 0 0 0 0 "" 0 ""
+Bp8=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_socket.c}.235.5" 0 0 0 0 "" 0 ""
+Bp9=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_socket.c}.235.5" 0 0 0 0 "" 0 ""
+Bp10=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_light.c}.388.21" 0 0 0 0 "" 0 ""
+Bp11=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_light.c}.395.21" 0 0 0 0 "" 0 ""
+Bp12=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_socket.c}.433.13" 1 0 0 0 "" 0 ""
+Bp13=_ "STD_CODE" "{$PROJ_DIR$\..\Source\app\app_timer.c}.155.4" 1 0 0 0 "" 0 ""
+Bp14=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_socket.c}.391.5" 1 0 0 0 "" 0 ""
+Count=15
 [ChipconEmu]
 Stop timers on halt=0
 Leave target running=1

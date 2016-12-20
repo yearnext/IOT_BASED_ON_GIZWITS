@@ -43,20 +43,20 @@
 // 定时器工作模式
 typedef enum
 {
-	TIMER_SLEEP_MODE = 0x00,
-	TIMER_DOWNCNT_MODE_WAIT = 0xB1,
-	TIMER_PERIOD_MODE_WAIT = 0xB2,
-	TIMER_CUSTOM_MODE_WAIT = 0xB3,
+	TIMER_SLEEP_MODE        = 0x00,
+	TIMER_DOWNCNT_MODE_WAIT,
+	TIMER_PERIOD_MODE_WAIT,
+	TIMER_CUSTOM_MODE_WAIT,
 	TIMER_DOWNCNT_MODE,
-	TIMER_PERIOD_MODE ,
-	TIMER_CUSTOM_MODE ,
+	TIMER_PERIOD_MODE,
+	TIMER_CUSTOM_MODE,
 }TIMER_MODE;
 
 // 定时器自定义工作类型
 // 定时器自定义工作类型
 typedef struct
 {
-	const uint8 res : 1;
+	const uint8 res  : 1;
 	uint8 monday     : 1;
 	uint8 tuesday    : 1;
 	uint8 wednesday  : 1;

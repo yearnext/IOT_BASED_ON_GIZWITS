@@ -31,7 +31,7 @@
 #define DEVICE_FIRSTWRITEKEY_ID                 (0x0202)
 #define DEVICE_COORD_SAVE_ID                    (0x0210)
 #define DEVICE_LIGHT_SAVE_ID                    (0x0210)
-#define DEVICE_SOCKET_SAVE_ID                   (0x0210)
+#define DEVICE_SOCKET_SAVE_ID                   (0x0201)
 #define DEVICE_CURTAIN_SAVE_ID                  (0x0210)
 #define DEVICE_DEVICE_TEMP_HUM_SENSOR_SAVE_ID   (0x0210)
 //设备占用存储空间大小
@@ -99,6 +99,7 @@ typedef void (*load_flase_handler)(void);
 extern void deviceKeyInit( void );
 extern bool deviceKeyCheck( uint16 id, uint16 size );
 extern bool deviceLoadDownData( uint16, uint16, void*, load_flase_handler );
+extern bool deviceSaveData( uint16 id, uint16 size, void *ctx );
 
 #endif      /* __CC2530_FLASH_SAVE_H__ */
 

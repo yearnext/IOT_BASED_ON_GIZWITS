@@ -390,7 +390,8 @@ void deviceTimerCallBack( void )
         timer_500ms = 0;
     }
     
-#if USE_MYPROTOCOL_DEBUG    
+// #if USE_MYPROTOCOL_DEBUG    
+#if 0  
     if( ++timer_30s >= TIMER_1S_COUNT )
     {    
         MYPROTOCOL_LOG("device socket send get net time packet! \r\n");

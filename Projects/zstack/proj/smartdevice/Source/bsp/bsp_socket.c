@@ -80,6 +80,9 @@ typedef enum
 // 配置定时器使用数量
 #define SOCKET_USE_TIMER_NUM (2)
 
+// 写入离线数据
+#define socketSaveData() deviceSaveData(DEVICE_SOCKET_SAVE_ID, DEVICE_SOCKET_DATA_SIZE, (void *)&socket )
+
 /* Private variables ---------------------------------------------------------*/
 // 插座存储数据
 static struct _DEVICE_SOCKET_SAVE_DATA_
@@ -195,13 +198,8 @@ static bool saveSocketTimerData( uint8 timer, uint8 *data )
 #endif
     
     memcpy(&socket.timer[timer],data,sizeof(socket.timer[timer]));
-    
-    osal_nv_write(DEVICE_SOCKET_SAVE_ID,
-                  (uint32)&socket.timer[timer]-(uint32)&socket,
-                  sizeof(socket.timer[timer]),
-                  (void *)&socket.timer[timer]); 
 
-    return true;
+    return socketSaveData();
 }
 
                   
@@ -216,12 +214,8 @@ static bool saveSocketTimerData( uint8 timer, uint8 *data )
 static bool saveSocketLoadData( uint8 data )
 {
     socket.load_set = data;
-    
-    osal_nv_write(DEVICE_SOCKET_SAVE_ID,
-                  (uint32)&socket.load_set-(uint32)&socket,
-                  sizeof(socket.load_set),
-                  (void *)&socket.load_set);     
-    return true;
+
+    return socketSaveData();
 }
 
 /**
@@ -238,8 +232,7 @@ static void rstSocketData( void )
     socket.status.now = SOCKET_OFF_CMD;
     socket.status.last = SOCKET_ON_CMD;
     
-    osal_nv_item_init(DEVICE_SOCKET_SAVE_ID,DEVICE_SOCKET_DATA_SIZE,NULL);
-    osal_nv_write(DEVICE_SOCKET_SAVE_ID,0,DEVICE_SOCKET_DATA_SIZE,(void *)&socket);
+    socketSaveData();
 }
 
 /**
@@ -311,10 +304,7 @@ void socketControlHandler( uint8 state )
         
         setSocketState( socket.status.now );
         
-        osal_nv_write(DEVICE_SOCKET_SAVE_ID,\
-                      (uint16)&socket.status-(uint16)&socket,\
-                      sizeof(socket.status),\
-                      (void *)&socket.status);
+        socketSaveData();
     }
     
     reportSocketState();

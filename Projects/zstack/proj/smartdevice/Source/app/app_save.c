@@ -112,7 +112,7 @@ void deviceKeyInit( void )
     uint8 key = 0;
     
     key = DEVICE_FIRST_WRIYE_KEY;
-    osal_nv_write(DEVICE_LIGHT_SAVE_ID,0,1,(void *)&key);
+    osal_nv_write(DEVICE_FIRSTWRITEKEY_ID,0,1,(void *)&key);
 }
 
 /**
@@ -164,8 +164,20 @@ bool deviceKeyCheck( uint16 id, uint16 size )
 bool deviceLoadDownData( uint16 id, uint16 size, void *ctx, load_flase_handler handler )
 {
     // FLASH 数据初始化
-    if( deviceKeyCheck(id,size) == false \
-        || osal_nv_read(id,0,size,ctx) != SUCCESS )
+//    if( deviceKeyCheck(id,size) == false \
+//        || osal_nv_read(id,0,size,ctx) != SUCCESS )
+//    {
+//        handler();
+//        return false;
+//    }
+    
+//    if( deviceKeyCheck(id,size) == false )
+//    {
+//        handler();
+//        return false;
+//    }
+    
+    if( osal_nv_read(id,0,size,ctx) != SUCCESS )
     {
         handler();
         return false;
@@ -174,6 +186,24 @@ bool deviceLoadDownData( uint16 id, uint16 size, void *ctx, load_flase_handler h
     return true;
 }
 
+/**
+ *******************************************************************************
+ * @brief       设备向FLASH写入数据
+ * @param       [in/out]  ID                    存储在FLASH中的ID
+ *              [in/out]  SIZE                  加载数据的大小
+ *              [in/out]  ctx                   载入数据的目标
+ * @return      [in/out]  FALSE                 加载失败
+ *              [in/out]  TRUE                  加载成功 
+ * @note        None
+ *******************************************************************************
+ */
+bool deviceSaveData( uint16 id, uint16 size, void *ctx )
+{
+    osal_nv_item_init(id,size,NULL);
+    osal_nv_write(id,0,size,ctx);
+    
+    return true;
+}
 
 /** @}*/     /* Flash 存储功能模块 */
 
