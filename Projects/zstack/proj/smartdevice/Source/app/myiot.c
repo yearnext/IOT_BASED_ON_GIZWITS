@@ -88,6 +88,7 @@
 /** 定时器计数值 */
 #define TIMER_10MS_COUNT  DEVICE_TIMR_CONVER_TICK(10)
 #define TIMER_20MS_COUNT  DEVICE_TIMR_CONVER_TICK(20)
+#define TIMER_30MS_COUNT  DEVICE_TIMR_CONVER_TICK(30)
 #define TIMER_50MS_COUNT  DEVICE_TIMR_CONVER_TICK(50)
 #define TIMER_100MS_COUNT DEVICE_TIMR_CONVER_TICK(100)
 #define TIMER_500MS_COUNT DEVICE_TIMR_CONVER_TICK(500)
@@ -319,16 +320,16 @@ static void myiotCommLedControl( uint8 state )
 #if MYPROTOCOL_DEVICE_IS_COORD
 void deviceTimerCallBack( void )
 {
-    static uint8 timer_20ms  = 0;
+    static uint8 timer_30ms  = 0;
     static uint8 timer_50ms = 0;
     static uint8 timer_100ms = 0;
     
-    if( ++timer_20ms >= TIMER_20MS_COUNT )
+    if( ++timer_30ms >= TIMER_30MS_COUNT )
     {
         key_scan();
         key_handler();
         
-        timer_20ms = 0;
+        timer_30ms = 0;
     }
   
     if( ++timer_50ms >= TIMER_50MS_COUNT )
@@ -349,14 +350,14 @@ void deviceTimerCallBack( void )
 #elif MYPROTOCOL_DEVICE_IS_LIGHT
 void deviceTimerCallBack( void )
 {
-    static uint8 timer_20ms  = 0;
+    static uint8 timer_30ms  = 0;
     static uint8 timer_500ms = 0;
     
-    if( ++timer_20ms >= TIMER_20MS_COUNT )
+    if( ++timer_30ms >= TIMER_30MS_COUNT )
     {
         key_scan();
         key_handler();
-        timer_20ms = 0;
+        timer_30ms = 0;
     }
 
     if( ++timer_500ms >= TIMER_500MS_COUNT )
@@ -371,15 +372,15 @@ void deviceTimerCallBack( void )
 #elif MYPROTOCOL_DEVICE_IS_SOCKET
 void deviceTimerCallBack( void )
 {
-    static uint8 timer_20ms  = 0;
+    static uint8 timer_30ms  = 0;
     static uint8 timer_500ms = 0;
     static uint16 timer_30s  = 0;
     
-    if( ++timer_20ms >= TIMER_20MS_COUNT )
+    if( ++timer_30ms >= TIMER_30MS_COUNT )
     {
         key_scan();
         key_handler();
-        timer_20ms = 0;
+        timer_30ms = 0;
     }
 
     if( ++timer_500ms >= TIMER_500MS_COUNT )
@@ -409,19 +410,19 @@ void deviceTimerCallBack( void )
 #elif MYPROTOCOL_DEVICE_IS_CURTAIN
 void deviceTimerCallBack( void )
 {
-    static uint8 timer_20ms   = 0;
+    static uint8 timer_30ms   = 0;
     static uint8 timer_500ms  = 0;
     static uint16 timer_15s   = 0;
     static uint16 timer_30s   = 0;
     static uint16 timer_1min  = 0;
 
-    if( ++timer_20ms >= TIMER_20MS_COUNT )
+    if( ++timer_30ms >= TIMER_30MS_COUNT )
     {
         key_scan();
         key_handler();
         
         curtainSpeedDetection();
-        timer_20ms = 0;
+        timer_30ms = 0;
     }
 
     if( ++timer_500ms >= TIMER_500MS_COUNT )

@@ -736,48 +736,41 @@ void curtainSwitchKeyHandler( key_message_t message )
     switch (message)
     {
         case KEY_MESSAGE_PRESS_EDGE:
-            switch( keyHandle )
+            if( curtain.metor.status == CURTAIN_STOP_STATE )
             {
-                case 0:
-                    curtainControlHandler(CURTAIN_CMD_OPEN);
-                    curtainSaveData();
-                    reportCurtainStatus();                
-#if USE_MYPROTOCOL_DEBUG
-                    MYPROTOCOL_LOG("curtain is opening! \r\n");
-#endif
+                if( keyHandle == 0 )
+                {
                     keyHandle = 1;
-                    break;
-                case 1:
-                    curtainControlHandler(CURTAIN_CMD_STOP);
-                    curtainSaveData();
-                    reportCurtainStatus();
+                    curtainControlHandler(CURTAIN_CMD_OPEN);
 #if USE_MYPROTOCOL_DEBUG
-                    MYPROTOCOL_LOG("curtain is stop，old state is open! \r\n");
+                    MYPROTOCOL_LOG("curtain is open! \r\n");
 #endif
-                    keyHandle = 2;
-                    break;
-                case 2:
+                }
+                else
+                {
+                    keyHandle = 0;
                     curtainControlHandler(CURTAIN_CMD_CLOSE);
-                    curtainSaveData();
-                    reportCurtainStatus();
-#if USE_MYPROTOCOL_DEBUG
-                    MYPROTOCOL_LOG("curtain is close! \r\n");
-#endif
-                    keyHandle = 3;
-                    break;
-                case 3:
-                    curtainControlHandler(CURTAIN_CMD_STOP);
-                    curtainSaveData();
-                    reportCurtainStatus();
 #if USE_MYPROTOCOL_DEBUG
                     MYPROTOCOL_LOG("curtain is stop，old state is close! \r\n");
 #endif
-                    keyHandle =0;
-                    break;
-                default:
-                    keyHandle = 0;
-                    break;
+                }
             }
+            else
+            {
+#if USE_MYPROTOCOL_DEBUG
+                if( curtain.metor.status == CURTAIN_CLOSE_STATE )
+                {
+                    MYPROTOCOL_LOG("curtain is stop，old state is close! \r\n");
+                }
+                else
+                {
+                    MYPROTOCOL_LOG("curtain is stop，old state is open! \r\n");
+                }
+#endif
+                curtainControlHandler(CURTAIN_CMD_STOP);
+            }
+            curtainSaveData();
+            reportCurtainStatus();  
 			break;
         case KEY_MESSAGE_LONG_PRESS:
             rstCurtainData();

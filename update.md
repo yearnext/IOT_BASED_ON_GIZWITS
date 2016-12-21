@@ -33,7 +33,7 @@
 |-|RTM版|Release To Manufactur，意思是发布到生产商，这基本就是最终的版本|
 |-|GA版|Generally Available，最终版|
 |正式版本|-|-|
-|-||Enhance|增强版或者加强版|
+|-|Enhance|增强版或者加强版|
 |-|Full version|完全版|
 |-|Release|发行版，有时间限制|
 |-|Upgrade|升级版|
@@ -41,12 +41,13 @@
 |-|Plus|增强版，不过这种大部分是在程序界面及多媒体功能上增强|
 
 ## 更新日志
-**固件版本：IOTBaseOnGizwits_MCUSoftwareDebug_0.2.9_alpha_201612210058**
+**固件版本：IOTBaseOnGizwits_MCUSoftwareDebug_0.2.9_alpha_201612212337**
 + 完成ZSTACK的NV操作调试。
 + 添加更新日志。
 + 添加设备时钟芯片使能/禁用开关。
 + 添加设备数据保存使能/禁用开关。
 + 修改电灯默认上电状态为关闭状态。
++ 解决了电动窗帘无法实现远程和按键连续控制的BUG。
 
 **固件版本：IOTBaseOnGizwits_MCUSoftwareDebug_0.2.8_alpha_201612201138**
 + 修复倒计时定时器不能正常工作的BUG。
