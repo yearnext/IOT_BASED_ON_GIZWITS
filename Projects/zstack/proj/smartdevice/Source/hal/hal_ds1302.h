@@ -117,16 +117,6 @@ extern void ds1302_wr_data( uint8 wr_addr, uint8 wr_data );
 extern uint8 ds1302_rd_data( uint8 rd_addr );
 extern void ds1302_rd_time( void *time );
 extern void ds1302_wr_time( void *time );
-
-#define hal_timechip_init() hal_ds1302_init()  
-#define hal_time_set(time)  ds1302_wr_time(time)
-#define hal_time_read(time) ds1302_rd_time(time)
-
-#else
-#define hal_timechip_init()
-#define hal_time_set(time)
-#define hal_time_read(time) 
-
 #endif
 
 #endif      /* __HAL_DS1302_H__ */

@@ -122,7 +122,7 @@
 #define CURTAIN_USE_TIMER_NUM    (2)
 
 // 电动窗帘占用FLASH大小
-#define DEVICE_CURTAIN_DATA_SIZE (Cal_DataSize(curtain))
+#define DEVICE_CURTAIN_DATA_SIZE (calSaveDataSize(curtain))
 
 // 电动窗帘工作状态
 #define CURTAIN_INIT_STATE        (0x00)
@@ -463,7 +463,7 @@ static void rstCurtainData( void )
     memset(&curtain,0,sizeof(curtain));
     
     osal_nv_item_init(DEVICE_CURTAIN_SAVE_ID,DEVICE_CURTAIN_DATA_SIZE,NULL);
-    osal_nv_write(DEVICE_CURTAIN_SAVE_ID,0,DEVICE_CURTAIN_DATA_SIZE,(void *)&curtain);
+    curtainSaveData();
 }
 
 /**
@@ -486,7 +486,7 @@ void bspCurtainInit(void)
     curtainBrightnessInit();
 	
     // FLASH 数据初始化
-    deviceLoadDownData(DEVICE_CURTAIN_SAVE_ID,DEVICE_CURTAIN_DATA_SIZE,(void *)&curtain,rstCurtainData);
+    deviceLoadData(DEVICE_CURTAIN_SAVE_ID,DEVICE_CURTAIN_DATA_SIZE,(void *)&curtain,rstCurtainData);
     
     curtainControlHandler(curtain.metor.status);
 }
@@ -839,13 +839,14 @@ bool curtainMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
             Onboard_soft_reset();
             break;
         case MYPROTOCOL_RD_TIME_CMD:
-            if( recPacket->user_data.data[sizeof(user_time)] == 1 )
-            {
-#if USE_MYPROTOCOL_DEBUG
-                MYPROTOCOL_LOG("curtain get net time is not invaild! \r\n");
-#endif 
-                app_time_update((user_time *)&recPacket->user_data.data);
-            }
+//            if( recPacket->user_data.data[sizeof(user_time)] == 1 )
+//            {
+//#if USE_MYPROTOCOL_DEBUG
+//                MYPROTOCOL_LOG("curtain get net time is not invaild! \r\n");
+//#endif 
+//                app_time_update((user_time *)&recPacket->user_data.data);
+//            }
+            app_time_update((user_time *)&recPacket->user_data.data);
             break;
         case RD_CURTAIN_STATE:
             reportCurtainStatus();

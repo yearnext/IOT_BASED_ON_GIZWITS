@@ -163,7 +163,7 @@
  * @note        None
  *******************************************************************************
  */
-bool deviceLoadDownData( uint16 id, uint16 size, void *ctx, load_flase_handler handler )
+bool deviceLoadData( uint16 id, uint16 size, void *ctx, load_flase_handler handler )
 {
     if( osal_nv_item_init(id, size, NULL) == SUCCESS )
     {
@@ -186,6 +186,7 @@ bool deviceLoadDownData( uint16 id, uint16 size, void *ctx, load_flase_handler h
     return false;
 }
 
+#if USE_DATA_SAVE
 /**
  *******************************************************************************
  * @brief       设备向FLASH写入数据
@@ -207,6 +208,8 @@ bool deviceSaveData( uint16 id, uint16 size, void *ctx )
 
     return false;
 }
+
+#endif
 
 /** @}*/     /* Flash 存储功能模块 */
 

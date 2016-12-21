@@ -12525,6 +12525,10 @@
     </group>
     <group>
       <name>DeviceList</name>
+      <excluded>
+        <configuration>IOT_DEVICE_LIGHT</configuration>
+        <configuration>IOT_DEVICE_SOCKET</configuration>
+      </excluded>
       <file>
         <name>$PROJ_DIR$\..\Source\devicelist\devicelist.c</name>
       </file>
@@ -12540,11 +12544,21 @@
     </group>
     <group>
       <name>Gizwits</name>
+      <excluded>
+        <configuration>IOT_DEVICE_LIGHT</configuration>
+        <configuration>IOT_DEVICE_SOCKET</configuration>
+      </excluded>
       <file>
         <name>$PROJ_DIR$\..\Source\gizwits\gizwits_product.c</name>
+        <excluded>
+          <configuration>IOT_DEVICE_LIGHT</configuration>
+        </excluded>
       </file>
       <file>
         <name>$PROJ_DIR$\..\Source\gizwits\gizwits_product.h</name>
+        <excluded>
+          <configuration>IOT_DEVICE_LIGHT</configuration>
+        </excluded>
       </file>
       <file>
         <name>$PROJ_DIR$\..\Source\gizwits\gizwits_protocol.c</name>
@@ -12557,9 +12571,15 @@
       <name>hal</name>
       <file>
         <name>$PROJ_DIR$\..\Source\hal\hal_dht11.c</name>
+        <excluded>
+          <configuration>IOT_DEVICE_LIGHT</configuration>
+        </excluded>
       </file>
       <file>
         <name>$PROJ_DIR$\..\Source\hal\hal_dht11.h</name>
+        <excluded>
+          <configuration>IOT_DEVICE_LIGHT</configuration>
+        </excluded>
       </file>
       <file>
         <name>$PROJ_DIR$\..\Source\hal\hal_ds1302.c</name>

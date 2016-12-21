@@ -103,7 +103,6 @@ static devStates_t NwkState;
  */
  
 #if USE_MYPROTOCOL_DEBUG
-
 /**
  *******************************************************************************
  * @brief       初始化函数

@@ -36,11 +36,11 @@
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 // 灯的亮度与PWM占空比之间转换
-//#define Light_Brightness_Conversion(n) ( 0xFF - (n) )
-#define Light_Brightness_Conversion(n) ( n )
+#define Light_Brightness_Conversion(n) ( 0xFF - (n) )
+//#define Light_Brightness_Conversion(n) ( n )
 #define Get_Light_Brightness()         ( Get_TIM4_CH0_Duty() )
 
-#define DEVICE_LIGHT_DATA_SIZE         (Cal_DataSize(light))
+#define DEVICE_LIGHT_DATA_SIZE         (calSaveDataSize(light))
 
 // 灯的最大亮度/最小亮度
 #define LIGHT_MAX_BRIGHTNESS           (100)
@@ -56,6 +56,9 @@
 #define LIGHT_NO_LOAD_SET              (0x00)
 #define LIGHT_LOAD_SET                 (0x01)
      
+// 写入离线数据
+#define lightSaveData() deviceSaveData(DEVICE_CURTAIN_SAVE_ID, DEVICE_CURTAIN_DATA_SIZE, (void *)&curtain )
+
 /* Private typedef -----------------------------------------------------------*/
 // 电灯控制命令
 typedef enum
@@ -179,10 +182,7 @@ static bool saveLightTimerData( uint8 timer, uint8 *data )
     
     memcpy(&light.timer[timer],data,sizeof(light.timer[timer]));
     
-    osal_nv_write(DEVICE_LIGHT_SAVE_ID,
-                  (uint32)&light.timer[timer]-(uint32)&light,
-                  sizeof(light.timer[timer]),
-                  (void *)&light.timer[timer]); 
+    lightSaveData(); 
 
     return true;
 }
@@ -197,12 +197,9 @@ static bool saveLightTimerData( uint8 timer, uint8 *data )
  */
 static bool saveLightLoadSetData( uint8 data )
 {
-    light.load_set = data;
+    light.load_set = data;    
+    lightSaveData();
     
-    osal_nv_write(DEVICE_LIGHT_SAVE_ID,
-                  (uint32)&light.load_set-(uint32)&light,
-                  sizeof(light.load_set),
-                  (void *)&light.load_set);     
     return true;
 }
 
@@ -221,7 +218,7 @@ static void rstLightData( void )
     light.status.last = LIGHT_ON_BRIGHTNESS;
     
     osal_nv_item_init(DEVICE_LIGHT_SAVE_ID,DEVICE_LIGHT_DATA_SIZE,NULL);
-    osal_nv_write(DEVICE_LIGHT_SAVE_ID,0,DEVICE_LIGHT_DATA_SIZE,(void *)&light);
+    lightSaveData();
 }
 
 /**
@@ -284,7 +281,7 @@ void bspLightInit( void )
     setLightBrightness(LIGHT_OFF_BRIGHTNESS);
     
     // FLASH 数据初始化
-    deviceLoadDownData(DEVICE_LIGHT_SAVE_ID,DEVICE_LIGHT_DATA_SIZE,(void *)&light,rstLightData);
+    deviceLoadData(DEVICE_LIGHT_SAVE_ID,DEVICE_LIGHT_DATA_SIZE,(void *)&light,rstLightData);
     
     // 载入掉点前的状态
     if( light.load_set == LIGHT_LOAD_SET )
@@ -310,10 +307,7 @@ void lightControlHandler( uint8 brightness )
         
         setLightBrightness( light.status.now );
         
-        osal_nv_write(DEVICE_LIGHT_SAVE_ID,\
-                      (uint16)&light.status-(uint16)&light,\
-                      sizeof(light.status),\
-                      (void *)&light.status);
+        lightSaveData();
     }
 }
 
@@ -351,10 +345,7 @@ void lightSwitchHandler( void )
     
     setLightBrightness( light.status.now );
     
-    osal_nv_write(DEVICE_LIGHT_SAVE_ID,\
-              ((uint16)&light.status - (uint16)&light),\
-              sizeof(light.status),\
-              (void *)&light.status); 
+    lightSaveData();
 }
 
 /**
@@ -471,10 +462,11 @@ bool lightMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
             Onboard_soft_reset();
             break;
         case MYPROTOCOL_RD_TIME_CMD:
-            if( recPacket->user_data.data[8] == 1 )
-            {
-                app_time_update((user_time *)&recPacket->user_data.data);
-            }
+//            if( recPacket->user_data.data[8] == 1 )
+//            {
+//                app_time_update((user_time *)&recPacket->user_data.data);
+//            }
+            app_time_update((user_time *)&recPacket->user_data.data);
             break;
         case RD_LIGHT_BRIGHTNESS:
             reportLightBrightnessData();

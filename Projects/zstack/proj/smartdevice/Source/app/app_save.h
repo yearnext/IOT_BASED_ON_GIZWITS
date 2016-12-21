@@ -33,20 +33,19 @@
 #define DEVICE_SOCKET_SAVE_ID                   (0x0210)
 #define DEVICE_CURTAIN_SAVE_ID                  (0x0210)
 #define DEVICE_DEVICE_TEMP_HUM_SENSOR_SAVE_ID   (0x0210)
+
 //设备占用存储空间大小
-#define Cal_DataSize(data)                      ( sizeof(data) / sizeof(unsigned char) )
-//#define DEVICE_COORD_DATA_SIZE                  (Cal_DataSize(DEVICE_COORD_SAVE_DATA))
-//#define DEVICE_DEVICE_TEMP_HUM_SENSOR_DATA_SIZE (Cal_DataSize(DEVICE_TEMP_HUM_SENSOR_SAVE_DATA))
-//设备ID
-//#define DEVICE_COORD_ID                         (0x00)
-//#define DEVICE_LIGHT_ID                         (0x01)
-//#define DEVICE_SOCKET_ID                        (0x02)
-//#define DEVICE_CURTAIN_ID                       (0x03)
-//#define DEVICE_DEVICE_TEMP_HUM_SENSOR_ID        (0x04)
+#define calSaveDataSize(data)                   ( sizeof(data) / sizeof(unsigned char) )
+
+//数据保存使能标志
+#define USE_DATA_SAVE                           (0)
+
 // 初次写入数据密钥
-#define DEVICE_FIRST_WRIYE_KEY (0x5A)
+#define DEVICE_FIRST_WRIYE_KEY                  (0x5A)
+
 // 配置智能设备的定时器数量
-#define SIMPLE_DEVICE_TIMER_NUM (2)
+#define SIMPLE_DEVICE_TIMER_NUM                 (2)
+
 /* Exported types ------------------------------------------------------------*/
 //加载数据错误功能
 typedef void (*load_flase_handler)(void);
@@ -56,11 +55,13 @@ typedef void (*load_flase_handler)(void);
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-//extern void Rst_DeviceSaveData( uint8 );
-extern void deviceKeyInit( void );
-extern bool deviceKeyCheck( uint16 id, uint16 size );
-extern bool deviceLoadDownData( uint16, uint16, void*, load_flase_handler );
+extern bool deviceLoadData( uint16, uint16, void*, load_flase_handler );
+
+#if USE_DATA_SAVE
 extern bool deviceSaveData( uint16 id, uint16 size, void *ctx );
+#else
+#define deviceSaveData(a,b,c) 
+#endif
 
 #endif      /* __CC2530_FLASH_SAVE_H__ */
 

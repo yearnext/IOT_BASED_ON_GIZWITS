@@ -52,7 +52,7 @@
 #define CLR_SOCKET_CONTROL()    ( SOCKET_CONTROL_PORT = SOCKET_CONTROL_POLARITY(0) )
 #define RD_SOCKET_CONTROL()     ( SOCKET_CONTROL_POLARITY(SOCKET_CONTROL_PORT) )
 
-#define DEVICE_SOCKET_DATA_SIZE    (Cal_DataSize(socket))
+#define DEVICE_SOCKET_DATA_SIZE    (calSaveDataSize(socket))
 
 /* Private typedef -----------------------------------------------------------*/
 // 继电器控制命令
@@ -199,8 +199,9 @@ static bool saveSocketTimerData( uint8 timer, uint8 *data )
 #endif
     
     memcpy(&socket.timer[timer],data,sizeof(socket.timer[timer]));
-
-    return socketSaveData();
+    socketSaveData();
+    
+    return true;
 }
 
                   
@@ -215,8 +216,9 @@ static bool saveSocketTimerData( uint8 timer, uint8 *data )
 static bool saveSocketLoadData( uint8 data )
 {
     socket.load_set = data;
-
-    return socketSaveData();
+    socketSaveData();
+    
+    return true;
 }
 
 /**
@@ -250,7 +252,7 @@ void bspSocketInit( void )
     setSocketState(SOCKET_OFF_CMD);
     
     // FLASH 数据初始化
-    deviceLoadDownData(DEVICE_SOCKET_SAVE_ID,DEVICE_SOCKET_DATA_SIZE,(void *)&socket,rstSocketData);
+    deviceLoadData(DEVICE_SOCKET_SAVE_ID,DEVICE_SOCKET_DATA_SIZE,(void *)&socket,rstSocketData);
     
     setSocketState(socket.status.now);
 }
@@ -414,10 +416,11 @@ bool socketMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
             Onboard_soft_reset();
             break;
         case MYPROTOCOL_RD_TIME_CMD:
-            if( recPacket->user_data.data[8] == 1 )
-            {
-                app_time_update((user_time *)&recPacket->user_data.data);
-            }
+//            if( recPacket->user_data.data[8] == 1 )
+//            {
+//                app_time_update((user_time *)&recPacket->user_data.data);
+//            }
+            app_time_update((user_time *)&recPacket->user_data.data);
             break;
         case RD_SOCKET_STATE:
             reportSocketState();

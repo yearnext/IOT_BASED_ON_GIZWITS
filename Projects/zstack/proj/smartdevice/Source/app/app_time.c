@@ -29,9 +29,27 @@
 #include "gizwits_protocol.h"
 
 /* Exported macro ------------------------------------------------------------*/
+#define USE_HAL_TIME (0)
+
+#if USE_HAL_TIME
+#define hal_timechip_init() hal_ds1302_init()  
+#define hal_time_set(time)  ds1302_wr_time(time)
+#define hal_time_read(time) ds1302_rd_time(time)
+
+#else
+#define hal_timechip_init()
+#define hal_time_set(time)
+#define hal_time_read(time)
+
+#endif
+
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/  
+#if !USE_HAL_TIME
+    static user_time deviceTime;
+#endif
+ 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -49,6 +67,10 @@ void app_time_init( void )
     hal_timechip_init();
     
     app_get_time();
+    
+#if !USE_HAL_TIME 
+    memset(&deviceTime, 0, sizeof(deviceTime));
+#endif
 }
 
 /**
@@ -61,8 +83,12 @@ void app_time_init( void )
  */
 void app_time_update( user_time *time )
 {
+#if USE_HAL_TIME 
     time->year -= 2000;
     hal_time_set(time); 
+#else
+    memcpy(&deviceTime, time, sizeof(deviceTime));
+#endif
 }
 
 /**
@@ -76,6 +102,7 @@ void app_time_update( user_time *time )
 user_time app_get_time( void )
 {
 #if !MYPROTOCOL_DEVICE_IS_COORD
+#if USE_HAL_TIME 
     user_time time;
     
     memset(&time, 0, sizeof(time));
@@ -85,6 +112,10 @@ user_time app_get_time( void )
     time.year += 2000;
 
     return time;
+#else
+    return deviceTime;
+#endif
+
 #else  
     return gizwitsNTPConverUserTime();
 #endif
