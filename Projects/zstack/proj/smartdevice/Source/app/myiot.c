@@ -81,7 +81,7 @@
 
 /** 设备后台运行时间 */
 #define DEVICE_BACKSTAGE_TIME           (10)
-#define DEVICE_TIMR_CONVER_TICK(n)      (n/DEVICE_BACKSTAGE_TIME)
+#define DEVICE_TIMR_CONVER_TICK(n)      ((n)/DEVICE_BACKSTAGE_TIME)
 /** 设备定时器事件 */
 #define DEVICE_TIMER_EVEN               (0x0008)
 
@@ -350,14 +350,14 @@ void deviceTimerCallBack( void )
 #elif MYPROTOCOL_DEVICE_IS_LIGHT
 void deviceTimerCallBack( void )
 {
-    static uint8 timer_30ms  = 0;
+    static uint8 timer_20ms  = 0;
     static uint8 timer_500ms = 0;
     
-    if( ++timer_30ms >= TIMER_30MS_COUNT )
+    if( ++timer_20ms >= TIMER_20MS_COUNT )
     {
         key_scan();
         key_handler();
-        timer_30ms = 0;
+        timer_20ms = 0;
     }
 
     if( ++timer_500ms >= TIMER_500MS_COUNT )
@@ -366,7 +366,7 @@ void deviceTimerCallBack( void )
         lightWorkingHandler();
         timer_500ms = 0;
     }
-    
+//    lightWorkingHandler();
 }
 
 #elif MYPROTOCOL_DEVICE_IS_SOCKET
@@ -411,6 +411,7 @@ void deviceTimerCallBack( void )
 void deviceTimerCallBack( void )
 {
     static uint8 timer_30ms   = 0;
+//    static uint8 timer_50ms   = 0;
     static uint8 timer_500ms  = 0;
     static uint16 timer_15s   = 0;
     static uint16 timer_30s   = 0;
@@ -424,6 +425,12 @@ void deviceTimerCallBack( void )
         curtainSpeedDetection();
         timer_30ms = 0;
     }
+    
+//    if( ++timer_50ms >= TIMER_50MS_COUNT )
+//    {  
+//        curtainMetorFresh();
+//        timer_50ms = 0;
+//    }
 
     if( ++timer_500ms >= TIMER_500MS_COUNT )
     {

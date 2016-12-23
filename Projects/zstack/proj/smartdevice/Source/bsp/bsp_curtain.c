@@ -135,22 +135,51 @@
 #define CURTAIN_CLOSE_ALL_STATE   (0x06)
 
 // 电动窗帘控制命令
-#define CURTAIN_CMD_STOP          (0x00)
-#define CURTAIN_CMD_OPEN          (0x01)
-#define CURTAIN_CMD_CLOSE         (0x02)
+#define CURTAIN_STOP_CMD          (0x00)
+#define CURTAIN_OPEN_CMD          (0x01)
+#define CURTAIN_CLOSE_CMD         (0x02)
 
 // 电动窗帘功能使能宏
 #define CURTAIN_DISABLE_FUNC      (0x00)
 #define CURTAIN_ENABLE_FUNC       (0x01)
 
 // 电机工作函数
-#define OPEN_CURTAIN_OPERA()      {CLR_CURTAIN_REVERSE();SET_CURTAIN_FORWARD();}
-#define CLOSE_CURTAIN_OPERA()     {CLR_CURTAIN_FORWARD();SET_CURTAIN_REVERSE();}
-#define INIT_CURTAIN_OPERA()      {CLR_CURTAIN_REVERSE();CLR_CURTAIN_FORWARD();}
+//#define OPEN_CURTAIN_OPERA()      {CLR_CURTAIN_REVERSE();Onboard_wait(10);SET_CURTAIN_FORWARD();Onboard_wait(10);}
+//#define CLOSE_CURTAIN_OPERA()     {CLR_CURTAIN_FORWARD();Onboard_wait(10);SET_CURTAIN_REVERSE();Onboard_wait(10);}
+//#define INIT_CURTAIN_OPERA()      {CLR_CURTAIN_REVERSE();Onboard_wait(10);CLR_CURTAIN_FORWARD();Onboard_wait(10);}
+     
+static void OPEN_CURTAIN_OPERA( void )      
+{
+    CLR_CURTAIN_REVERSE();
+    Onboard_wait(10);
+    SET_CURTAIN_FORWARD();
+    Onboard_wait(10);
+}
+
+static void CLOSE_CURTAIN_OPERA( void )
+{
+    CLR_CURTAIN_FORWARD();
+    Onboard_wait(10);
+    SET_CURTAIN_REVERSE();
+    Onboard_wait(10);
+}
+
+static void INIT_CURTAIN_OPERA( void )      
+{
+    CLR_CURTAIN_REVERSE();
+    Onboard_wait(10);
+    CLR_CURTAIN_FORWARD();
+    Onboard_wait(10);
+}
 
 // 电动窗帘定时器标号
 #define CURTAIN_SIGNAL_TIMER      (0x01)
 #define CURTAIN_CIRCUL_TIMER      (0x02)
+
+// 电机限位标志
+#define CURTAIN_LIMIT_NONE        (0x00)
+#define CURTAIN_LIMIT_LEFT        (0x01)
+#define CURTAIN_LIMIT_RIGHT       (0x02)
 
 // 写入离线数据
 #define curtainSaveData() deviceSaveData(DEVICE_CURTAIN_SAVE_ID, DEVICE_CURTAIN_DATA_SIZE, (void *)&curtain )
@@ -183,6 +212,7 @@ static struct _DEVICE_CURTAIN_SAVE_DATA_
     struct
     {
         uint8 status;
+        uint8 last_status;
     }metor;
     
     // 定时器数据
@@ -203,6 +233,7 @@ static struct _DEVICE_CURTAIN_SAVE_DATA_
     struct
     {
         uint8 status;
+        uint8 last_status;
     }rain;
     
     // 室内亮度
@@ -210,6 +241,9 @@ static struct _DEVICE_CURTAIN_SAVE_DATA_
     
     // 上电设置
     uint8 load_set;
+    
+    // 窗帘限位标志
+    uint8 limit;
 }curtain;
 
 /* Private functions ---------------------------------------------------------*/
@@ -488,6 +522,8 @@ void bspCurtainInit(void)
     // FLASH 数据初始化
     deviceLoadData(DEVICE_CURTAIN_SAVE_ID,DEVICE_CURTAIN_DATA_SIZE,(void *)&curtain,rstCurtainData);
     
+    memset(&curtain, 0, sizeof(curtain));
+    
     curtainControlHandler(curtain.metor.status);
 }
  
@@ -501,25 +537,27 @@ void bspCurtainInit(void)
  */
 void curtainControlHandler( uint8 cmd )
 {
-    if( cmd == CURTAIN_CMD_OPEN )
+    if( cmd == CURTAIN_OPEN_CMD )
     {
-        if( curtain.status != CURTAIN_OPEN_ALL_STATE )
+        if( curtain.status != CURTAIN_OPEN_ALL_STATE && curtain.limit != CURTAIN_LIMIT_LEFT )
         {
             INIT_CURTAIN_OPERA();
-            SET_CURTAIN_FORWARD();
+            OPEN_CURTAIN_OPERA();
 
             curtain.status = CURTAIN_OPEN_STATE;
+            curtain.metor.last_status = curtain.metor.status;
             curtain.metor.status = CURTAIN_OPEN_STATE;
         }
     }
-    else if( cmd == CURTAIN_CMD_CLOSE )
+    else if( cmd == CURTAIN_CLOSE_CMD )
     {
-        if( curtain.status != CURTAIN_CLOSE_ALL_STATE )
+        if( curtain.status != CURTAIN_CLOSE_ALL_STATE && curtain.limit != CURTAIN_LIMIT_RIGHT )
         {
             INIT_CURTAIN_OPERA();
-            SET_CURTAIN_REVERSE();
+            CLOSE_CURTAIN_OPERA();
             
             curtain.status = CURTAIN_CLOSE_STATE;
+            curtain.metor.last_status = curtain.metor.status;
             curtain.metor.status = CURTAIN_CLOSE_STATE;
         }
     }
@@ -527,21 +565,45 @@ void curtainControlHandler( uint8 cmd )
     {
         INIT_CURTAIN_OPERA();
         
-        if( curtain.status == CURTAIN_OPEN_STATE )
+        if( curtain.limit == CURTAIN_LIMIT_LEFT )
         {
-            curtain.status = CURTAIN_OPEN_END_STATE;
+            curtain.status = CURTAIN_OPEN_ALL_STATE;
         }
-        else if( curtain.status == CURTAIN_CLOSE_STATE )
+        else if( curtain.limit == CURTAIN_LIMIT_RIGHT )
         {
-            curtain.status = CURTAIN_CLOSE_END_STATE;
+            curtain.status = CURTAIN_CLOSE_ALL_STATE;
         }
         else
         {
-            
+            if( curtain.status == CURTAIN_OPEN_STATE )
+            {
+                curtain.status = CURTAIN_OPEN_END_STATE;
+            }
+            else if( curtain.status == CURTAIN_CLOSE_STATE )
+            {
+                curtain.status = CURTAIN_CLOSE_END_STATE;
+            }
+            else
+            {
+                // do nothing!
+            }
         }
-        
+        curtain.metor.last_status = curtain.metor.status;
         curtain.metor.status = CURTAIN_STOP_STATE;
     }
+}
+
+/**
+ *******************************************************************************
+ * @brief       刷新电动窗帘当前状态
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None                  
+ *******************************************************************************
+ */
+void curtainMetorFresh( void )
+{
+    curtainControlHandler(curtain.metor.status);
 }
 
 /**
@@ -570,6 +632,7 @@ void curtainSpeedDetection( void )
         s1Value = s1NowValue;
         s1Count = 0;
         s1Handler = 0;
+        curtain.limit = CURTAIN_LIMIT_NONE;
     }
     else
     {
@@ -577,7 +640,17 @@ void curtainSpeedDetection( void )
         {
             if( s1Count >= CURTAIN_SPEED_COUNT )
             {
-                curtainControlHandler(CURTAIN_CMD_STOP);
+                if( curtain.status == CURTAIN_OPEN_STATE )
+                {
+                    curtain.limit = CURTAIN_LIMIT_LEFT;
+                    curtainControlHandler(CURTAIN_STOP_CMD);
+                }
+                else if( curtain.status == CURTAIN_CLOSE_STATE )
+                {
+                    curtain.limit = CURTAIN_LIMIT_RIGHT;
+                    curtainControlHandler(CURTAIN_STOP_CMD);
+                }
+                
                 reportCurtainStatus();
                 s1Handler = 1;
                 
@@ -602,7 +675,7 @@ void curtainSpeedDetection( void )
 //        {
 //            if( s2Count >= CURTAIN_SPEED_COUNT )
 //            {
-//                curtainControlHandler(CURTAIN_CMD_STOP);
+//                curtainControlHandler(CURTAIN_STOP_CMD);
 //                reportCurtainStatus();
 //                s2Handler = 1;
 //                
@@ -662,7 +735,7 @@ void curtainRainDetection( void )
                     curtain.rain.status = 1;
                     reportCurtainRainStatus();
             
-                    curtainControlHandler(CURTAIN_CMD_CLOSE);
+                    curtainControlHandler(CURTAIN_CLOSE_CMD);
                     reportCurtainStatus();
                 }
                 
@@ -695,11 +768,11 @@ void curtainBrightnessHandler( void )
    {
        if( curtain.brightness > (curtain.mode.brightness + 20) )
        {
-           curtainControlHandler(CURTAIN_CMD_CLOSE);
+           curtainControlHandler(CURTAIN_CLOSE_CMD);
        }
        else if( curtain.brightness < (curtain.mode.brightness + 10) )
        {
-           curtainControlHandler(CURTAIN_CMD_OPEN);
+           curtainControlHandler(CURTAIN_OPEN_CMD);
        }
        else
        {
@@ -732,80 +805,67 @@ void curtainWorkingHandler( void )
  */
 void curtainSwitchKeyHandler( key_message_t message )
 {
-    static uint8 keyHandle = 0;
     switch (message)
     {
         case KEY_MESSAGE_PRESS_EDGE:
-            if( curtain.metor.status == CURTAIN_STOP_STATE )
+#if USE_MYPROTOCOL_DEBUG
+                    MYPROTOCOL_LOG("KEY_MESSAGE_PRESS_EDGE handler! \r\n");
+#endif
+            switch( curtain.status )
             {
-                if( keyHandle == 0 )
-                {
-                    keyHandle = 1;
-                    curtainControlHandler(CURTAIN_CMD_OPEN);
+                case CURTAIN_STOP_STATE:
+                curtainControlHandler(CURTAIN_OPEN_CMD);
 #if USE_MYPROTOCOL_DEBUG
                     MYPROTOCOL_LOG("curtain is open! \r\n");
 #endif
-                }
-                else
-                {
-                    keyHandle = 0;
-                    curtainControlHandler(CURTAIN_CMD_CLOSE);
+                    break;
+                case CURTAIN_OPEN_STATE:
+                    curtainControlHandler(CURTAIN_STOP_CMD);
 #if USE_MYPROTOCOL_DEBUG
-                    MYPROTOCOL_LOG("curtain is stop，old state is close! \r\n");
-#endif
-                }
-            }
-            else
-            {
-#if USE_MYPROTOCOL_DEBUG
-                if( curtain.metor.status == CURTAIN_CLOSE_STATE )
-                {
-                    MYPROTOCOL_LOG("curtain is stop，old state is close! \r\n");
-                }
-                else
-                {
                     MYPROTOCOL_LOG("curtain is stop，old state is open! \r\n");
-                }
 #endif
-                curtainControlHandler(CURTAIN_CMD_STOP);
+                    break;
+                case CURTAIN_OPEN_END_STATE:
+                    curtainControlHandler(CURTAIN_CLOSE_CMD);
+#if USE_MYPROTOCOL_DEBUG
+                    MYPROTOCOL_LOG("curtain is close! \r\n");
+#endif
+                    break;
+                case CURTAIN_OPEN_ALL_STATE:
+                    curtainControlHandler(CURTAIN_CLOSE_CMD);
+#if USE_MYPROTOCOL_DEBUG
+                    MYPROTOCOL_LOG("curtain is close! \r\n");
+#endif
+                    break;
+                case CURTAIN_CLOSE_STATE:
+                    curtainControlHandler(CURTAIN_STOP_CMD);
+#if USE_MYPROTOCOL_DEBUG
+                    MYPROTOCOL_LOG("curtain is stop，old state is close! \r\n");
+#endif
+                    break;
+                case CURTAIN_CLOSE_END_STATE:
+                    curtainControlHandler(CURTAIN_OPEN_CMD);
+#if USE_MYPROTOCOL_DEBUG
+                    MYPROTOCOL_LOG("curtain is open! \r\n");
+#endif
+                    break;
+                case CURTAIN_CLOSE_ALL_STATE:
+                    curtainControlHandler(CURTAIN_OPEN_CMD);
+#if USE_MYPROTOCOL_DEBUG
+                    MYPROTOCOL_LOG("curtain is open! \r\n");
+#endif
+                    break;
+                default:
+                    return;
+                    break; 
             }
             curtainSaveData();
             reportCurtainStatus();  
 			break;
         case KEY_MESSAGE_LONG_PRESS:
-            rstCurtainData();
-            Onboard_soft_reset();
-            break;
-		default:
-			break;
-    }
-}
-
-/**
- *******************************************************************************
- * @brief       按键处理
- * @param       [in]   message    按键信息
- * @return      [out]  void
- * @note        None
- *******************************************************************************
- */
-void curtainRainKeyHandler( key_message_t message )
-{
-    switch (message)
-    {
-		case KEY_MESSAGE_LONG_PRESS:
-        if( !curtain.rain.status )
-        {
-            curtain.rain.status = 1;
-            reportCurtainRainStatus();
-        }
-			break;
-        case KEY_MESSAGE_RELEASE:
-        if( curtain.rain.status )
-        {
-            curtain.rain.status = 0;
-            reportCurtainRainStatus();
-        }
+//            curtainMetorFresh();
+//            rstCurtainData();
+//            Onboard_soft_reset();
             break;
 		default:
 			break;

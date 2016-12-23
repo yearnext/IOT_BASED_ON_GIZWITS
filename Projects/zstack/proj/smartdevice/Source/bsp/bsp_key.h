@@ -35,7 +35,7 @@
  *******************************************************************************
  */
 // ∞¥º¸…®√Ë ±º‰
-#define KEY_SCAN_TIME (10)
+#define KEY_SCAN_TIME (20)
 #define KEY_TIME2COUNT(n) ((n)/KEY_SCAN_TIME)
 
 #define KEY_LONG_RRESS_TIME  KEY_TIME2COUNT(3000)
@@ -195,7 +195,7 @@ extern void key2_handler(key_message_t);
 #elif MYPROTOCOL_DEVICE_IS_SOCKET
 extern void key2_handler(key_message_t);
 #elif MYPROTOCOL_DEVICE_IS_CURTAIN
-extern void key2_handler(key_message_t);
+//extern void key2_handler(key_message_t);
 #elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
 #else
 #endif

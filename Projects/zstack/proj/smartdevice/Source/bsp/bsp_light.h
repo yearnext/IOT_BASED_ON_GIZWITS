@@ -45,8 +45,10 @@ extern void lightControlHandler( uint8 );
 extern void lightSwitchHandler( void );
 
 #if MYPROTOCOL_DEVICE_IS_LIGHT
-#define lightSwitchKeyHandler key1_handler
-#define lightRstKeyHandler    key2_handler
+//#define lightSwitchKeyHandler key1_handler
+//#define lightRstKeyHandler    key2_handler
+#define lightSwitchKeyHandler key2_handler
+#define lightRstKeyHandler    key1_handler
 #endif
 
 extern void lightSwitchKeyHandler( key_message_t );

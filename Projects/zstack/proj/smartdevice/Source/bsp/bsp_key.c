@@ -103,35 +103,34 @@ static struct
  */
 static bool key_press_timer_handler(key_value_t value)
 {
-    // 按键多击检测
-    if (press_detect.press_multi.status)
-	{
-		if (key_message_send(value, KEY_MESSAGE_MULTI_PRESS) == true)
-		{
-			press_detect.press_multi.status = 0;			
-		}
-		
-		return true;
-	} 
-	else
-	{
-		if (++press_detect.press_multi.count >= KEY_MULTI_RRESS_TIME)
-		{
-			press_detect.press_multi.count = 0;
-			
-			if (key_message_send(value, KEY_MESSAGE_MULTI_PRESS) == false)
-			{
-				press_detect.press_multi.status = 1;	
-			}
-			
-			return true;
-		}
-	}
-    
     // 按键长按检测
 	if (press_detect.press_long.status)
 	{
-		key_message_send(value, KEY_MESSAGE_LONG_PRESS);
+//		key_message_send(value, KEY_MESSAGE_LONG_PRESS);
+            // 按键多击检测
+        if (press_detect.press_multi.status)
+        {
+            if (key_message_send(value, KEY_MESSAGE_MULTI_PRESS) == true)
+            {
+                press_detect.press_multi.status = 0;			
+            }
+            
+            return true;
+        } 
+        else
+        {
+            if (++press_detect.press_multi.count >= KEY_MULTI_RRESS_TIME)
+            {
+                press_detect.press_multi.count = 0;
+                
+                if (key_message_send(value, KEY_MESSAGE_MULTI_PRESS) == false)
+                {
+                    press_detect.press_multi.status = 1;	
+                }
+                
+                return true;
+            }
+        }
 		return true;
 	} 
 	else
@@ -423,6 +422,7 @@ void key_handler(void)
 #elif MYPROTOCOL_DEVICE_IS_SOCKET
                 key2_handler(message.message);
 #elif MYPROTOCOL_DEVICE_IS_CURTAIN
+//                key2_handler(message.message);
 #elif MYPROTOCOL_DEVICE_IS_HT_SENSOR
 #else
 #endif

@@ -55,12 +55,14 @@ typedef void (*load_flase_handler)(void);
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-extern bool deviceLoadData( uint16, uint16, void*, load_flase_handler );
-
 #if USE_DATA_SAVE
 extern bool deviceSaveData( uint16 id, uint16 size, void *ctx );
+extern bool deviceLoadData( uint16, uint16, void*, load_flase_handler );
+
 #else
 #define deviceSaveData(a,b,c) 
+#define deviceLoadData(a,b,c,d)
+
 #endif
 
 #endif      /* __CC2530_FLASH_SAVE_H__ */

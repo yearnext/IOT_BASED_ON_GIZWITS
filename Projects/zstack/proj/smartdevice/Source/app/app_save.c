@@ -150,7 +150,7 @@
 //        }
 //    }
 //}
-
+#if USE_DATA_SAVE
 /**
  *******************************************************************************
  * @brief       设备加载掉电前存储的数据
@@ -186,7 +186,6 @@ bool deviceLoadData( uint16 id, uint16 size, void *ctx, load_flase_handler handl
     return false;
 }
 
-#if USE_DATA_SAVE
 /**
  *******************************************************************************
  * @brief       设备向FLASH写入数据

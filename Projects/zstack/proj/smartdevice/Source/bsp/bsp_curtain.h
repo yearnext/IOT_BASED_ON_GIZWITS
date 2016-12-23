@@ -45,6 +45,7 @@ extern "C"
 /* Exported functions --------------------------------------------------------*/
 extern void bspCurtainInit( void );
 extern bool curtainControlCmd( uint8 );
+extern void curtainMetorFresh( void );
 #if MYPROTOCOL_DEVICE_IS_CURTAIN
 #define curtainSwitchKeyHandler key1_handler
 #endif

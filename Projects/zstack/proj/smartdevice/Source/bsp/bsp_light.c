@@ -368,12 +368,11 @@ void lightSwitchKeyHandler( key_message_t message )
 			break;
         case KEY_MESSAGE_LONG_PRESS_EDGE:
             lastStatus = light.status.now;
-            keyStatus = 1;
-            break;
-        case KEY_MESSAGE_LONG_PRESS:
-            keyStatus = 1;
+            
             if( light.status.last >= light.status.now )
             {
+                keyStatus = 1;
+                
                 if( light.status.now < LIGHT_MAX_BRIGHTNESS  )
                 {
                     setLightBrightness( light.status.now++ );
@@ -381,22 +380,44 @@ void lightSwitchKeyHandler( key_message_t message )
             }
             else
             {
+                keyStatus = 2;
+                
                 if( light.status.now > LIGHT_MIN_BRIGHTNESS  )
                 {
                     setLightBrightness( light.status.now-- );
                 }
             }
             break;
-        case KEY_MESSAGE_RELEASE_EDGE: 
+        case KEY_MESSAGE_MULTI_PRESS:
             if( keyStatus == 1 )
             {
-                light.status.last = lastStatus;
-                reportLightBrightnessData();
+                if( light.status.now < LIGHT_MAX_BRIGHTNESS  )
+                {
+                    setLightBrightness( light.status.now++ );
+                }
+            }
+            else if( keyStatus == 2 )
+            {
+                if( light.status.now > LIGHT_MIN_BRIGHTNESS  )
+                {
+                    setLightBrightness( light.status.now-- );
+                }
             }
             else
             {
+                // do nothing!
+            }
+            break;
+        case KEY_MESSAGE_RELEASE_EDGE: 
+            if( keyStatus == 0 )
+            {
                 lightSwitchHandler();
             }
+            else
+            {
+                light.status.last = lastStatus;
+            }
+            reportLightBrightnessData();
             break;
 		default:
 			break;
@@ -440,6 +461,25 @@ void lightWorkingHandler( void )
     {
         deviceTimerHandler((DEVICE_TIMER*)&light.timer[i],lightControlHandler);
     }
+//    static uint8 i = 0;
+//    static bool status = false;
+//    
+//    if( status == false )
+//    {
+//        if( ++i >= 100 )
+//        {
+//            status = true;
+//        }
+//    }
+//    else
+//    {
+//        if( --i <= 0 )
+//        {
+//            status = false;
+//        }
+//    }
+//    
+//    setLightBrightness(i);
 }
 
 /**

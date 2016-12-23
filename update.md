@@ -41,6 +41,11 @@
 |-|Plus|增强版，不过这种大部分是在程序界面及多媒体功能上增强|
 
 ## 更新日志
+**固件版本：IOTBaseOnGizwits_MCUSoftwareDebug_0.2.10_alpha_201612240022**
++ 修复了电动窗帘上电自动运行的BUG。
++ 修复了电动窗帘按键失灵的BUG。
++ 修复了按键过于灵敏的BUG。
+
 **固件版本：IOTBaseOnGizwits_MCUSoftwareDebug_0.2.9_alpha_201612212337**
 + 完成ZSTACK的NV操作调试。
 + 添加更新日志。
