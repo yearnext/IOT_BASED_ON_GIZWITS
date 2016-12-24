@@ -309,7 +309,19 @@ void socketControlHandler( uint8 state )
         
         socketSaveData();
     }
-    
+}
+
+/**
+ ******************************************************************************
+ * @brief       插座数值设置函数(定时器专用)
+ * @param       [in/out]  void
+ * @return      [in/out]  value    插座的数值
+ * @note        None 
+ *******************************************************************************
+ */
+void socketTimerontrolHandler( uint8 state )
+{
+    socketControlHandler(state);
     reportSocketState();
 }
 
@@ -335,6 +347,8 @@ void socketSwitchHandler( void )
     }
     
     socketControlHandler(socket.status.now);
+
+    reportSocketState();
 }
 
 /**
@@ -392,7 +406,7 @@ void socketWorkingHandler( void )
     
     for( i=0; i<SOCKET_USE_TIMER_NUM; i++ )
     {
-        deviceTimerHandler((DEVICE_TIMER*)&socket.timer[i],socketControlHandler);
+        deviceTimerHandler((DEVICE_TIMER*)&socket.timer[i],socketTimerontrolHandler);
     }
 }
 

@@ -313,6 +313,20 @@ void lightControlHandler( uint8 brightness )
 
 /**
  *******************************************************************************
+ * @brief       电灯亮度设置函数(定时器专用)
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+void lightTimerControlHandler( uint8 brightness )
+{
+    lightControlHandler(brightness);
+    reportLightBrightnessData();
+}
+
+/**
+ *******************************************************************************
  * @brief       电灯按键处理
  * @param       [in/out]  void
  * @return      [in/out]  void
@@ -459,7 +473,7 @@ void lightWorkingHandler( void )
     
     for( i=0; i<LIGHT_USE_TIMER_NUM; i++ )
     {
-        deviceTimerHandler((DEVICE_TIMER*)&light.timer[i],lightControlHandler);
+        deviceTimerHandler((DEVICE_TIMER*)&light.timer[i],lightTimerControlHandler);
     }
 //    static uint8 i = 0;
 //    static bool status = false;

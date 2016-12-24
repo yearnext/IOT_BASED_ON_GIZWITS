@@ -52,7 +52,7 @@ extern "C"
  * @name 通讯参数配置
  * @{
  */
-#define GIZWITS_TICK_CYCLE (50)
+#define GIZWITS_TICK_CYCLE (100)
      
 #define GIZWITS_TIME_CONVER_TICK(time) (time/GIZWITS_TICK_CYCLE)
      

@@ -144,34 +144,10 @@
 #define CURTAIN_ENABLE_FUNC       (0x01)
 
 // 电机工作函数
-//#define OPEN_CURTAIN_OPERA()      {CLR_CURTAIN_REVERSE();Onboard_wait(10);SET_CURTAIN_FORWARD();Onboard_wait(10);}
-//#define CLOSE_CURTAIN_OPERA()     {CLR_CURTAIN_FORWARD();Onboard_wait(10);SET_CURTAIN_REVERSE();Onboard_wait(10);}
-//#define INIT_CURTAIN_OPERA()      {CLR_CURTAIN_REVERSE();Onboard_wait(10);CLR_CURTAIN_FORWARD();Onboard_wait(10);}
+//#define OPEN_CURTAIN_OPERA()      {CLR_CURTAIN_REVERSE();Onboard_wait(5);SET_CURTAIN_FORWARD();Onboard_wait(5);}
+//#define CLOSE_CURTAIN_OPERA()     {CLR_CURTAIN_FORWARD();Onboard_wait(5);SET_CURTAIN_REVERSE();Onboard_wait(5);}
+//#define INIT_CURTAIN_OPERA()      {CLR_CURTAIN_REVERSE();Onboard_wait(5);CLR_CURTAIN_FORWARD();Onboard_wait(5);}
      
-static void OPEN_CURTAIN_OPERA( void )      
-{
-    CLR_CURTAIN_REVERSE();
-    Onboard_wait(10);
-    SET_CURTAIN_FORWARD();
-    Onboard_wait(10);
-}
-
-static void CLOSE_CURTAIN_OPERA( void )
-{
-    CLR_CURTAIN_FORWARD();
-    Onboard_wait(10);
-    SET_CURTAIN_REVERSE();
-    Onboard_wait(10);
-}
-
-static void INIT_CURTAIN_OPERA( void )      
-{
-    CLR_CURTAIN_REVERSE();
-    Onboard_wait(10);
-    CLR_CURTAIN_FORWARD();
-    Onboard_wait(10);
-}
-
 // 电动窗帘定时器标号
 #define CURTAIN_SIGNAL_TIMER      (0x01)
 #define CURTAIN_CIRCUL_TIMER      (0x02)
@@ -248,6 +224,54 @@ static struct _DEVICE_CURTAIN_SAVE_DATA_
 
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
+/**
+ *******************************************************************************
+ * @brief       打开窗帘
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+static void OPEN_CURTAIN_OPERA( void )      
+{
+    CLR_CURTAIN_REVERSE();
+    Onboard_wait(5);
+    SET_CURTAIN_FORWARD();
+    Onboard_wait(5);
+}
+
+/**
+ *******************************************************************************
+ * @brief       关闭窗帘
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+static void CLOSE_CURTAIN_OPERA( void )
+{
+    CLR_CURTAIN_FORWARD();
+    Onboard_wait(5);
+    SET_CURTAIN_REVERSE();
+    Onboard_wait(5);
+}
+
+/**
+ *******************************************************************************
+ * @brief       初始化窗帘
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+static void INIT_CURTAIN_OPERA( void )      
+{
+    CLR_CURTAIN_REVERSE();
+    Onboard_wait(5);
+    CLR_CURTAIN_FORWARD();
+    Onboard_wait(5);
+}
+
 /**
  *******************************************************************************
  * @brief       上报窗帘当前状态
@@ -595,6 +619,20 @@ void curtainControlHandler( uint8 cmd )
 
 /**
  *******************************************************************************
+ * @brief       电动窗帘控制命令(定时器专用)
+ * @param       [in/out]  cmd     控制命令
+ * @return      [in/out]  bool    执行状态
+ * @note        None
+ *******************************************************************************
+ */
+void curtainTimerControlHandler( uint8 cmd )
+{
+    curtainTimerControlHandler(cmd);
+    reportCurtainStatus();
+}
+
+/**
+ *******************************************************************************
  * @brief       刷新电动窗帘当前状态
  * @param       [in/out]  void
  * @return      [in/out]  void
@@ -718,7 +756,7 @@ void curtainRainDetection( void )
         {
             if( rainCount >= RAIN_SPEED_COUNT )
             {
-                if( rainValue )
+                if( !rainValue )
                 {
                     curtain.rain.status = 0;
                     reportCurtainRainStatus();
@@ -791,8 +829,8 @@ void curtainBrightnessHandler( void )
  */
 void curtainWorkingHandler( void )
 {
-    deviceTimerHandler((DEVICE_TIMER*)& curtain.timer.signal,curtainControlHandler);
-    deviceTimerHandler((DEVICE_TIMER*)& curtain.timer.circul,curtainControlHandler);
+    deviceTimerHandler((DEVICE_TIMER*)& curtain.timer.signal,curtainTimerControlHandler);
+    deviceTimerHandler((DEVICE_TIMER*)& curtain.timer.circul,curtainTimerControlHandler);
 }
 
 /**

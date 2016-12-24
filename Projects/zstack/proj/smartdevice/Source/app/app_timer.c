@@ -34,7 +34,7 @@
 // 时间相关宏
 #define ONE_DAY_MINUTES        ( 24*60 )
 #define Time_Hour2Minute(hour) ((hour)*60)
-#define TIMER_CUSTOM_BV(n)     ( 0x01 << (n) )
+#define TIMER_CIRCUL_BV(n)     ( 0x01 << (n) )
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -111,12 +111,24 @@ bool deviceTimerHandler(DEVICE_TIMER *timer, device_timer_func func)
 			return true;
 			break;
 		case TIMER_PERIOD_MODE_WAIT:
-			if (devicePeriodTimerInquire(&timer->time,now_time) == DEVICE_START_SIGNAL)
+        {
+            DEVICE_STATUS_SIGNAL timerSignal = devicePeriodTimerInquire(&timer->time,now_time);
+			if ( timerSignal == DEVICE_START_SIGNAL)
 			{
 				func(timer->status.start);
 				timer->mode = TIMER_PERIOD_MODE;
 			}
-			break;
+            else if( timerSignal == DEVICE_STOP_SIGNAL )
+            {
+                func(timer->status.end);
+                timer->mode = TIMER_SLEEP_MODE;
+                break;
+            }
+            else
+            {
+                break;
+            }
+        }
 		case TIMER_PERIOD_MODE:
 			if (devicePeriodTimerInquire(&timer->time, now_time) == DEVICE_STOP_SIGNAL)
 			{
@@ -135,35 +147,37 @@ bool deviceTimerHandler(DEVICE_TIMER *timer, device_timer_func func)
 				timer->mode = TIMER_SLEEP_MODE;
 			}
 			break;		
-		case TIMER_CUSTOM_MODE_WAIT:
+		case TIMER_CIRCUL_MODE_WAIT:
 		{
 			uint8 week = *(uint8 *)(&timer->custom);
-			if (( week & TIMER_CUSTOM_BV(time.week)) \
+			if (( week & TIMER_CIRCUL_BV(time.week)) \
 				&&(devicePeriodTimerInquire(&timer->time, now_time) == DEVICE_START_SIGNAL))
 			{
 				func(timer->status.start);
-				timer->mode = TIMER_CUSTOM_MODE;
+				timer->mode = TIMER_CIRCUL_MODE;
 			}
             else
             {
+                func(timer->status.end);
+                timer->mode = TIMER_CIRCUL_MODE_WAIT;
                 break;
             }
 		}
-		case TIMER_CUSTOM_MODE:
+		case TIMER_CIRCUL_MODE:
 		{
 			uint8 week = *(uint8 *)(&timer->custom);
-			if (week & TIMER_CUSTOM_BV(time.week))
+			if (week & TIMER_CIRCUL_BV(time.week))
 			{
 				if (devicePeriodTimerInquire(&timer->time, now_time) == DEVICE_STOP_SIGNAL)
 				{
 					func(timer->status.end);
-					timer->mode = TIMER_CUSTOM_MODE_WAIT;
+					timer->mode = TIMER_CIRCUL_MODE_WAIT;
 				} 
 			}
 			else
 			{
 				func(timer->status.end);
-				timer->mode = TIMER_CUSTOM_MODE_WAIT;
+				timer->mode = TIMER_CIRCUL_MODE_WAIT;
 			}
 			break;
 		}	

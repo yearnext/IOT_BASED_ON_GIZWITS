@@ -352,6 +352,7 @@ void deviceTimerCallBack( void )
 {
     static uint8 timer_20ms  = 0;
     static uint8 timer_500ms = 0;
+    static uint16 timer_30s  = 0;
     
     if( ++timer_20ms >= TIMER_20MS_COUNT )
     {
@@ -362,10 +363,26 @@ void deviceTimerCallBack( void )
 
     if( ++timer_500ms >= TIMER_500MS_COUNT )
     {
-        deviceUpdateNTPTime();
         lightWorkingHandler();
         timer_500ms = 0;
     }
+    
+#if 0  
+    if( ++timer_30s >= TIMER_1S_COUNT )
+    {    
+        MYPROTOCOL_LOG("device LIGHT send get net time packet! \r\n");
+
+        deviceUpdateNTPTime();
+        timer_30s = 0;
+    }
+#else  
+    if( ++timer_30s >= TIMER_30S_COUNT )
+    {    
+        MYPROTOCOL_LOG("device LIGHT send get net time packet! \r\n");
+        deviceUpdateNTPTime();
+        timer_30s = 0;
+    }
+#endif 
 //    lightWorkingHandler();
 }
 
@@ -401,6 +418,7 @@ void deviceTimerCallBack( void )
 #else  
     if( ++timer_30s >= TIMER_30S_COUNT )
     {    
+        MYPROTOCOL_LOG("device socket send get net time packet! \r\n");
         deviceUpdateNTPTime();
         timer_30s = 0;
     }
@@ -444,7 +462,7 @@ void deviceTimerCallBack( void )
         timer_15s = 0;
     }
     
-#if USE_MYPROTOCOL_DEBUG    
+#if 0    
     if( ++timer_30s >= TIMER_1S_COUNT )
     {    
         MYPROTOCOL_LOG("device curtain send get net time packet! \r\n");
