@@ -30,7 +30,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     protected final String TAG = getClass().getSimpleName();
     private byte[] emptyData = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    protected String mLogcat;
+    public static String sLogcat;
 
     GizWifiSDKListener mListener = new GizWifiSDKListener() {
 
@@ -144,7 +144,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                     } else if (Arrays.equals(bytes, emptyData)) {
                         Log.w(TAG, "mDidReceiveData: " + "全为0数据一条");
                     } else {
-                        mLogcat = mLogcat +updateLogcat(bytes);
+                        sLogcat = sLogcat +updateLogcat(bytes);
                         receiveSucceedData(bytes);
                     }
                 } else {

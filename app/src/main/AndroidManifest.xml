@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.FLASHLIGHT"/>
     //API23需授权权限
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
@@ -25,7 +27,6 @@
             android:theme="@style/loginTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
@@ -36,8 +37,10 @@
         <activity android:name=".activity.WIFIActivity"/>
         <activity android:name=".activity.DeviceActivity"/>
         <activity android:name=".activity.RegisterActivity"/>
-        <activity android:name=".activity.Main2Activity"
-                  android:exported="true"/>
+        <activity
+            android:name=".activity.Main2Activity"
+            android:exported="true"
+            android:launchMode="singleTask"/>
 
         <receiver android:name=".broadcast.ForceOfflineReceiver">
             <intent-filter>
@@ -48,6 +51,9 @@
         <activity
             android:name=".activity.SettingsActivity"
             android:exported="true">
+        </activity>
+        <activity android:name=".activity.DialogActivity"
+            android:theme="@style/AppTheme.Dialog">
         </activity>
     </application>
 

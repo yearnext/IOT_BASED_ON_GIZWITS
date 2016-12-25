@@ -34,6 +34,7 @@ public class StartActivity extends BaseActivity {
         } else {
             successfulPermissions();
         }
+
     }
 
 

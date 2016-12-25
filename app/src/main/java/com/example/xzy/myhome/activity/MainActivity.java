@@ -77,6 +77,7 @@ public class MainActivity extends BaseActivity {
                     Intent intent = new Intent(MainActivity.this, Main2Activity.class);
                     intent.putExtra("gizDevice", mGizDevice);
                     startActivityForResult(intent, 0);
+                    finish();
                 } else {
                     ToastUtil.showToast(MainActivity.this, "当前设备处于离线状态");
                 }

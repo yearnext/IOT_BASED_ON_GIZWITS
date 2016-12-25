@@ -9,38 +9,43 @@
     android:layout_height="70dp">
 
     <ImageView
-        android:id="@+id/image_device_item"
+        android:id="@+id/image_curtain_item"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_marginTop="5dp"
-        android:src="@drawable/socket"/>
+        android:src="@drawable/curtain"/>
 
     <TextView
-        android:id="@+id/tv_device_item_name"
+        android:id="@+id/tv_curtain_name"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_marginLeft="20dp"
-        android:layout_toRightOf="@id/image_device_item"
+        android:layout_toRightOf="@id/image_curtain_item"
         android:gravity="center"
-        android:text="插座"
+        android:text="窗帘"
         android:textSize="30sp"/>
 
+    <TextView
+        android:id="@+id/tv_curtain_stateing"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="20dp"
+        android:layout_toRightOf="@id/tv_curtain_name"
+        android:gravity="center"
+        android:text=""
+        android:textSize="20sp"/>
 
-    <com.rm.rmswitch.RMSwitch
-        android:id="@+id/switch_device_item"
+
+    <ImageView
+        android:id="@+id/switch_curtain_item"
+        android:src="@drawable/ic_power_settings_new_black_24dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_centerInParent="true"
-        android:layout_marginRight="15dp"
-        app:checked="false"
-        app:forceAspectRatio="false"
-        app:enabled="true"
-        app:switchDesign="android"
-        app:switchBkgCheckedColor="#ffd600"
-        app:switchBkgNotCheckedColor="#424242"
-        app:switchToggleCheckedColor="#eeeeee"
-        app:switchToggleNotCheckedColor="#eeeeee"/>
+        android:layout_marginRight="15dp"/>
+
 
 </RelativeLayout>
 

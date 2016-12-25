@@ -2,6 +2,7 @@ package com.example.xzy.myhome.model.bean;
 
 import android.util.Log;
 
+import com.example.xzy.myhome.activity.BaseActivity;
 import com.gizwits.gizwifisdk.api.GizWifiDevice;
 
 import java.io.Serializable;
@@ -9,7 +10,7 @@ import java.util.Calendar;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static android.content.ContentValues.TAG;
-import static com.mxchip.helper.ProbeReqData.bytesToHex;
+import static com.example.xzy.myhome.model.GizLog.updateAppSendLogcat;
 
 /**
  * Created by xzy on 16/9/18.
@@ -68,13 +69,14 @@ public class PacketBean implements Serializable {
     public static byte[] getSystemTime() {
         Calendar _calendar = Calendar.getInstance();
         byte[] _date = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        _date[0]= (byte)_calendar.get(Calendar.YEAR);
-        _date[1]= (byte) (_calendar.get(Calendar.MONTH)+1);
-        _date[2]= (byte) _calendar.get(Calendar.DAY_OF_MONTH);
+        _date[7]= (byte) ((byte)_calendar.get(Calendar.YEAR)<<8&0xFF);
+        _date[6]= (byte) ((byte)_calendar.get(Calendar.YEAR)&0xFF);
+        _date[4]= (byte) (_calendar.get(Calendar.MONTH)+1);
+        _date[5]= (byte) _calendar.get(Calendar.DAY_OF_MONTH);
         _date[3]= (byte) _calendar.get(Calendar.DAY_OF_WEEK);
-        _date[4]= (byte) _calendar.get(Calendar.HOUR_OF_DAY);
-        _date[5]= (byte)  _calendar.get(Calendar.MINUTE);
-        _date[6]= (byte) _calendar.get(Calendar.SECOND);
+        _date[2]= (byte) _calendar.get(Calendar.HOUR_OF_DAY);
+        _date[1]= (byte)  _calendar.get(Calendar.MINUTE);
+        _date[0]= (byte) _calendar.get(Calendar.SECOND);
         return _date;
     }
 
@@ -82,22 +84,21 @@ public class PacketBean implements Serializable {
         packet[0] = type;
         packet[1] = eventNumber;
         packet[2] = deviceType;
-
         for (int i = 0; i < 8; i++) {
             Log.e("", "sendPacket: " + i);
             packet[3 + i] = mac[i];
         }
         packet[11] = command;
         packet[12] = dataLength;
-
         for (int i = 0; i < data.length; i++) {
             packet[13 + i] = data[i];
         }
-
         packet[31] = getCheckSum();
+        if (BaseActivity.sLogcat!=null)
+        BaseActivity.sLogcat=BaseActivity.sLogcat+updateAppSendLogcat(packet);
         dataMap.put("Packet", packet);
         mDevice.write(dataMap, 0);
-        Log.e("发送数据", bytesToHex(packet));
+
 
     }
 
@@ -109,8 +110,9 @@ public class PacketBean implements Serializable {
         packet[13] = ++count;
         packet[31] = getCheckSum();
         dataMap.put("Packet", packet);
+        BaseActivity.sLogcat=BaseActivity.sLogcat+updateAppSendLogcat(packet);
         mDevice.write(dataMap, 0);
-        Log.e("发送数据", bytesToHex(packet));
+
     }
 
     //各种get set方法
@@ -137,6 +139,12 @@ public class PacketBean implements Serializable {
 
     public PacketBean setDataState(byte dataState) {
         data[0] = dataState;
+        return this;
+
+    }
+    public PacketBean setcloseLuminance(byte dataState) {
+        data[0] = 1;
+        data[1] = dataState;
         return this;
 
     }
@@ -244,7 +252,6 @@ public class PacketBean implements Serializable {
 
     public PacketBean setDataTiming(byte[] data) {
         for (int i = 0; i < 8; i++) {
-            if (i == 6) i++;
             this.data[i] = data[i];
         }
         return this;
@@ -267,7 +274,6 @@ public class PacketBean implements Serializable {
                 .setDataLength(DATA_LENGTH.TIME)
                 .setData(getSystemTime())
                 .sendPacket(device);
-
     }
 
 
@@ -312,7 +318,7 @@ public class PacketBean implements Serializable {
 
     }
     public interface DATA_LENGTH{
-        byte TIME = 0x7;
+        byte TIME = 0x8;
     }
 }
 

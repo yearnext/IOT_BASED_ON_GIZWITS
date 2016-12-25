@@ -21,6 +21,8 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
     </com.yanzhenjie.recyclerview.swipe.SwipeMenuRecyclerView>
 
+
+
     <ScrollView
         android:id="@+id/layout_debug"
         android:layout_width="match_parent"
@@ -35,7 +37,8 @@
                 android:id="@+id/button_error"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="获取第一台设备消息"/>
+                android:text="获取第一台设备消息"
+                android:visibility="gone"/>
 
             <Button
                 android:id="@+id/button_error1"
@@ -48,6 +51,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="清理日志"/>
+            <Button
+                android:id="@+id/button_update"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="手动更新日志"/>
+
 
 
             <TextView

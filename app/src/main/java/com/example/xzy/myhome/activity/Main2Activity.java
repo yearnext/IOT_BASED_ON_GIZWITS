@@ -1,8 +1,14 @@
 package com.example.xzy.myhome.activity;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -37,6 +43,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import static android.app.Notification.DEFAULT_ALL;
 import static com.example.xzy.myhome.model.bean.PacketBean.COMMAND.UPDATE_DEVICE_COUNT;
 import static com.mxchip.helper.ProbeReqData.bytesToHex;
 
@@ -55,10 +62,15 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
     @BindView(R.id.layout_debug)
     ScrollView layoutDebug;
 
-    static int sLampLuminance=150;
+    static int sLampLuminance = 150;
+
     private GizWifiDevice mGizDevice;
     private List<Device> mDeviceList;
     private DeviceItemRecycleViewAdapter deviceRVAdapter;
+    SharedPreferences preferences;
+    int mLuminance1;
+    int mLuminance2;
+    static int b;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,12 +82,16 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
         mGizDevice.setListener(mDeviceListener);
         mGizDevice.getDeviceStatus();
         mDeviceList = new ArrayList<>();
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mLuminance1 = preferences.getInt(Setting.PREF_LUMINANCE1, 60);
+        mLuminance2 = preferences.getInt(Setting.PREF_LUMINANCE2, 80);
         if (Setting.TEST) testInitData();
         if (!PreferenceManager.getDefaultSharedPreferences(this)
                 .getBoolean(Setting.PREF_DEBUG, false))
             layoutDebug.setVisibility(View.GONE);
-        iniToolbarList();
+        //iniToolbarList();
         initRecycleView();
+
     }
 
     @Override
@@ -130,15 +146,19 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
                 Intent intent = new Intent(Main2Activity.this, SettingsActivity.class);
                 intent.putExtra("device", mDeviceList.get(adapterPosition));
                 intent.putExtra("gizDevice", mGizDevice);
-                startActivity(intent);
+                if (mDeviceList.get(adapterPosition).getDeviceType() == PacketBean.DEVICE_TYPE.SENSOR_TEMPERATURE) {
+                    Snackbar.make(rvDeviceItem, "暂无相关设置", Snackbar.LENGTH_LONG).show();
+                } else {
+                    startActivity(intent);
+
+                }
             }
         });
-
     }
 
     @Override
     protected void receiveSucceedData(byte[] b) {
-        textViewLogcat.setText(mLogcat);
+        textViewLogcat.setText(sLogcat);
         PacketBean packetBean = new PacketBean(b);
         switch (PacketBean.receiveDataType(packetBean)) {
             case PacketBean.RECEIVE_DEVICE_TYPE.DEVICE:
@@ -147,9 +167,17 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
             case PacketBean.RECEIVE_DEVICE_TYPE.GATEWAY:
                 updateDeviceList(packetBean);
                 break;
+
         }
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (sLogcat != null) {
+            textViewLogcat.setText(sLogcat);
+        }
+    }
 
     private void updateDeviceData(PacketBean packetBean) {
         int index = getListIndex(packetBean.getMac());
@@ -165,6 +193,18 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
                 byte[] _mac = mDeviceList.get(index).getMac();
                 byte _deviceType = mDeviceList.get(index).getDeviceType();
                 PacketBean.updateDeviceTime(_mac, _deviceType, mGizDevice);
+                break;
+            case (byte) 0x18:
+                NotificationManager notificationManager =
+                        (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+                Notification notification =
+                        new NotificationCompat.Builder(this)
+                                .setSmallIcon(R.mipmap.ic_launcher)
+                                .setContentTitle("警告")
+                                .setContentText("下雨了")
+                                .setDefaults(DEFAULT_ALL)
+                                .build();
+                notificationManager.notify(0,notification);
                 break;
         }
     }
@@ -199,6 +239,9 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
             count = data[0];
             Log.i(TAG, "updateDeviceList: 接收到设备列表更新，有" + count + "台设备");
             mDeviceList.removeAll(mDeviceList);
+            DeviceItemRecycleViewAdapter.sLampCount = 0;
+            DeviceItemRecycleViewAdapter.sCurtainCount = 0;
+            DeviceItemRecycleViewAdapter.sSocketCount = 0;
             for (byte i = 0; i < count; i++) {
                 new PacketBean().requestDeviceList(mGizDevice, i);
             }
@@ -208,13 +251,15 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
             int index = getListIndex(packetBean.getDataMac());
             Log.w(TAG, "index:" + index);
             if (index != -1) {
-                device = mDeviceList.get(index);
+                /*device = mDeviceList.get(index);
                 device.setMac(packetBean.getDataMac());
-                device.setDeviceType(packetBean.getDataDeviceType());
+                device.setDeviceType(packetBean.getDataDeviceType());*/
             } else {
                 device.setMac(packetBean.getDataMac());
                 device.setDeviceType(packetBean.getDataDeviceType());
                 mDeviceList.add(device);
+                appRequstDeviceData(device);
+
             }
 
             Log.i(TAG, "获取到的设备MAC：" + bytesToHex(packetBean.getDataMac()) +
@@ -224,8 +269,7 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
     }
 
 
-
-    @OnClick({R.id.button_error, R.id.button_error1, R.id.button_clear})
+    @OnClick({R.id.button_error, R.id.button_error1, R.id.button_clear, R.id.button_update})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.button_error:
@@ -238,22 +282,22 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
                 packetBean.sendPacket(mGizDevice);
                 break;
             case R.id.button_clear:
-                mLogcat = "";
-                textViewLogcat.setText(mLogcat);
+                sLogcat = "";
+                textViewLogcat.setText(sLogcat);
                 break;
+            case R.id.button_update:
+                if (sLogcat != null)
+                    textViewLogcat.setText(sLogcat);
+                break;
+
         }
     }
 
 
 
-    @Override
-    public void onNameClick(int position, View view) {
-        //// TODO: 2016/10/26 名字修改
-
-    }
 
     @Override
-    public void onSwitchClick(int position, View view, byte switchState) {
+    public void onSwitchClick(int position, byte switchState) {
         PacketBean packetBean = new PacketBean();
         packetBean.setMac(mDeviceList.get(position).getMac())
                 .setDeviceType(mDeviceList.get(position).getDeviceType())
@@ -271,18 +315,23 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
         device1.setMac(new byte[]{0, 0, 0, 0, 0, 0, 0, 1});
         Device device2 = new Device();
         device2.setDeviceType(PacketBean.DEVICE_TYPE.LAMP);
+        device2.setDeviceName("灯");
         device2.setMac(new byte[]{0, 0, 0, 0, 0, 0, 0, 2});
 
         Device device3 = new Device();
         device3.setDeviceType(PacketBean.DEVICE_TYPE.CURTAIN);
+        device3.setDeviceName("窗帘");
+
         device3.setMac(new byte[]{0, 0, 0, 0, 0, 0, 0, 3});
 
         Device device4 = new Device();
         device4.setDeviceType(PacketBean.DEVICE_TYPE.SOCKET);
+        device4.setDeviceName("插座1");
         device4.setMac(new byte[]{0, 0, 0, 0, 0, 0, 0, 4});
 
         Device device5 = new Device();
         device5.setDeviceType(PacketBean.DEVICE_TYPE.SOCKET);
+        device4.setDeviceName("插座2");
         device5.setMac(new byte[]{0, 0, 0, 0, 0, 0, 0, 5});
 
         Collections.addAll(mDeviceList, device1, device2, device3, device4, device5);
@@ -311,4 +360,16 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
                 break;
         }
     }
+
+    private void appRequstDeviceData(Device device) {
+        PacketBean packetBean = new PacketBean();
+        packetBean.setMac(device.getMac())
+                .setType(PacketBean.TYPE.APP_REQUEST)
+                .setDeviceType(device.getDeviceType())
+                .setCommand(PacketBean.COMMAND.STATE_READ)
+                .setDataLength((byte) 0)
+                .sendPacket(mGizDevice);
+    }
+
+
 }

@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:background="#FFF"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:android="http://schemas.android.com/apk/res/android">
 
         <ImageView
@@ -24,15 +23,23 @@
             android:text="灯"
             android:textSize="30sp"/>
 
-        <SeekBar
-            android:id="@+id/seekBar_lamp"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@id/image_item_lamp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginStart="19dp"
-            android:layout_toEndOf="@id/tv_item_name_lamp"
-            android:max="100"/>
+    <com.rm.rmswitch.RMTristateSwitch
+        android:id="@+id/switch_device"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerInParent="true"
+        android:layout_marginRight="15dp"
+        app:forceAspectRatio="false"
+        app:state="left"
+        app:enabled="true"
+        app:switchDesign="android"
+        app:switchBkgLeftColor="#424242"
+        app:switchBkgMiddleColor="#ffd600"
+        app:switchBkgRightColor="#f44336"
+        app:switchToggleLeftColor="#eeeeee"
+        app:switchToggleMiddleColor="#eeeeee"
+        app:switchToggleRightColor="#eeeeee"/>
 
     </RelativeLayout>
 
