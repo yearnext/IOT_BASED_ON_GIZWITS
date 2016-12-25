@@ -41,6 +41,9 @@
 |-|Plus|增强版，不过这种大部分是在程序界面及多媒体功能上增强|
 
 ## 更新日志
+**固件版本：IOTBaseOnGizwits_MCUSoftwareDebug_0.2.13_alpha_201612252343**
++ 切换电灯控制按键为电容按键。
+
 **固件版本：IOTBaseOnGizwits_MCUSoftwareDebug_0.2.12_alpha_201612252330**
 + 修复了窗帘定时器回调存在递归的BUG。
 + 修改通讯协议标注错误的问题。

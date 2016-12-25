@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=-658992594
+Checksum=175186652
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -104,12 +104,10 @@ Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\Source\hal\hal_dht11.c}.172.21" 0 0 0 0 "" 0 ""
 Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits\gizwits_protocol.c}.1175.9" 0 0 0 0 "" 0 ""
 Bp5=_ "STD_CODE" "{$PROJ_DIR$\..\Source\gizwits\gizwits_protocol.c}.1182.9" 0 0 0 0 "" 0 ""
 Bp6=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_socket.c}.338.5" 0 0 0 0 "" 0 ""
-Bp7=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_light.c}.384.13" 0 0 0 0 "" 0 ""
-Bp8=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_light.c}.408.17" 0 0 0 0 "" 0 ""
-Bp9=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\Components\hal\common\hal_assert.c}.238.9" 1 0 0 0 "" 0 ""
-Bp10=_ "STD_CODE" "{$PROJ_DIR$\..\Source\app\app_timer.c}.118.5" 1 0 0 0 "" 0 ""
-Bp11=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_curtain.c}.960.13" 1 0 0 0 "" 0 ""
-Count=12
+Bp7=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\Components\hal\common\hal_assert.c}.238.9" 1 0 0 0 "" 0 ""
+Bp8=_ "STD_CODE" "{$PROJ_DIR$\..\Source\app\app_timer.c}.118.5" 1 0 0 0 "" 0 ""
+Bp9=_ "STD_CODE" "{$PROJ_DIR$\..\Source\bsp\bsp_curtain.c}.960.13" 0 0 0 0 "" 0 ""
+Count=10
 [ChipconEmu]
 Stop timers on halt=0
 Leave target running=1

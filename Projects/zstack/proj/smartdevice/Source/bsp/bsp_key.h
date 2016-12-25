@@ -63,18 +63,18 @@
 #define KEY2_READ()      KEY_ACTIVE_LOW(KEY2_PORT)
 // µçµÆµÆ°´¼ü¶Ë¿ÚÅäÖÃ
 #elif MYPROTOCOL_DEVICE_IS_LIGHT
-/** KEY1 P0_4 */
-#define KEY1_PORT        P0_4
+/** KEY1 P0_5 */
+#define KEY1_PORT        P0_5
 #define KEY1_PORT_SEL    P0SEL
 #define KEY1_PORT_DIR    P0DIR
-#define KEY1_PORT_BIT    BV(4)
+#define KEY1_PORT_BIT    BV(5)
 #define KEY1_PORT_INIT() st(KEY1_PORT_SEL &= ~KEY1_PORT_BIT; KEY1_PORT_DIR &= ~KEY1_PORT_BIT;)
 #define KEY1_READ()      KEY_ACTIVE_LOW(KEY1_PORT)
 /** KEY2 P0_5 */
-#define KEY2_PORT        P0_5
+#define KEY2_PORT        P0_4
 #define KEY2_PORT_SEL    P0SEL
 #define KEY2_PORT_DIR    P0DIR
-#define KEY2_PORT_BIT    BV(5)
+#define KEY2_PORT_BIT    BV(4)
 #define KEY2_PORT_INIT() st(KEY2_PORT_SEL &= ~KEY2_PORT_BIT; KEY2_PORT_DIR &= ~KEY2_PORT_BIT;)
 #define KEY2_READ()      KEY_ACTIVE_LOW(KEY2_PORT)
 // ²å×ù°´¼ü¶Ë¿ÚÅäÖÃ
