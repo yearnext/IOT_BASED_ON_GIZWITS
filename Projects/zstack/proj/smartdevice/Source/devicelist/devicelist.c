@@ -415,7 +415,7 @@ bool deviceIsExists( MYPROTOCOL_DEVICE_INFO_t *info )
  */
 bool deviceInfoGet( uint8 id, MYPROTOCOL_DEVICE_INFO_t **info )
 {
-    if( id == 0 )
+    if( id <= 0 )
     {
         return false;
     }

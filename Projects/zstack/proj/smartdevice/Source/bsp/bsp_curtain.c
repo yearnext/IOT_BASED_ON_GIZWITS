@@ -149,8 +149,8 @@
 //#define INIT_CURTAIN_OPERA()      {CLR_CURTAIN_REVERSE();Onboard_wait(5);CLR_CURTAIN_FORWARD();Onboard_wait(5);}
      
 // 电动窗帘定时器标号
-#define CURTAIN_SIGNAL_TIMER      (0x01)
-#define CURTAIN_CIRCUL_TIMER      (0x02)
+#define CURTAIN_SIGNAL_TIMER      (0x00)
+#define CURTAIN_CIRCUL_TIMER      (0x01)
 
 // 电机限位标志
 #define CURTAIN_LIMIT_NONE        (0x00)
@@ -627,7 +627,7 @@ void curtainControlHandler( uint8 cmd )
  */
 void curtainTimerControlHandler( uint8 cmd )
 {
-    curtainTimerControlHandler(cmd);
+    curtainControlHandler(cmd);
     reportCurtainStatus();
 }
 
