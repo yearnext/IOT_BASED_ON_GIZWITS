@@ -654,7 +654,7 @@ void curtainMetorFresh( void )
  */
 void curtainSpeedDetection( void )
 {
-#define CURTAIN_SPEED_COUNT (15)
+#define CURTAIN_SPEED_COUNT (10)
     
     static uint8 s1Count = 0;
 //    static uint8 s2Count = 0;

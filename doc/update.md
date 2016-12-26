@@ -41,6 +41,9 @@
 |-|Plus|增强版，不过这种大部分是在程序界面及多媒体功能上增强|
 
 ## 更新日志
+**固件版本：IOTBaseOnGizwits_MCUSoftwareDebug_0.2.14_alpha_201612261423**
++ 修改窗帘速度检测时间。
+
 **固件版本：IOTBaseOnGizwits_MCUSoftwareDebug_0.2.13_alpha_201612252343**
 + 切换电灯控制按键为电容按键。
 

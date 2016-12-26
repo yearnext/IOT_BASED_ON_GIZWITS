@@ -96,6 +96,13 @@ Fmt6={W}1:events	4	0
 Fmt7={W}1:gizwits_uart_status	4	0
 Fmt8={W}1:size	3	0
 Fmt9={W}1:start	3	0
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
 [Breakpoints]
 Bp0=_ "STD_CODE" "{E:\Project}.411.3" 0 0 0 0 "" 0 ""
 Bp1=_ "STD_CODE" "{C:\Users\NBSEC\Desktop}.248.3" 0 0 0 0 "" 0 ""
@@ -111,13 +118,6 @@ Count=10
 [ChipconEmu]
 Stop timers on halt=0
 Leave target running=1
-[Log file]
-LoggingEnabled=_ 0
-LogFile=_ ""
-Category=_ 0
-[TermIOLog]
-LoggingEnabled=_ 0
-LogFile=_ ""
 [Aliases]
 A0=_ "C:\Users\NBSEC\Desktop\IOT_BASED_ON_GIZWITS\Projects\zstack\ZMain\TI2530DB\ZMain.c" ""
 A1=_ "C:\Users\NBSEC\Desktop\IOT_BASED_ON_GIZWITS\Projects\zstack\proj\smartdevice\Source\bsp\bsp_key.c" ""
