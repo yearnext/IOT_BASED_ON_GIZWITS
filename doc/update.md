@@ -41,6 +41,9 @@
 |-|Plus|增强版，不过这种大部分是在程序界面及多媒体功能上增强|
 
 ## 更新日志
+**固件版本：IOTBaseOnGizwits_MCUSoftwareDebug_0.2.15_alpha_201612261700**
++ 添加网关获取网络事时间前置标志。
+
 **固件版本：IOTBaseOnGizwits_MCUSoftwareDebug_0.2.14_alpha_201612261423**
 + 修改窗帘速度检测时间。
 

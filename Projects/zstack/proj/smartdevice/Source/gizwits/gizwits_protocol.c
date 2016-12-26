@@ -1749,10 +1749,13 @@ bool gizwitsHandle( void )
         // memcpy((uint8 *)&gizwitsProtocol.gizLastDataPoint, (uint8 *)currentData, sizeof(dataPoint_t));
     // }    
 	
-	if(0 == (gizGetTimerCount() % (UPDATE_NTP_TIME)))
+    if( gizwitsProtocol.wifiStatusData.con_m2m == 1 )
     {
-        gizwitsGetNTP();
-	}
+        if(0 == (gizGetTimerCount() % (UPDATE_NTP_TIME)))
+        {
+            gizwitsGetNTP();
+        }
+    }
 
     return true;
 }
