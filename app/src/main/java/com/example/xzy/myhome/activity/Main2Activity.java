@@ -71,6 +71,7 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
     int mLuminance1;
     int mLuminance2;
     static int b;
+    byte count;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -234,46 +235,66 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
         //请求设备数
         if (packetBean.getCommand() == PacketBean.COMMAND.UPDATE_DEVICE_COUNT ||
                 packetBean.getCommand() == PacketBean.COMMAND.DEVICE_RESPONSE_APP_COUNT) {
-            byte count;
+
             byte[] data = packetBean.getData();
+            if (count==data[0])
+            {mDeviceList.removeAll(mDeviceList);
+                return;}
             count = data[0];
             Log.i(TAG, "updateDeviceList: 接收到设备列表更新，有" + count + "台设备");
-            mDeviceList.removeAll(mDeviceList);
-            DeviceItemRecycleViewAdapter.sLampCount = 0;
-            DeviceItemRecycleViewAdapter.sCurtainCount = 0;
-            DeviceItemRecycleViewAdapter.sSocketCount = 0;
-            for (byte i = 0; i < count; i++) {
-                new PacketBean().requestDeviceList(mGizDevice, i);
-            }
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        for (byte i = 0; i < count; i++) {
+                            try {
+                                Thread.sleep(1000);
+                                new PacketBean().requestDeviceList(mGizDevice, i);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }).start();
+
             //获取设备信息
         } else if (packetBean.getCommand() == PacketBean.COMMAND.UPDATE_DEVICE_MESSAGE) {
             Device device = new Device();
             int index = getListIndex(packetBean.getDataMac());
             Log.w(TAG, "index:" + index);
             if (index != -1) {
-                /*device = mDeviceList.get(index);
+                device = mDeviceList.get(index);
                 device.setMac(packetBean.getDataMac());
-                device.setDeviceType(packetBean.getDataDeviceType());*/
+                device.setDeviceType(packetBean.getDataDeviceType());
             } else {
                 device.setMac(packetBean.getDataMac());
                 device.setDeviceType(packetBean.getDataDeviceType());
                 mDeviceList.add(device);
                 appRequstDeviceData(device);
+                deviceRVAdapter.notifyDataSetChanged();
 
             }
-
             Log.i(TAG, "获取到的设备MAC：" + bytesToHex(packetBean.getDataMac()) +
                     "类型" + packetBean.getDataDeviceType());
-            deviceRVAdapter.notifyDataSetChanged();
         }
     }
 
 
-    @OnClick({R.id.button_error, R.id.button_error1, R.id.button_clear, R.id.button_update})
+    @OnClick({R.id.button_1,R.id.button_2,R.id.button_3,R.id.button_4, R.id.button_error1, R.id.button_clear, R.id.button_update})
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.button_error:
+            case R.id.button_1:
                 new PacketBean().requestDeviceList(mGizDevice, (byte) 0);
+                break;
+            case R.id.button_2:
+                new PacketBean().requestDeviceList(mGizDevice, (byte) 1);
+                break;
+            case R.id.button_3:
+                new PacketBean().requestDeviceList(mGizDevice, (byte) 2);
+                break;
+            case R.id.button_4:
+                new PacketBean().requestDeviceList(mGizDevice, (byte) 3);
                 break;
             case R.id.button_error1:
                 PacketBean packetBean = new PacketBean();

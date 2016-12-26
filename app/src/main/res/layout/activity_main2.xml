@@ -34,11 +34,25 @@
             android:orientation="vertical">
 
             <Button
-                android:id="@+id/button_error"
+                android:id="@+id/button_1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="获取第一台设备消息"
-                android:visibility="gone"/>
+                android:text="获取第1台设备消息"/>
+            <Button
+                android:id="@+id/button_2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="获取第2台设备消息"/>
+            <Button
+                android:id="@+id/button_3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="获取第3台设备消息"/>
+            <Button
+                android:id="@+id/button_4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="获取第4台设备消息"/>
 
             <Button
                 android:id="@+id/button_error1"

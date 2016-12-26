@@ -114,7 +114,6 @@ public class SettingsActivity extends BaseActivity {
             case PacketBean.DEVICE_TYPE.SENSOR_TEMPERATURE:
                 ToastUtil.showToast(this, "暂无相关设置设置");
                 break;
-
         }
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -225,9 +224,9 @@ public class SettingsActivity extends BaseActivity {
 
     private void showDialogOpenTiming() {
         if (mDevice.getDeviceType() == PacketBean.DEVICE_TYPE.LAMP)
-            mTimeData[6] = (byte) mLuminance2;
+        {     mTimeData[6] = (byte) mLuminance2;}
         else
-            mTimeData[6] = (byte) 1;
+        {  mTimeData[6] = (byte) 1;}
         TimePickerDialog dialog = new TimePickerDialog(
                 SettingsActivity.this,
                 R.style.AlertDialog_AppCompat_mTime,
