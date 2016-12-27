@@ -27,7 +27,7 @@
 #include "myprotocol.h"
 
 /* Exported macro ------------------------------------------------------------*/
-#define deviceUpdateNTPTime() MyprotocolSendData(NULL,NULL,createDeviceGetNetTimePacket,MyprotocolD2WSendData)
+#define deviceUpdateNTPTime() MyprotocolSendData(NULL,NULL,createDeviceGetNTPPacket,MyprotocolD2WSendData)
 
 /* Exported types ------------------------------------------------------------*/
 /**
@@ -55,6 +55,7 @@ typedef struct
 extern void app_time_init( void );
 extern void app_time_update( user_time* );
 extern user_time app_get_time( void );
+extern bool clrTimeUpdateFlag( void );
 extern bool IsLeapYear( uint16 );
 extern uint32 TimeConverTimeStamp( user_time* );
 extern user_time TimeStampConverTime( uint32 );

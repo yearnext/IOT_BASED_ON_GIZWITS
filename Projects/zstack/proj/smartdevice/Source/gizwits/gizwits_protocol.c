@@ -1022,6 +1022,8 @@ static bool gizProtocolErrorCmd(protocolHead_t *head,errorPacketsType_t error)
  */
 static bool gizProtocolNTP(protocolHead_t *head)
 {
+    static int8 last_minute = -1;
+    
 #if USE_MYPROTOCOL_DEBUG
     if(NULL == head)
     {
@@ -1032,6 +1034,13 @@ static bool gizProtocolNTP(protocolHead_t *head)
     memcpy((uint8 *)&gizwitsProtocol.TimeNTP,(uint8 *)&((protocolUTT_t *)head)->time, sizeof(gizwitsProtocol.TimeNTP));
     gizwitsProtocol.TimeNTP.year = gizProtocolExchangeBytes(gizwitsProtocol.TimeNTP.year);
     gizwitsProtocol.TimeNTP.ntp = gizExchangeWord(gizwitsProtocol.TimeNTP.ntp);
+    
+    if( last_minute != gizwitsProtocol.TimeNTP.minute )
+    {
+        last_minute = gizwitsProtocol.TimeNTP.minute;
+        MyprotocolSendData(NULL,NULL,createDeviceWrNTPPacket,MyprotocolD2DBroadcastData);
+        GIZWITS_LOG("coord broadcast ntp data! \r\n");
+    }
 
 //    gizwitsProtocol.NTPEvent.event[gizwitsProtocol.NTPEvent.num] = WIFI_NTP;
 //    gizwitsProtocol.NTPEvent.num++;
@@ -1749,14 +1758,11 @@ bool gizwitsHandle( void )
         // memcpy((uint8 *)&gizwitsProtocol.gizLastDataPoint, (uint8 *)currentData, sizeof(dataPoint_t));
     // }    
 	
-    if( gizwitsProtocol.wifiStatusData.con_m2m == 1 )
+    if(0 == (gizGetTimerCount() % (UPDATE_NTP_TIME)))
     {
-        if(0 == (gizGetTimerCount() % (UPDATE_NTP_TIME)))
-        {
-            gizwitsGetNTP();
-        }
+        gizwitsGetNTP();
     }
-
+    
     return true;
 }
 

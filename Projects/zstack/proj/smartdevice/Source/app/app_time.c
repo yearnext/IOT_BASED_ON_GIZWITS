@@ -50,6 +50,8 @@
     static user_time deviceTime;
 #endif
  
+static uint8 timeUpdateFlag = 0;
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -89,6 +91,20 @@ void app_time_update( user_time *time )
 #else
     memcpy(&deviceTime, time, sizeof(deviceTime));
 #endif
+    timeUpdateFlag = 1;
+}
+
+/**
+ *******************************************************************************
+ * @brief       清除时间刷新标志
+ * @param       [in/out]  void
+ * @return      [in/out]  void
+ * @note        None
+ *******************************************************************************
+ */
+bool clrTimeUpdateFlag( void )
+{
+    return (timeUpdateFlag == 1) ? (timeUpdateFlag = 0, true) : (false);
 }
 
 /**

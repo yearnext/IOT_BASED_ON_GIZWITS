@@ -59,7 +59,7 @@ extern "C"
  /** 3000ms重发 */
 #define SEND_MAX_TIME   GIZWITS_TIME_CONVER_TICK(3000)
      
-#define UPDATE_NTP_TIME GIZWITS_TIME_CONVER_TICK(500)
+#define UPDATE_NTP_TIME GIZWITS_TIME_CONVER_TICK(1000)
 
 /** 重发次数 */
 #define SEND_MAX_NUM    (2)                     

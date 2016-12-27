@@ -175,45 +175,6 @@ bool createDeviceInfoAckPacket( void *ctx, void *packet )
  * @note        None
  *******************************************************************************
  */
-bool createDeviceRdTimeAckPacket( void *ctx, void *packet )
-{    
-    user_time nowTime = gizwitsNTPConverUserTime();
-    
-#if USE_MYPROTOCOL_DEBUG
-    if( packet == NULL )
-    {
-        MYPROTOCOL_LOG("Device Num Ack Packet info is invalid! \r\n");
-        return false;
-    }
-#endif    
-
-    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype          = MYPROTOCOL_S2H_ACK;
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.cmd     = MYPROTOCOL_RD_TIME_CMD; 
-    memcpy(&((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data, &nowTime, sizeof(user_time));
-    
-    if( getGizwitsM2MStatus() == true )
-    {
-        ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[sizeof(user_time)] = 0x01;
-    }
-    else
-    {
-        ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[sizeof(user_time)] = 0x00;
-    }
-    
-    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.len = sizeof(user_time)+1;
-    
-    return true;
-}
-
-/**
- *******************************************************************************
- * @brief       网关响应设备信息
- * @param       [in/out]  ctx            设备ID
- * @param       [in/out]  packet         创建数据包函数
- * @return      [in/out]  bool           程序运行状态
- * @note        None
- *******************************************************************************
- */
 bool createAPPRdTimeAckPacket( void *ctx, void *packet )
 {    
     user_time nowTime = gizwitsNTPConverUserTime();
@@ -511,7 +472,7 @@ bool coordMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
                     case MYPROTOCOL_UPDATE_TIME_CMD:
                     {    
                         gizwitsGetNTP();
-                        MyprotocolSendData(NULL, NULL, createDeviceRdTimeAckPacket, MyprotocolD2WSendData);
+                        MyprotocolSendData(NULL, NULL, createDeviceGetNTPAckPacket, MyprotocolD2WSendData);
                         break;
                     }
                     case MYPROTOCOL_RD_TIME_CMD:
@@ -612,7 +573,7 @@ bool coordMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
                         }
 #endif
                         addDeviceTick(&recPacket->device);
-                        MyprotocolSendData(NULL, &recPacket->device.mac, createDeviceRdTimeAckPacket, MyprotocolD2DSendData);
+                        MyprotocolSendData(NULL, &recPacket->device.mac, createDeviceGetNTPAckPacket, MyprotocolD2DSendData);
                         break;
                     }
                     default:

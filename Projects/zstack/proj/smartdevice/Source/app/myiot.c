@@ -379,7 +379,10 @@ void deviceTimerCallBack( void )
     if( ++timer_30s >= TIMER_30S_COUNT )
     {    
         MYPROTOCOL_LOG("device LIGHT send get net time packet! \r\n");
-        deviceUpdateNTPTime();
+        if( clrTimeUpdateFlag() == false )
+        {
+            deviceUpdateNTPTime();
+        }
         timer_30s = 0;
     }
 #endif 
@@ -419,7 +422,10 @@ void deviceTimerCallBack( void )
     if( ++timer_30s >= TIMER_30S_COUNT )
     {    
         MYPROTOCOL_LOG("device socket send get net time packet! \r\n");
-        deviceUpdateNTPTime();
+        if( clrTimeUpdateFlag() == false )
+        {
+            deviceUpdateNTPTime();
+        }
         timer_30s = 0;
     }
 #endif 
@@ -431,9 +437,10 @@ void deviceTimerCallBack( void )
     static uint8 timer_30ms   = 0;
 //    static uint8 timer_50ms   = 0;
     static uint8 timer_500ms  = 0;
+    static uint16 timer_1s   = 0;
     static uint16 timer_15s   = 0;
     static uint16 timer_30s   = 0;
-    static uint16 timer_1min  = 0;
+//    static uint16 timer_1min  = 0;
 
     if( ++timer_30ms >= TIMER_30MS_COUNT )
     {
@@ -472,17 +479,20 @@ void deviceTimerCallBack( void )
     }
 #else  
     if( ++timer_30s >= TIMER_30S_COUNT )
-    {    
-        deviceUpdateNTPTime();
+    {  
+        if( clrTimeUpdateFlag() == false )
+        {
+            deviceUpdateNTPTime();
+        }
         timer_30s = 0;
     }
 #endif 
         
-    if( ++timer_1min >= TIMER_1MIN_COUNT )
+    if( ++timer_1s >= TIMER_1S_COUNT )
     {
         curtainRainDetection();
         
-        timer_1min = 0;
+        timer_1s = 0;
     }
 }
 

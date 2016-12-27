@@ -41,15 +41,15 @@
  * @{
  */
 // 窗帘正转端口寄存器定义
-#define CURTAIN_FORWARD_PORT     P1_2
-#define CURTAIN_FORWARD_BV       BV(2)
+#define CURTAIN_FORWARD_PORT     P1_3
+#define CURTAIN_FORWARD_BV       BV(3)
 #define CURTAIN_FORWARD_SEL      P1SEL
 #define CURTAIN_FORWARD_DIR      P1DIR
 #define CURTAIN_FORWARD_POLARITY ACTIVE_HIGH
 
 // 窗帘反转端口寄存器定义
-#define CURTAIN_REVERSE_PORT     P1_3
-#define CURTAIN_REVERSE_BV       BV(3)
+#define CURTAIN_REVERSE_PORT     P1_2
+#define CURTAIN_REVERSE_BV       BV(2)
 #define CURTAIN_REVERSE_SEL      P1SEL
 #define CURTAIN_REVERSE_DIR      P1DIR
 #define CURTAIN_REVERSE_POLARITY ACTIVE_HIGH
@@ -938,6 +938,10 @@ bool curtainMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
 //                app_time_update((user_time *)&recPacket->user_data.data);
 //            }
             app_time_update((user_time *)&recPacket->user_data.data);
+        case MYPROTOCOL_WR_TIME_CMD:
+            app_time_update((user_time *)&recPacket->user_data.data);
+            MyprotocolSendData(NULL,NULL,createDeviceWrNTPAckPacket,MyprotocolD2DSendData);
+            MYPROTOCOL_LOG("device curtain get write ntp cmd! \r\n");
             break;
         case RD_CURTAIN_STATE:
             reportCurtainStatus();

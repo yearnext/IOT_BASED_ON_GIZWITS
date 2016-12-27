@@ -436,6 +436,11 @@ bool socketMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
 //            }
             app_time_update((user_time *)&recPacket->user_data.data);
             break;
+        case MYPROTOCOL_WR_TIME_CMD:
+            app_time_update((user_time *)&recPacket->user_data.data);
+            MyprotocolSendData(NULL,NULL,createDeviceWrNTPAckPacket,MyprotocolD2DSendData);
+            MYPROTOCOL_LOG("device curtain get write ntp cmd! \r\n");
+            break;
         case RD_SOCKET_STATE:
             reportSocketState();
             break;

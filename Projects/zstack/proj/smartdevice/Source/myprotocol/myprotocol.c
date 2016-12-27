@@ -425,6 +425,48 @@ bool MyprotocolD2DSendData( void *ctx, void *packet )
 					      AF_DEFAULT_RADIUS);
 }
 
+/**
+ *******************************************************************************
+ * @brief       发送D2D数据包
+ * @param       [in/out]  ctx       上下文数据
+ * @param       [in/out]  packet    创建数据包函数   
+ * @return      [in/out]  bool      程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool MyprotocolD2DBroadcastData( void *ctx, void *packet )
+{
+  afAddrType_t DeviceDstAddr;
+  
+  if( NwkState == DEV_NWK_DISC )
+  {
+      return false;
+  }
+  
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("MyprotocolD2DSendData intput param packet is invalid! \r\n");
+        return false;
+    }
+#endif
+        
+    memset(&DeviceDstAddr,0,sizeof(DeviceDstAddr));
+   
+    DeviceDstAddr.addr.shortAddr = 0xFFFF;
+    DeviceDstAddr.addrMode = afAddrBroadcast;
+	DeviceDstAddr.endPoint = DeviceEndPoint;
+    
+    return AF_DataRequest(&DeviceDstAddr,
+					      &DeviceEpDesc,
+					      DeviceCommClustersID,
+					      MYPROTOCOL_PACKET_SIZE,
+					      (uint8 *)packet,
+					      &DeviceTransID,
+					      AF_DISCV_ROUTE,
+					      AF_DEFAULT_RADIUS);
+}
+
 #if MYPROTOCOL_DEVICE_IS_COORD
 /**
  *******************************************************************************
@@ -955,7 +997,7 @@ bool createW2DAckPacket( void *ctx, void *packet )
  * @note        None
  *******************************************************************************
  */
-bool createDeviceGetNetTimePacket( void *ctx, void *packet )
+bool createDeviceGetNTPPacket( void *ctx, void *packet )
 {
 #if USE_MYPROTOCOL_DEBUG
     if( packet == NULL )
@@ -967,6 +1009,110 @@ bool createDeviceGetNetTimePacket( void *ctx, void *packet )
 
     ((MYPROTOCOL_FORMAT_t *)(packet))->commtype      = MYPROTOCOL_S2H_WAIT;
     ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.cmd = MYPROTOCOL_RD_TIME_CMD;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.len = 0;
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       网关返回网络时间
+ * @param       [in/out]  ctx            设备ID
+ * @param       [in/out]  packet         创建数据包函数
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool createDeviceGetNTPAckPacket( void *ctx, void *packet )
+{    
+    user_time nowTime = gizwitsNTPConverUserTime();
+    
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("Device Num Ack Packet info is invalid! \r\n");
+        return false;
+    }
+#endif    
+
+    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype          = MYPROTOCOL_S2H_ACK;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.cmd     = MYPROTOCOL_RD_TIME_CMD; 
+    memcpy(&((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data, &nowTime, sizeof(user_time));
+    
+    if( getGizwitsM2MStatus() == true )
+    {
+        ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[sizeof(user_time)] = 0x01;
+    }
+    else
+    {
+        ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[sizeof(user_time)] = 0x00;
+    }
+    
+    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.len = sizeof(user_time)+1;
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       网关写入网络时间数据包
+ * @param       [in/out]  ctx            设备ID
+ * @param       [in/out]  packet         创建数据包函数
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool createDeviceWrNTPPacket( void *ctx, void *packet )
+{    
+    user_time nowTime = gizwitsNTPConverUserTime();
+    
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("Device Num Ack Packet info is invalid! \r\n");
+        return false;
+    }
+#endif    
+
+    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype          = MYPROTOCOL_H2S_WAIT;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.cmd     = MYPROTOCOL_WR_TIME_CMD; 
+    memcpy(&((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data, &nowTime, sizeof(user_time));
+    
+    if( getGizwitsM2MStatus() == true )
+    {
+        ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[sizeof(user_time)] = 0x01;
+    }
+    else
+    {
+        ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.data[sizeof(user_time)] = 0x00;
+    }
+    
+    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.len = sizeof(user_time)+1;
+    
+    return true;
+}
+
+/**
+ *******************************************************************************
+ * @brief       网关写入网络时间应答数据包
+ * @param       [in/out]  ctx            设备ID
+ * @param       [in/out]  packet         创建数据包函数
+ * @return      [in/out]  bool           程序运行状态
+ * @note        None
+ *******************************************************************************
+ */
+bool createDeviceWrNTPAckPacket( void *ctx, void *packet )
+{    
+#if USE_MYPROTOCOL_DEBUG
+    if( packet == NULL )
+    {
+        MYPROTOCOL_LOG("Device Num Ack Packet info is invalid! \r\n");
+        return false;
+    }
+#endif    
+
+    ((MYPROTOCOL_FORMAT_t *)(packet))->commtype      = MYPROTOCOL_H2S_ACK;
+    ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.cmd = MYPROTOCOL_RD_TIME_CMD; 
     ((MYPROTOCOL_FORMAT_t *)(packet))->user_data.len = 0;
     
     return true;

@@ -269,21 +269,21 @@ extern bool MyprotocolDeviceConStatusUpdate( uint8 );
  * @{
  */
 // 通用发送数据包函数
-#if MYPROTOCOL_DEVICE_IS_COORD
 extern bool MyprotocolD2DSendData( void*, void* );
-extern bool MyprotocolD2WSendData( void*, void* );
-
-#else
-extern bool MyprotocolD2DSendData( void*, void* );
-#define MyprotocolD2WSendData MyprotocolD2DSendData
-
-#endif
-
+extern bool MyprotocolD2DBroadcastData( void*, void* );
 extern bool MyprotocolForwardData( void*, void*, send_type );
 extern bool MyprotocolSendData( void*, void*, packet_type, send_type );
 
 // 专用发送数据包函数
 extern bool MyprotocolReplyErrPacket( MYPROTOCOL_FORMAT_t* );
+
+#if MYPROTOCOL_DEVICE_IS_COORD
+extern bool MyprotocolD2WSendData( void*, void* );
+#else
+extern bool MyprotocolD2DSendData( void*, void* );
+#define MyprotocolD2WSendData MyprotocolD2DSendData
+#endif
+
 /**@} */
 
 /**
@@ -315,7 +315,10 @@ extern bool createD2WWaitPacket( void*, void* );
 extern bool createD2WAckPacket( void*, void* );
 extern bool createW2DWaitPacket( void*, void* );
 extern bool createW2DAckPacket( void*, void* );
-extern bool createDeviceGetNetTimePacket( void*, void* );
+extern bool createDeviceGetNTPPacket( void*, void* );
+extern bool createDeviceGetNTPAckPacket( void*, void* );
+extern bool createDeviceWrNTPPacket( void*, void* );
+extern bool createDeviceWrNTPAckPacket( void*, void* );
 /**@} */
 
 #ifdef __cplusplus
