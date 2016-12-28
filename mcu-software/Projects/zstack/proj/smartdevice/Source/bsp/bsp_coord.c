@@ -546,8 +546,17 @@ bool coordMessageHandler( MYPROTOCOL_FORMAT_t *recPacket )
                                 break;
                         }
 #endif
-                        addDeviceTick(&recPacket->device);
-                        MyprotocolSendData(recPacket,&recPacket->device.mac, createDeviceTickAckPacket, MyprotocolD2DSendData);
+                        if( deviceIsExists(&recPacket->device) == true )
+                        {
+                            addDeviceTickForList(&recPacket->device);
+                            MyprotocolSendData(recPacket,&recPacket->device.mac, createDeviceTickAckPacket, MyprotocolD2DSendData);
+                        }
+                        else
+                        {
+                            addDeviceToList(&recPacket->device);
+                            MyprotocolSendData(recPacket,&recPacket->device.mac, createDeviceTickAckPacket, MyprotocolD2DSendData);
+                            MyprotocolSendData(NULL,NULL, createDeviceListChangePacket, MyprotocolD2WSendData);
+                        }
                         break;
                     }
                     case MYPROTOCOL_RD_TIME_CMD:

@@ -350,7 +350,7 @@ bool listZombieDeviceClr( void **ctx, void **list, void **expand )
 
 /**
  *******************************************************************************
- * @brief       从列表中清除添加设备
+ * @brief       从列表中添加设备
  * @param       [in/out]  *info   设备信息
  * @return      [in/out]  status  状态
  * @note        None
@@ -448,6 +448,19 @@ bool addDeviceTick( MYPROTOCOL_DEVICE_INFO_t *info )
     }
     
 //    return false;
+}
+
+/**
+ *******************************************************************************
+ * @brief       增加设备心跳计数
+ * @param       [in/out]  num     设备编号
+ * @return      [in/out]  status  状态
+ * @note        None
+ *******************************************************************************
+ */
+bool addDeviceTickForList( MYPROTOCOL_DEVICE_INFO_t *info )
+{
+    return nodeTraverse((void **)&listHead, listDeviceFindOperaForInfo, (void **)info, (void **)((uint16)&listDeviceTickAdd));
 }
 
 /**
