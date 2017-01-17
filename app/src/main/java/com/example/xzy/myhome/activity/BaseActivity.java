@@ -27,9 +27,9 @@ import static com.mxchip.helper.ProbeReqData.bytesToHex;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
-
     protected final String TAG = getClass().getSimpleName();
-    private byte[] emptyData = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    private byte[] emptyData = new byte[]{0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     public static String sLogcat;
 
     GizWifiSDKListener mListener = new GizWifiSDKListener() {
@@ -166,8 +166,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     };
 
-
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -187,7 +185,8 @@ public abstract class BaseActivity extends AppCompatActivity {
      * @param device    回调的GizWifiDevice对象
      * @param netStatus 设备的状态
      */
-    protected void mDidUpdateNetStatus(GizWifiDevice device, GizWifiDeviceNetStatus netStatus) {
+    protected void mDidUpdateNetStatus(
+            GizWifiDevice device, GizWifiDeviceNetStatus netStatus) {
         Toast.makeText(this, "设备状态变为:" + netStatus, Toast.LENGTH_SHORT).show();
         switch (netStatus) {
             case GizDeviceOnline:
@@ -206,8 +205,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         Log.i(TAG, "设备状态回调:" + device.getProductName() + "   " + netStatus);
     }
 
-
-
     //登录回调
     protected void mDidUserLogin(GizWifiErrorCode result, String uid, String token) {
     }
@@ -219,7 +216,8 @@ public abstract class BaseActivity extends AppCompatActivity {
 
 
     //WIFI配置回调
-    protected void mDidSetDeviceOnboarding(GizWifiErrorCode result, String mac, String did, String productKey) {
+    protected void mDidSetDeviceOnboarding(
+            GizWifiErrorCode result, String mac, String did, String productKey) {
     }
 
     //在AP模式下获取WIFI列表
@@ -227,7 +225,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     //设备发现回调
-    protected void mDidDiscovered(GizWifiErrorCode result, List<GizWifiDevice> deviceList) {
+    protected void mDidDiscovered(
+            GizWifiErrorCode result, List<GizWifiDevice> deviceList) {
     }
 
     protected void receiveSucceedData(byte[] bytes){

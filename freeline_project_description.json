@@ -1,0 +1,116 @@
+{
+    "android_gradle_plugin_version": "2.3.0-alpha2",
+    "apk_path": "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/build/outputs/apk/app-debug.apk",
+    "apt": {
+        "app": {
+            "aptArgs": [
+                
+            ],
+            "aptOutput": "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/build/generated/source/apt/debug",
+            "disableDiscovery": false,
+            "enabled": true,
+            "processor": null,
+            "processorPath": "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/libs/BLEasyConfig.jar:/Users/apple/Projects/AndroidStudioProjects/Myhome/app/libs/easylink2.0.jar:/Users/apple/Projects/AndroidStudioProjects/Myhome/app/libs/GizWifiSDK.jar:/Users/apple/Projects/AndroidStudioProjects/Myhome/app/libs/hiflying-iots-android-smartlink7.0.2.jar:/Users/apple/Projects/AndroidStudioProjects/Myhome/app/libs/Lark7618SDK_noudp1606031910_0101.jar:/Users/apple/Projects/AndroidStudioProjects/Myhome/app/libs/libEsptouch_v0.3.3.4_3.jar:/Users/apple/Projects/AndroidStudioProjects/Myhome/app/libs/libForEElink.jar:/Users/apple/Projects/AndroidStudioProjects/Myhome/app/libs/LSFSK_1.0.jar:/Users/apple/Projects/AndroidStudioProjects/Myhome/app/libs/OneShotConfig.jar:/Users/apple/Projects/AndroidStudioProjects/Myhome/app/libs/simpleconfigwizardlib.jar:/Users/apple/.gradle/caches/modules-2/files-2.1/com.jakewharton/butterknife-compiler/8.4.0/22f40cd3f01849c6deeab0a755d2082b2624581/butterknife-compiler-8.4.0.jar:/Users/apple/Library/Android/sdk/extras/android/m2repository/com/android/support/design/25.0.1/design-25.0.1.aar:/Users/apple/Library/Android/sdk/extras/android/m2repository/com/android/support/appcompat-v7/25.0.1/appcompat-v7-25.0.1.aar:/Users/apple/.gradle/caches/modules-2/files-2.1/com.jakewharton/butterknife/8.4.0/6c39334929311ff90a06c67ca310db1342fe2b6a/butterknife-8.4.0.aar:/Users/apple/Library/Android/sdk/extras/android/m2repository/com/android/support/recyclerview-v7/25.0.1/recyclerview-v7-25.0.1.aar:/Users/apple/Library/Android/sdk/extras/android/m2repository/com/android/support/cardview-v7/25.0.1/cardview-v7-25.0.1.aar:/Users/apple/Library/Android/sdk/extras/m2repository/com/android/support/constraint/constraint-layout/1.0.0-alpha4/constraint-layout-1.0.0-alpha4.aar:/Users/apple/.gradle/caches/modules-2/files-2.1/com.jakewharton/butterknife-annotations/8.4.0/ea392375cf9ff59234a82e7928a204215ccc98cd/butterknife-annotations-8.4.0.jar:/Users/apple/.gradle/caches/modules-2/files-2.1/com.google.auto/auto-common/0.6/cf7212b0f8bfef12657b942df8f4f2cf032d3f41/auto-common-0.6.jar:/Users/apple/.gradle/caches/modules-2/files-2.1/com.google.auto.service/auto-service/1.0-rc2/51033a5b8fcf7039159e35b6878f106ccd5fb35f/auto-service-1.0-rc2.jar:/Users/apple/.gradle/caches/modules-2/files-2.1/com.squareup/javapoet/1.7.0/4fdcf1fc27c1a8f55d1109df986c923152f07759/javapoet-1.7.0.jar:/Users/apple/Library/Android/sdk/extras/android/m2repository/com/android/support/support-v4/25.0.1/support-v4-25.0.1.aar:/Users/apple/Library/Android/sdk/extras/android/m2repository/com/android/support/transition/25.0.1/transition-25.0.1.aar:/Users/apple/Library/Android/sdk/extras/android/m2repository/com/android/support/support-vector-drawable/25.0.1/support-vector-drawable-25.0.1.aar:/Users/apple/Library/Android/sdk/extras/android/m2repository/com/android/support/animated-vector-drawable/25.0.1/animated-vector-drawable-25.0.1.aar:/Users/apple/Library/Android/sdk/extras/android/m2repository/com/android/support/support-compat/25.0.1/support-compat-25.0.1.aar:/Users/apple/Library/Android/sdk/extras/android/m2repository/com/android/support/support-core-ui/25.0.1/support-core-ui-25.0.1.aar:/Users/apple/Library/Android/sdk/extras/m2repository/com/android/support/constraint/constraint-layout-solver/1.0.0-alpha4/constraint-layout-solver-1.0.0-alpha4.jar:/Users/apple/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/18.0/cce0823396aa693798f8882e64213b1772032b09/guava-18.0.jar:/Users/apple/Library/Android/sdk/extras/android/m2repository/com/android/support/support-media-compat/25.0.1/support-media-compat-25.0.1.aar:/Users/apple/Library/Android/sdk/extras/android/m2repository/com/android/support/support-core-utils/25.0.1/support-core-utils-25.0.1.aar:/Users/apple/Library/Android/sdk/extras/android/m2repository/com/android/support/support-fragment/25.0.1/support-fragment-25.0.1.aar:/Users/apple/Library/Android/sdk/extras/android/m2repository/com/android/support/support-annotations/25.0.1/support-annotations-25.0.1.jar:/Users/apple/.android/build-cache/9925213b2b14ce07da33278f782575f28b013668/output/jars/classes.jar:/Users/apple/.android/build-cache/e32be45f3f61f25a69d9024be0f8ea0d5a8075ca/output/jars/classes.jar:/Users/apple/.android/build-cache/9ea0b75fc2326bc53bb213f96b92ebdf12f9621b/output/jars/classes.jar:/Users/apple/.android/build-cache/18032473f372ce07054dda5b8bcc8b286af2d85b/output/jars/classes.jar:/Users/apple/.android/build-cache/df0832191d65e7a0f5338549d55e74f7207f608a/output/jars/classes.jar:/Users/apple/.android/build-cache/df0832191d65e7a0f5338549d55e74f7207f608a/output/jars/libs/internal_impl-25.0.1.jar:/Users/apple/.android/build-cache/6530b8998f41ef286590f3c97fb218d0296a1862/output/jars/classes.jar:/Users/apple/.android/build-cache/6530b8998f41ef286590f3c97fb218d0296a1862/output/jars/libs/internal_impl-25.0.1.jar:/Users/apple/.android/build-cache/963ab1b0956f01d064f6ac632a26af4c0730a62e/output/jars/classes.jar:/Users/apple/.android/build-cache/963ab1b0956f01d064f6ac632a26af4c0730a62e/output/jars/libs/internal_impl-25.0.1.jar:/Users/apple/.android/build-cache/4d3992355af64b42623bc7b1d489f68e09549084/output/jars/classes.jar:/Users/apple/.android/build-cache/8e363730e9477c0061068973fdc4002631cd810d/output/jars/classes.jar:/Users/apple/.android/build-cache/fd5a3fe32dc2551a23d8eee09d4c242c0e775256/output/jars/classes.jar:/Users/apple/.android/build-cache/edcdd078d5ff79e1c5da0f5d6f280d771bfe093b/output/jars/classes.jar:/Users/apple/.android/build-cache/d247c7e1ce33c86670bd6fdac6ce9fd6f65b365b/output/jars/classes.jar:/Users/apple/.android/build-cache/d247c7e1ce33c86670bd6fdac6ce9fd6f65b365b/output/jars/libs/internal_impl-25.0.1.jar:/Users/apple/.android/build-cache/dab7d56140cf87a3f5c9e4efd854864ebc58b02f/output/jars/classes.jar:/Users/apple/.android/build-cache/dab7d56140cf87a3f5c9e4efd854864ebc58b02f/output/jars/libs/internal_impl-25.0.1.jar:/Users/apple/.android/build-cache/2765ecf4e46ac77df995c38580a9bb7917a1b365/output/jars/classes.jar:/Users/apple/.android/build-cache/2b3628490624a11eaaadeb19a1b6869db4dcb467/output/jars/classes.jar:/Users/apple/.android/build-cache/007507bf48b6131b4f18f6d6e1c49acec7cd278f/output/jars/classes.jar"
+        }
+    },
+    "apt_libraries": {
+        "dagger": false,
+        "butterknife": true
+    },
+    "auto_dependency": true,
+    "build_cache_dir": "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/build/freeline",
+    "build_directory": "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/build",
+    "build_script": "./gradlew :app:assembleDebug",
+    "build_script_work_directory": "",
+    "build_tools_directory": "/Users/apple/Library/Android/sdk/build-tools/25.0.0",
+    "build_tools_version": "25.0.0",
+    "compile_sdk_directory": "/Users/apple/Library/Android/sdk/platforms/android-25",
+    "compile_sdk_version": "android-25",
+    "databinding": [
+        
+    ],
+    "databinding_compiler_jar": "",
+    "databinding_modules": [
+        
+    ],
+    "debug_package": "com.example.xzy.myhome",
+    "exclude_dep_res_paths": [
+        
+    ],
+    "extra_dep_res_paths": [
+        
+    ],
+    "freeline_cache_dir": "/Users/apple/Projects/AndroidStudioProjects/Myhome",
+    "freeline_gradle_plugin_version": "0.8.3",
+    "java_home": "/Library/Java/JavaVirtualMachines/jdk1.8.0_73.jdk/Contents/Home",
+    "launcher": "com.example.xzy.myhome.activity.StartActivity",
+    "main_assets_directory": [
+        "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/debug/assets",
+        "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/main/assets"
+    ],
+    "main_jniLibs_directory": [
+        "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/debug/jniLibs",
+        "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/main/jniLibs"
+    ],
+    "main_jni_directory": [
+        "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/debug/jni",
+        "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/main/jni"
+    ],
+    "main_manifest_path": "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/main/AndroidManifest.xml",
+    "main_project_dir": "app",
+    "main_project_name": "app",
+    "main_r_path": "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/build/generated/source/r/debug/R.java",
+    "main_res_directory": [
+        "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/debug/res",
+        "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/main/res"
+    ],
+    "main_src_directory": [
+        "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/debug/java",
+        "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/main/java"
+    ],
+    "module_dependencies": {
+        "app": [
+            
+        ]
+    },
+    "modules": [
+        {
+            "name": "app",
+            "path": "/Users/apple/Projects/AndroidStudioProjects/Myhome/app"
+        }
+    ],
+    "package": "com.example.xzy.myhome",
+    "product_flavor": "",
+    "project_source_sets": {
+        "app": {
+            "main_assets_directory": [
+                "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/debug/assets",
+                "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/main/assets"
+            ],
+            "main_jniLibs_directory": [
+                "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/debug/jniLibs",
+                "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/main/jniLibs"
+            ],
+            "main_jni_directory": [
+                "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/debug/jni",
+                "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/main/jni"
+            ],
+            "main_manifest_path": "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/main/AndroidManifest.xml",
+            "main_res_directory": [
+                "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/debug/res",
+                "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/main/res"
+            ],
+            "main_src_directory": [
+                "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/debug/java",
+                "/Users/apple/Projects/AndroidStudioProjects/Myhome/app/src/main/java"
+            ]
+        }
+    },
+    "project_type": "gradle",
+    "retrolambda": {
+        
+    },
+    "root_dir": "/Users/apple/Projects/AndroidStudioProjects/Myhome",
+    "sdk_directory": "/Users/apple/Library/Android/sdk",
+    "use_jdk8": true
+}

@@ -44,7 +44,6 @@ public class LoginActivity extends BaseActivity {
 
     private SharedPreferences mPreferences;
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,7 +93,6 @@ public class LoginActivity extends BaseActivity {
         mEditor.apply();
     }
 
-
     //登录回调
     @Override
     protected void mDidUserLogin(GizWifiErrorCode result, String uid, String token) {
@@ -112,6 +110,5 @@ public class LoginActivity extends BaseActivity {
             Snackbar.make(eTLoginEmail, "登录失败", Snackbar.LENGTH_LONG).show();
         }
 }
-
 
 }

@@ -51,10 +51,8 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
 
     @BindView(R.id.tb_device_list1)
     Toolbar tbDeviceList;
-
     @BindView(R.id.text_view_logcat)
     TextView textViewLogcat;
-
     @BindView(R.id.rv_device_item)
     SwipeMenuRecyclerView rvDeviceItem;
     @BindView(R.id.button_error1)
@@ -100,7 +98,6 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
         super.onDestroy();
         mGizDevice.setSubscribe(false);
     }
-
 
     private void iniToolbarList() {
         tbDeviceList.inflateMenu(R.menu.devicelist_toolbar_menu);
@@ -280,7 +277,6 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
         }
     }
 
-
     @OnClick({R.id.button_1,R.id.button_2,R.id.button_3,R.id.button_4, R.id.button_error1, R.id.button_clear, R.id.button_update})
     public void onClick(View view) {
         switch (view.getId()) {
@@ -314,9 +310,6 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
         }
     }
 
-
-
-
     @Override
     public void onSwitchClick(int position, byte switchState) {
         PacketBean packetBean = new PacketBean();
@@ -328,6 +321,7 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
                 .setDataLength((byte) 1)
                 .sendPacket(mGizDevice);
         sLampLuminance = switchState;
+
     }
 
     private void testInitData() {
@@ -377,6 +371,7 @@ public class Main2Activity extends BaseActivity implements DeviceItemRecycleView
                 ToastUtil.showToast(Main2Activity.this, device.getProductName() + "设备状态变为:可控");
                 break;
             case GizDeviceUnavailable:
+
                 ToastUtil.showToast(Main2Activity.this, device.getProductName() + "设备状态变为:难以获得的");
                 break;
         }

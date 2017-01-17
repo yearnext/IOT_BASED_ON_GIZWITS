@@ -1,35 +1,28 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:paddingTop="8dp"
-    tools:context="com.example.xzy.myhome.activity.WIFIActivity">
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:paddingLeft="16dp"
+              android:paddingRight="16dp"
+              android:paddingTop="8dp"
+              tools:context="com.example.xzy.myhome.activity.WIFIActivity">
 
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="15dp"
+        android:contentDescription="@string/add_device"
+        android:src="@drawable/nodevice"/>
 
-        <ImageView
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
-            android:src="@drawable/nodevice"
-            android:layout_gravity="center"
-            android:contentDescription="@string/add_device" />
-
-        <TextView
-            android:id="@+id/textView1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:layout_gravity="center"
-            android:text="@string/configuration_message" />
-
-
-
-
-
-
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="10dp"
+        android:text="@string/configuration_message"/>
 
     <android.support.design.widget.TextInputLayout
         android:layout_width="match_parent"
@@ -41,11 +34,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/choose_wifi_list_title"
-            android:textSize="14sp" />
+            android:textSize="14sp"/>
     </android.support.design.widget.TextInputLayout>
-
-
-
 
     <android.support.design.widget.TextInputLayout
         android:layout_width="match_parent"
@@ -57,24 +47,26 @@
             android:layout_height="wrap_content"
             android:hint="@string/softPsw_hint"
             android:inputType="textPassword"
-            android:textSize="14sp" />
+            android:textSize="14sp"/>
     </android.support.design.widget.TextInputLayout>
 
+    <Button
+        android:id="@+id/button_wifi_login"
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        android:layout_marginTop="40dp"
+        android:background="@drawable/button_shape"
+        android:text="@string/next"
+        android:textColor="@color/white"/>
 
-        <Button
-            android:id="@+id/button_wifi_login"
-            android:layout_width="fill_parent"
-            android:layout_height="40dp"
-            android:layout_marginTop="40dp"
-            android:background="@drawable/button_shape"
-            android:text="@string/next" />
     <Button
         android:id="@+id/button_wifi_login1"
         android:layout_width="fill_parent"
         android:layout_height="40dp"
         android:layout_marginTop="40dp"
         android:background="@drawable/button_shape"
-        android:text="ap" />
+        android:text="ap"
+        android:visibility="gone"/>
 
 </LinearLayout>
 

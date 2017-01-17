@@ -61,7 +61,6 @@ public class MainActivity extends BaseActivity {
         initRecyclerView();
     }
 
-
     private void initRecyclerView() {
         mIotAdapter = new IotRecyclerAdapter(iotDeviceList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -98,6 +97,8 @@ public class MainActivity extends BaseActivity {
                         startActivity(intent);
                         break;
                     case R.id.refresh_item:
+                        Intent intent1 = new Intent("com.example.xzy.myhome.FORCE_OFFLINE");
+                        sendBroadcast(intent1);
                         refresh();
                         break;
                     case R.id.delete_item:

@@ -30,19 +30,15 @@ public class StartActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            insertDummyContactWrapper();
+            requestPermissions();
         } else {
             successfulPermissions();
         }
 
     }
 
-
-
-
-
     @TargetApi(Build.VERSION_CODES.M)
-    private void insertDummyContactWrapper() {
+    private void requestPermissions() {
         int hasWriteContactsPermission = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (hasWriteContactsPermission != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,},
@@ -54,7 +50,8 @@ public class StartActivity extends BaseActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(
+            int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == INTI_PERMISSIONS) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
